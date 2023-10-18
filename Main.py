@@ -3,9 +3,11 @@ import json
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton, QTextEdit, QDialog, \
-    QSlider, QLabel, QHBoxLayout
+    QSlider, QLabel, QHBoxLayout, QComboBox
 from PyQt5.QtCore import Qt, QSize
 from fuzzywuzzy import fuzz
+
+from gui.ComboBoxDerivatives import CustomComboBox
 
 
 class MangaApp(QWidget):
@@ -15,6 +17,7 @@ class MangaApp(QWidget):
         self.data = self.load_json()
         self.showing_all_entries = False
         self.search_cutoff_threshold = 0
+        self.sort_order_reversed = False
         self.load_settings()
         self.init_ui()
 
@@ -41,9 +44,22 @@ class MangaApp(QWidget):
         self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
         self.settings_button.clicked.connect(self.show_options_dialog)
 
+        # Sort drop down
+        self.sort_combobox = CustomComboBox()
+        self.sorting_options = [
+            ("By id", lambda entry: entry['id']),
+            ("By date added", lambda entry: self.data.index(entry)),
+            ("By score", lambda entry: entry.get('score', float('-inf')))
+        ]
+        for name, _ in self.sorting_options:
+            self.sort_combobox.addItem(name)
+        self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
+        self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
+
         hbox = QHBoxLayout()  # Create a horizontal box layout
         hbox.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
         hbox.addWidget(self.settings_button)
+        hbox.addWidget(self.sort_combobox)
         self.layout.addLayout(hbox)
 
         # List view
@@ -62,6 +78,15 @@ class MangaApp(QWidget):
         self.layout.addWidget(self.save_button)
 
         self.setLayout(self.layout)
+
+    def toggle_sort_order(self):
+        print(f"Toggling sort order from: {self.sort_order_reversed}")
+        self.sort_order_reversed = not self.sort_order_reversed
+        self.update_list(forceRefresh=True)
+
+    def secondary_sort_key(self, x):
+        sort_func = self.sorting_options[self.sort_combobox.currentIndex()][1]
+        return sort_func(x[0])
 
     def show_options_dialog(self):
         dialog = QDialog(self)
@@ -117,23 +142,27 @@ class MangaApp(QWidget):
 
         return score
 
-    def update_list(self):
+    def update_list(self, forceRefresh=False):
         search_terms = [term.strip() for term in self.search_bar.text().split(",")]
 
+        # Define sort in case we need it
+        _, sort_func = self.sorting_options[self.sort_combobox.currentIndex()]
+
         # If less than 3 characters and already showing all entries, return early
-        if all(len(term) < 3 for term in search_terms):
-            if self.showing_all_entries:
+        if len(search_terms) < 3:
+            if self.showing_all_entries and not forceRefresh:
                 return
             else:
+                sorted_data = sorted(self.data, key=lambda x: sort_func(x), reverse=not self.sort_order_reversed)
                 self.list_widget.clear()
-                for entry in self.data:
+                for entry in sorted_data:
                     self.list_widget.addItem(entry['title'])
                 self.showing_all_entries = True
                 return
 
         # Compute scores for all manga entries and sort them based on the score
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in self.data]
-        sorted_data = sorted(scored_data, key=lambda x: x[1], reverse=True)
+        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x)), reverse=not self.sort_order_reversed)
 
         self.list_widget.clear()  # Clear the list before adding filtered results
 

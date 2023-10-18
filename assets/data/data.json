@@ -1,19 +1,21 @@
 [
     {
+        "id": 1,
         "title": "Manga A",
         "author": "Author A",
         "tags": [
             "action",
             "fantasy"
         ],
-        "rating": 4
+        "score": 7
     },
     {
+        "id": 2,
         "title": "Manga B",
         "author": "Author B",
         "tags": [
             "romance"
         ],
-        "rating": 2
+        "score": 6
     }
 ]
