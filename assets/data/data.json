@@ -1,0 +1,19 @@
+[
+    {
+        "title": "Manga A",
+        "author": "Author A",
+        "tags": [
+            "action",
+            "fantasy"
+        ],
+        "rating": 4
+    },
+    {
+        "title": "Manga B",
+        "author": "Author B",
+        "tags": [
+            "romance"
+        ],
+        "rating": 2
+    }
+]
