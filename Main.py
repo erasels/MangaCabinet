@@ -98,51 +98,51 @@ class MangaApp(QWidget):
             settings = {"search_cutoff_threshold": self.search_cutoff_threshold}
             json.dump(settings, f)
 
-    def match_score(self, data, term):
-        """Recursive search to compute a score for the closeness of the match."""
+    def match_score(self, data, terms):
+        """Compute a score based on the number of matching terms."""
         score = 0
 
-        if isinstance(data, dict):
-            for key, value in data.items():
-                score += self.match_score(value, term)
-        elif isinstance(data, list):
-            for item in data:
-                score += self.match_score(item, term)
-        elif isinstance(data, str):
-            score += fuzz.ratio(data.lower(), term.lower())  # Using ratio for a more comprehensive match score
+        for term in terms:
+            if ":" in term:
+                field, value = term.split(":", 1)
+                data_value = data.get(field, "")
+                if isinstance(data_value, (int, float)):
+                    if str(data_value) == value:
+                        score += 1
+                elif value.lower() in str(data_value).lower():
+                    score += 1
+            else:
+                if any(term.lower() in str(data_value).lower() for data_value in data.values()):
+                    score += 1
 
         return score
 
     def update_list(self):
-        search_term = self.search_bar.text()
+        search_terms = [term.strip() for term in self.search_bar.text().split(",")]
 
         # If less than 3 characters and already showing all entries, return early
-        if len(search_term) < 3:
+        if all(len(term) < 3 for term in search_terms):
             if self.showing_all_entries:
                 return
             else:
-                # If not currently showing all entries, refresh the list to show all
                 self.list_widget.clear()
                 for entry in self.data:
                     self.list_widget.addItem(entry['title'])
                 self.showing_all_entries = True
                 return
 
-        # From here onwards, we know the search_term has 3 or more characters
         # Compute scores for all manga entries and sort them based on the score
-        scored_data = [(entry, self.match_score(entry, search_term)) for entry in self.data]
+        scored_data = [(entry, self.match_score(entry, search_terms)) for entry in self.data]
         sorted_data = sorted(scored_data, key=lambda x: x[1], reverse=True)
 
         self.list_widget.clear()  # Clear the list before adding filtered results
 
-        # Only add entries with a score greater than the slider's threshold to the list
         for idx, (entry, score) in enumerate(sorted_data):
-            if idx < self.search_cutoff_threshold:
+            if score == len(search_terms) and idx < self.search_cutoff_threshold:
                 self.list_widget.addItem(entry['title'])
             else:
                 break
 
-        # Set the variable to False as we are now showing filtered results
         self.showing_all_entries = False
 
     def display_detail(self, item):
