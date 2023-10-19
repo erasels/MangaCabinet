@@ -12,14 +12,20 @@ from gui.ComboBoxDerivatives import CustomComboBox
 
 
 class MangaApp(QWidget):
-    data_file = os.path.join('assets', 'data', 'data.json')
-    settings_file = os.path.join('assets', 'data', 'settings.json')
-    groups_file = os.path.join('assets', 'data', 'groups.json')
+    image_path = os.path.join('assets', 'images')
+    data_path = os.path.join('assets', 'data')
+
+    data_file = os.path.join(data_path, 'data.json')
+    settings_file = os.path.join(data_path, 'settings.json')
+    groups_file = os.path.join(data_path, 'groups.json')
+
+    combobox_style_file = os.path.join(image_path, 'combobox_style.qss')
 
     def __init__(self):
         super().__init__()
         self.data = self.load_json(MangaApp.data_file)
         self.groups = self.load_json(MangaApp.groups_file)
+        self.styles = self.load_styles()
         self.showing_all_entries = False
         self.search_cutoff_threshold = 0
         self.sort_order_reversed = False
@@ -50,6 +56,13 @@ class MangaApp(QWidget):
         settings = {"search_cutoff_threshold": self.search_cutoff_threshold}
         self.save_json(MangaApp.settings_file, settings)
 
+    def load_styles(self):
+        styles = {}
+        with open(MangaApp.combobox_style_file, "r") as f:
+            stylesheet = f.read()
+            styles["combobox"] = stylesheet
+
+        return styles
     def init_ui(self):
         self.layout = QVBoxLayout()
 
@@ -59,7 +72,7 @@ class MangaApp(QWidget):
 
         # Options Button
         self.settings_button = QPushButton(self)
-        self.settings_button.setIcon(QIcon('assets/images/options_icon.png'))
+        self.settings_button.setIcon(QIcon(os.path.join(MangaApp.image_path, 'options_icon.png')))
         self.settings_button.setIconSize(QSize(24, 24))
         self.settings_button.setFixedSize(24, 24)  # Set the button size to match the icon size
         self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
@@ -76,6 +89,8 @@ class MangaApp(QWidget):
             self.sort_combobox.addItem(name)
         self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
         self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
+        self.sort_combobox.setStyleSheet(self.styles.get("combobox"))
+        self.sort_combobox.setObjectName("Normal")
 
         search_box = QHBoxLayout()  # Create a horizontal box layout
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
@@ -93,7 +108,7 @@ class MangaApp(QWidget):
         self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
 
         # Add group button
-        self.add_group_btn = QPushButton("Add Group", self)
+        self.add_group_btn = QPushButton("New Group", self)
         self.add_group_btn.clicked.connect(self.add_group)
 
         groups_box = QHBoxLayout()
@@ -119,7 +134,11 @@ class MangaApp(QWidget):
         self.setLayout(self.layout)
 
     def toggle_sort_order(self):
-        print(f"Toggling sort order from: {self.sort_order_reversed}")
+        if self.sort_order_reversed:
+            self.sort_combobox.setObjectName("Normal")
+        else:
+            self.sort_combobox.setObjectName("Reversed")
+        self.sort_combobox.setStyleSheet(self.styles["combobox"])  # Refresh the stylesheet to force the update.
         self.sort_order_reversed = not self.sort_order_reversed
         self.update_list(forceRefresh=True)
 
