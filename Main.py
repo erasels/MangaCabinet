@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 
@@ -11,23 +12,42 @@ from gui.ComboBoxDerivatives import CustomComboBox
 
 
 class MangaApp(QWidget):
+    data_file = os.path.join('assets', 'data', 'data.json')
+    settings_file = os.path.join('assets', 'data', 'settings.json')
+    groups_file = os.path.join('assets', 'data', 'groups.json')
+
     def __init__(self):
         super().__init__()
-        self.json_file = 'assets/data/data.json'
-        self.data = self.load_json()
+        self.data = self.load_json(MangaApp.data_file)
         self.showing_all_entries = False
         self.search_cutoff_threshold = 0
         self.sort_order_reversed = False
         self.load_settings()
         self.init_ui()
 
-    def load_json(self):
-        with open(self.json_file, 'r') as file:
-            return json.load(file)
+    def load_json(self, file_path: str, data_type='list'):
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                try:
+                    return json.load(file)
+                except json.JSONDecodeError:
+                    print(f"Warning: The file {file_path} contains invalid JSON. Using default {data_type} instead.")
+                    return [] if data_type == 'list' else {}
+        else:
+            print(f"Warning: The file {file_path} does not exist. Using default {data_type} instead.")
+            return [] if data_type == 'list' else {}
 
-    def save_json(self):
-        with open(self.json_file, 'w') as file:
-            json.dump(self.data, file, indent=4)
+    def save_json(self, file_path: str, input_data):
+        with open(file_path, 'w') as file:
+            json.dump(input_data, file, indent=4)
+
+    def load_settings(self):
+        settings = self.load_json(MangaApp.settings_file, "dict")
+        self.search_cutoff_threshold = settings.get("search_cutoff_threshold", 100)
+
+    def save_settings(self):
+        settings = {"search_cutoff_threshold": self.search_cutoff_threshold}
+        self.save_json(MangaApp.settings_file, settings)
 
     def init_ui(self):
         self.layout = QVBoxLayout()
@@ -113,16 +133,6 @@ class MangaApp(QWidget):
         self.slider_label.setText(f"Search Cutoff Threshold: {self.search_cutoff_threshold}")
         self.save_settings()  # Save to the settings.json file
 
-    def load_settings(self):
-        with open('assets/data/settings.json', 'r') as f:
-            settings = json.load(f)
-            self.search_cutoff_threshold = settings.get("search_cutoff_threshold", 100)  # Default
-
-    def save_settings(self):
-        with open('assets/data/settings.json', 'w') as f:
-            settings = {"search_cutoff_threshold": self.search_cutoff_threshold}
-            json.dump(settings, f)
-
     def match_score(self, data, terms):
         """Compute a score based on the number of matching terms."""
         score = 0
@@ -185,7 +195,7 @@ class MangaApp(QWidget):
         for i, entry in enumerate(self.data):
             if entry['title'] == current_data['title']:
                 self.data[i] = current_data
-                self.save_json()
+                self.save_json(MangaApp.data_file, self.data)
                 self.update_list()
                 break
 
