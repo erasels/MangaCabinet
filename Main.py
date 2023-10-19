@@ -126,7 +126,7 @@ class MangaApp(QWidget):
         self.list_view = QListView(self)
         self.list_model = QStandardItemModel(self.list_view)
         self.list_view.setModel(self.list_model)
-        self.list_view.setSpacing(2)  # Add spacing between items for the line separator effect
+        self.list_view.setSpacing(1)  # Add spacing between items for the line separator effect
         self.list_delegate = MangaDelegate(self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
         self.list_view.clicked.connect(self.display_detail)  # Add this line here
@@ -333,6 +333,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MangaApp()
     window.setWindowTitle("Manga Cabinet")
-    window.resize(400, 400)
+    window.resize(1280, 720)
     window.show()
     sys.exit(app.exec_())

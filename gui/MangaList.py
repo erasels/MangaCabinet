@@ -19,7 +19,7 @@ def blend_colors(color1, color2, alpha):
 # Constants for tags
 TAG_WIDTH = 60
 TAG_HEIGHT = 20
-TAG_SPACING = 5
+TAG_SPACING = 3
 TAG_COLUMNS = 3
 TAG_MINIMUM_FONT_SIZE = 5
 TAG_BACKGROUND_COLOR = QColor("#D6D6D6")
