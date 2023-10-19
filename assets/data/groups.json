@@ -1,0 +1,11 @@
+{
+    "Test": {
+        "color": "#FF0000"
+    },
+    "Green": {
+        "color": "#00FF00"
+    },
+    "Red": {
+        "color": "#ff0000"
+    }
+}
