@@ -111,10 +111,12 @@ class MangaApp(QWidget):
 
         self.group_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
         self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
+        self.group_combobox.setStyleSheet(self.styles.get("dropdown"))
 
         # Add group button
         self.add_group_btn = QPushButton("New Group", self)
         self.add_group_btn.clicked.connect(self.add_group)
+        self.add_group_btn.setStyleSheet(self.styles.get("textbutton"))
 
         groups_box = QHBoxLayout()
         groups_box.addWidget(self.group_combobox, 1)
@@ -134,6 +136,7 @@ class MangaApp(QWidget):
         # Save button
         self.save_button = QPushButton("Save Changes", self)
         self.save_button.clicked.connect(self.save_changes)
+        self.save_button.setStyleSheet(self.styles.get("textbutton"))
         self.layout.addWidget(self.save_button)
 
         self.setLayout(self.layout)
@@ -180,12 +183,14 @@ class MangaApp(QWidget):
         # Name input
         name_label = QLabel("Group Name:", dialog)
         name_input = QLineEdit(dialog)
+        name_input.setStyleSheet(self.styles.get("lineedit"))
         layout.addWidget(name_label)
         layout.addWidget(name_input)
 
         # Color picker setup
         picked_color = [Qt.white]  # Default color, using a mutable type like a list to store the selected color
         pick_color_button = QPushButton("Pick Color", dialog)
+        pick_color_button.setStyleSheet(self.styles.get("textbutton"))
         layout.addWidget(pick_color_button)
 
         # Update the button's background color to show the picked color
@@ -198,8 +203,10 @@ class MangaApp(QWidget):
         # Save and Cancel buttons
         save_btn = QPushButton("Save", dialog)
         save_btn.clicked.connect(dialog.accept)
+        save_btn.setStyleSheet(self.styles.get("textbutton"))
         cancel_btn = QPushButton("Cancel", dialog)
         cancel_btn.clicked.connect(dialog.reject)
+        cancel_btn.setStyleSheet(self.styles.get("textbutton"))
         btn_layout = QHBoxLayout()
         btn_layout.addWidget(save_btn)
         btn_layout.addWidget(cancel_btn)

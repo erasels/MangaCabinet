@@ -1,0 +1,17 @@
+QComboBox {
+    border: 1px solid #B6B6B6;
+    border-radius: 5px;
+    padding: 2px;
+    background-color: #F9F9F9;
+}
+QComboBox:hover {
+    border-color: #888888;
+}
+QComboBox::drop-down {
+    border: 0;
+}
+
+QComboBox::down-arrow {
+    padding-right: 5px;
+    image: url(assets/images/down_arrow.png);
+}
