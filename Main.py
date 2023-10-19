@@ -126,6 +126,8 @@ class MangaApp(QWidget):
         # List view
         self.list_widget = QListWidget(self)
         self.list_widget.itemClicked.connect(self.display_detail)
+        self.list_widget.setStyleSheet(self.styles.get("mangalist"))
+
         self.layout.addWidget(self.list_widget)
         self.update_list()
 
@@ -295,6 +297,8 @@ class MangaApp(QWidget):
 
     def create_list_item(self, entry: dict):
         item = QListWidgetItem(entry['title'])
+        item.setTextAlignment(Qt.AlignJustify)
+        item.setToolTip(entry['title'])  # Show full title on hover
         group_name = entry.get('MC_Grouping')
         if group_name and group_name in self.groups:
             color = self.groups[group_name].get("color")
@@ -310,13 +314,15 @@ class MangaApp(QWidget):
                 self.detail_view.setText(json.dumps(entry, indent=4))
 
     def save_changes(self):
-        if self.detail_view.toPlainText():
-            current_data = json.loads(self.detail_view.toPlainText())
+        contents = self.detail_view.toPlainText()
+        if len(contents) > 5:
+            current_data = json.loads(contents)
             for i, entry in enumerate(self.data):
-                if entry['title'] == current_data['title']:
+                if entry['id'] == current_data['id']:
                     self.data[i] = current_data
+                    # TODO: Might want to optimize this
                     self.save_json(MangaApp.data_file, self.data)
-                    self.update_list()
+                    self.update_list(True)
                     break
 
 

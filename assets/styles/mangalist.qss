@@ -1,0 +1,9 @@
+QListWidget {
+    border: 1px solid #B6B6B6;
+    border-radius: 5px;
+    background-color: #F9F9F9;
+}
+
+QListWidget::item:hover {
+    background-color: #E5E5E5;  /* Dim the item a little when hovered */
+}
