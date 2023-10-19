@@ -2,13 +2,12 @@ import os
 import sys
 import json
 
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton, QTextEdit, QDialog, \
-    QSlider, QLabel, QHBoxLayout, QComboBox, QListWidgetItem, QColorDialog, QMessageBox
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize
-from fuzzywuzzy import fuzz
 
 from gui.ComboBoxDerivatives import CustomComboBox
+from gui.MangaList import MangaDelegate
 
 
 # noinspection PyUnresolvedReferences
@@ -124,11 +123,14 @@ class MangaApp(QWidget):
         self.layout.addLayout(groups_box)
 
         # List view
-        self.list_widget = QListWidget(self)
-        self.list_widget.itemClicked.connect(self.display_detail)
-        self.list_widget.setStyleSheet(self.styles.get("mangalist"))
-
-        self.layout.addWidget(self.list_widget)
+        self.list_view = QListView(self)
+        self.list_model = QStandardItemModel(self.list_view)
+        self.list_view.setModel(self.list_model)
+        self.list_view.setSpacing(2)  # Add spacing between items for the line separator effect
+        self.list_delegate = MangaDelegate(self.list_view)
+        self.list_view.setItemDelegate(self.list_delegate)
+        self.list_view.clicked.connect(self.display_detail)  # Add this line here
+        self.layout.addWidget(self.list_view)
         self.update_list()
 
         # Detail view (as a text edit for simplicity)
@@ -275,9 +277,9 @@ class MangaApp(QWidget):
                 return
             else:
                 sorted_data = sorted(mod_data, key=lambda x: sort_func(x), reverse=not self.sort_order_reversed)
-                self.list_widget.clear()
+                self.list_model.clear()
                 for entry in sorted_data:
-                    self.list_widget.addItem(self.create_list_item(entry))
+                    self.create_list_item(entry)
                 self.showing_all_entries = True
                 return
 
@@ -285,33 +287,24 @@ class MangaApp(QWidget):
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
         sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x)), reverse=not self.sort_order_reversed)
 
-        self.list_widget.clear()  # Clear the list before adding filtered results
+        self.list_model.clear()  # Clear the list before adding filtered results
 
         for idx, (entry, score) in enumerate(sorted_data):
             if score == len(search_terms) and idx < self.search_cutoff_threshold:
-                self.list_widget.addItem(self.create_list_item(entry))
+                self.create_list_item(entry)
             else:
                 break
 
         self.showing_all_entries = False
 
     def create_list_item(self, entry: dict):
-        item = QListWidgetItem(entry['title'])
-        item.setTextAlignment(Qt.AlignJustify)
-        item.setToolTip(entry['title'])  # Show full title on hover
-        group_name = entry.get('MC_Grouping')
-        if group_name and group_name in self.groups:
-            color = self.groups[group_name].get("color")
-            if color:
-                item.setBackground(QColor(color))
+        item = QStandardItem()
+        item.setData(entry, Qt.UserRole)
+        self.list_model.appendRow(item)
 
-        return item
-
-    def display_detail(self, item):
-        title = item.text()
-        for entry in self.data:
-            if entry['title'] == title:
-                self.detail_view.setText(json.dumps(entry, indent=4))
+    def display_detail(self, index):
+        data = index.data(Qt.UserRole)
+        self.detail_view.setText(json.dumps(data, indent=4))
 
     def save_changes(self):
         contents = self.detail_view.toPlainText()

@@ -1,14 +1,19 @@
 [
     {
-        "id": 1,
-        "title": "Manga A",
+        "MC_Grouping": "Red",
         "author": "Author A",
+        "id": 1,
+        "score": 7,
         "tags": [
             "action",
-            "fantasy"
+            "fantasy",
+            "High School",
+            "Isekai",
+            "Psychological",
+            "Horror",
+            "Sports"
         ],
-        "score": 7,
-        "MC_Grouping": "Red"
+        "title": "Manga Abba"
     },
     {
         "id": 2,
