@@ -9,5 +9,4 @@ Manga Cabinet is a local application designed to help manga enthusiasts and coll
 3. **Edit & Save**: Modify the metadata in the detailed view and save your changes back to the original JSON file.
 4. **Completely Local**: No internet? No problem. Everything runs locally, ensuring your data remains private.
 5. **Upcoming Features**: 
-    - Foldering to categorize your manga collection.
     - Enhanced UI for a better user experience.
