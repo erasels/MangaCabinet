@@ -94,7 +94,7 @@ class MangaApp(QWidget):
             self.sort_combobox.addItem(name)
         self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
         self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
-        self.sort_combobox.setStyleSheet(self.styles.get("combobox"))
+        self.sort_combobox.setStyleSheet(self.styles.get("sorter"))
         self.sort_combobox.setObjectName("Normal")
 
         search_box = QHBoxLayout()  # Create a horizontal box layout
