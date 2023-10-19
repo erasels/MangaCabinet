@@ -150,7 +150,7 @@ class MangaApp(QWidget):
             self.sort_combobox.setObjectName("Normal")
         else:
             self.sort_combobox.setObjectName("Reversed")
-        self.sort_combobox.setStyleSheet(self.styles["combobox"])  # Refresh the stylesheet to force the update.
+        self.sort_combobox.setStyleSheet(self.styles["sorter"])  # Refresh the stylesheet to force the update.
         self.sort_order_reversed = not self.sort_order_reversed
         self.update_list(forceRefresh=True)
 
