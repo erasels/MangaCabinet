@@ -11,15 +11,15 @@ from fuzzywuzzy import fuzz
 from gui.ComboBoxDerivatives import CustomComboBox
 
 
+# noinspection PyUnresolvedReferences
 class MangaApp(QWidget):
     image_path = os.path.join('assets', 'images')
     data_path = os.path.join('assets', 'data')
+    style_path = os.path.join('assets', 'styles')
 
     data_file = os.path.join(data_path, 'data.json')
     settings_file = os.path.join(data_path, 'settings.json')
     groups_file = os.path.join(data_path, 'groups.json')
-
-    combobox_style_file = os.path.join(image_path, 'combobox_style.qss')
 
     def __init__(self):
         super().__init__()
@@ -58,17 +58,22 @@ class MangaApp(QWidget):
 
     def load_styles(self):
         styles = {}
-        with open(MangaApp.combobox_style_file, "r") as f:
-            stylesheet = f.read()
-            styles["combobox"] = stylesheet
-
+        if os.path.exists(MangaApp.style_path):
+            for file_name in os.listdir(MangaApp.style_path):
+                if file_name.endswith(".qss"):
+                    with open(os.path.join(MangaApp.style_path, file_name), "r") as f:
+                        stylesheet = f.read()
+                        # Store the style in the dictionary using the filename without the .qss extension
+                        styles[file_name.rsplit('.', 1)[0]] = stylesheet
         return styles
+
     def init_ui(self):
         self.layout = QVBoxLayout()
 
         # Search bar
         self.search_bar = QLineEdit(self)
         self.search_bar.textChanged.connect(self.update_list)
+        self.search_bar.setStyleSheet(self.styles.get("lineedit"))
 
         # Options Button
         self.settings_button = QPushButton(self)
