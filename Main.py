@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QSize
 
 from gui.ComboBoxDerivatives import CustomComboBox
 from gui.MangaList import MangaDelegate
+from auxillary.DataAccess import MangaEntry
 
 
 # noinspection PyUnresolvedReferences
@@ -16,13 +17,13 @@ class MangaApp(QWidget):
     data_path = os.path.join('assets', 'data')
     style_path = os.path.join('assets', 'styles')
 
-    data_file = os.path.join(data_path, 'data.json')
+    data_file = os.path.join(data_path, 'data_real.json')
     settings_file = os.path.join(data_path, 'settings.json')
     groups_file = os.path.join(data_path, 'groups.json')
 
     def __init__(self):
         super().__init__()
-        self.data = self.load_json(MangaApp.data_file)
+        self.data = self.load_json(MangaApp.data_file, data_type="mangas")
         self.groups = self.load_json(MangaApp.groups_file)
         self.styles = self.load_styles()
         self.showing_all_entries = False
@@ -35,7 +36,10 @@ class MangaApp(QWidget):
         if os.path.exists(file_path):
             with open(file_path, 'r') as file:
                 try:
-                    return json.load(file)
+                    if data_type == "mangas":
+                        return json.load(file, object_pairs_hook=MangaEntry)
+                    else:
+                        return json.load(file)
                 except json.JSONDecodeError:
                     print(f"Warning: The file {file_path} contains invalid JSON. Using default {data_type} instead.")
                     return [] if data_type == 'list' else {}
@@ -269,7 +273,7 @@ class MangaApp(QWidget):
             mod_data = self.data
         else:
             # TODO: Inefficient, might need to be optimized
-            mod_data = [manga_entry for manga_entry in self.data if manga_entry.get("MC_Grouping") == selected_group]
+            mod_data = [manga_entry for manga_entry in self.data if manga_entry.group == selected_group]
 
         # If less than 3 characters and already showing all entries, return early
         if len(search_terms) < 3:

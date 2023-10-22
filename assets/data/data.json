@@ -4,7 +4,7 @@
         "author": "Author A",
         "id": 1,
         "score": 7,
-        "tags": [
+        "tag": [
             "action",
             "fantasy",
             "High School",
@@ -19,7 +19,7 @@
         "id": 2,
         "title": "Manga sdfdsfsdfsfsdfsd dgjd fgj fgj dgj dj ertj eje dfg dsg sdfsdf sffwefsdfjhj sj fdjdgjd jdfgjd fgj  sfwef sf wef B",
         "author": "Author B",
-        "tags": [
+        "tag": [
             "romance"
         ],
         "score": 6

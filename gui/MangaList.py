@@ -36,7 +36,7 @@ class MangaDelegate(QStyledItemDelegate):
         background_color = QColor("#F9F9F9")  # default background color
 
         # Set group-specific color
-        group_name = entry.get('MC_Grouping')
+        group_name = entry.group
         if group_name and group_name in self.parent().parent().groups:
             color = self.parent().parent().groups[group_name].get("color")
             if color:
@@ -56,7 +56,7 @@ class MangaDelegate(QStyledItemDelegate):
         painter.restore()
 
         # Draw the title and handle long titles
-        title = entry['title']
+        title = entry.display_title()
         title_rect = option.rect.adjusted(10, 10, -10, -10)  # Adjust as necessary
 
         # Calculate total width for three tags with their spacing
@@ -84,7 +84,7 @@ class MangaDelegate(QStyledItemDelegate):
         painter.drawText(title_rect, Qt.AlignLeft, line2.strip())
 
         # Handle tags (showing only the first six tags)
-        tags = entry.get('tags', [])[:6]  # TODO: Add logic to show important/interesting tags
+        tags = entry.tags[:6]  # TODO: Add logic to show important/interesting tags
 
         # Start position for tags
         tag_x_start = title_rect.right() + TAG_SPACING
