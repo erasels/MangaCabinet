@@ -114,6 +114,7 @@ class MangaDelegate(QStyledItemDelegate):
                 painter.fillPath(tag_path, TAG_BACKGROUND_COLOR)
                 painter.strokePath(tag_path, QPen(QColor("#000000"), 1))  # draw border
                 painter.drawText(tag_rect, Qt.AlignCenter, tags[idx])
+        painter.setFont(original_font)
 
     def sizeHint(self, option, index):
         return QSize(200, 60)
