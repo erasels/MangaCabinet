@@ -80,6 +80,7 @@ class MangaApp(QWidget):
         self.sorting_options = [
             ("By id", lambda entry: entry['id']),
             ("By date added", lambda entry: len(self.data) - self.data.index(entry) - 1),
+            ("By Upload", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),
             ("By score", lambda entry: entry.get('score', float('-inf')))
         ]
         for name, _ in self.sorting_options:

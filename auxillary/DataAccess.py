@@ -1,3 +1,5 @@
+from datetime import datetime
+
 
 class MangaEntry(dict):
     ATTRIBUTE_MAP = {
@@ -37,3 +39,9 @@ class MangaEntry(dict):
 
     def is_translated(self):
         return self.get("language") and "translated" in self["language"]
+
+    def upload_date(self):
+        if self.upload:
+            return datetime.strptime(self.upload, "%Y/%m/%d %H:%M")
+        else:
+            return None
