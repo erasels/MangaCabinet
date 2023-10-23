@@ -33,7 +33,6 @@ class OptionsDialog(QDialog):
         tooltip_text = "The amount of results to return when using the search bar."
         self.slider.setToolTip(tooltip_text)
 
-
         # Add a QCheckBox for the loose search matching option
         self.loose_match_checkbox = QCheckBox("Enable Loose Search Matching", self)
         self.loose_match_checkbox.setChecked(self.mw.settings[loose_match])

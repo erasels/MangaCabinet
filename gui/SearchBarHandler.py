@@ -12,6 +12,12 @@ class SearchBarHandler:
         self.mw = main_window
         self.sort_order_reversed = False
         self.showing_all_entries = False
+        self.sorting_options = [
+            ("By id", lambda entry: entry['id']),
+            ("By date added", lambda entry: len(self.mw.data) - self.mw.data.index(entry) - 1),
+            ("By Upload", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),  # Ends up being same as id
+            ("By score", lambda entry: entry.get('score', float('-inf')))
+        ]
         self.init_ui()
 
     def init_ui(self):
@@ -20,12 +26,6 @@ class SearchBarHandler:
         self.mw.search_bar.setStyleSheet(self.mw.styles.get("lineedit"))
 
         # Sorting combo box
-        self.sorting_options = [
-            ("By id", lambda entry: entry['id']),
-            ("By date added", lambda entry: len(self.mw.data) - self.mw.data.index(entry) - 1),
-            ("By Upload", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),  # Ends up being same as id
-            ("By score", lambda entry: entry.get('score', float('-inf')))
-        ]
         for name, _ in self.sorting_options:
             self.mw.sort_combobox.addItem(name)
         self.mw.sort_combobox.currentIndexChanged.connect(lambda: self.update_list())
