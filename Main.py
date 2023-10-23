@@ -43,12 +43,10 @@ class MangaApp(QWidget):
     # Method to create settings window
     def show_options_dialog(self):
         self.dialog = OptionsDialog(parent=self, settings=self.settings)
-        print("in")
         if self.dialog.exec_() == 0:
             self.settings = self.dialog.settings  # Get updated settings
-            print(self.settings)
+            self.update_list(True)
             save_json(MangaApp.settings_file, self.settings)
-        print("out")
 
     def load_styles(self):
         styles = {}
