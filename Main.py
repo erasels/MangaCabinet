@@ -130,10 +130,14 @@ class MangaApp(QWidget):
         self.list_view = QListView(self)
         self.list_model = QStandardItemModel(self.list_view)
         self.list_view.setModel(self.list_model)
-        self.list_view.setSpacing(1)  # Add spacing between items for the line separator effect
+
+        self.list_view.setWrapping(True)
+        self.list_view.setFlow(QListView.LeftToRight)
+        self.list_view.setLayoutMode(QListView.Batched)
+
         self.list_delegate = MangaDelegate(self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
-        self.list_view.clicked.connect(self.display_detail)  # Add this line here
+        self.list_view.clicked.connect(self.display_detail)
         self.layout.addWidget(self.list_view)
         self.update_list()
 
@@ -148,6 +152,11 @@ class MangaApp(QWidget):
         self.layout.addWidget(self.save_button)
 
         self.setLayout(self.layout)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.list_view.updateGeometries()
+        self.list_view.doItemsLayout()  # Force the view to relayout items.
 
     def toggle_sort_order(self):
         if self.sort_order_reversed:
