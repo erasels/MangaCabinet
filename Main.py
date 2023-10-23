@@ -9,6 +9,7 @@ from PyQt5.QtCore import Qt, QSize
 from auxillary.JSONMethods import load_json, save_json, load_styles
 from gui.ComboBoxDerivatives import RightClickableComboBox
 from gui.MangaList import MangaDelegate
+from gui.SearchBarHandler import SearchBarHandler
 from gui.Options import OptionsDialog, init_settings, search_thrshold
 from auxillary.DataAccess import MangaEntry
 
@@ -42,10 +43,9 @@ class MangaApp(QWidget):
 
     # Method to create settings window
     def show_options_dialog(self):
-        self.dialog = OptionsDialog(parent=self, settings=self.settings)
+        self.dialog = OptionsDialog(parent=self)
         if self.dialog.exec_() == 0:
-            self.settings = self.dialog.settings  # Get updated settings
-            self.update_list()
+            self.search_bar_handler.update_list()
             save_json(MangaApp.settings_file, self.settings)
 
     def init_ui(self):
@@ -53,8 +53,7 @@ class MangaApp(QWidget):
 
         # Search bar
         self.search_bar = QLineEdit(self)
-        self.search_bar.textChanged.connect(lambda: self.update_list(False))
-        self.search_bar.setStyleSheet(self.styles.get("lineedit"))
+        self.search_bar_handler = SearchBarHandler(self)
 
         # Options Button
         self.settings_button = QPushButton(self)
@@ -74,7 +73,7 @@ class MangaApp(QWidget):
         ]
         for name, _ in self.sorting_options:
             self.sort_combobox.addItem(name)
-        self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list())
+        self.sort_combobox.currentIndexChanged.connect(lambda: self.search_bar_handler.update_list())
         self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
         self.sort_combobox.setStyleSheet(self.styles.get("sorter"))
         self.sort_combobox.setObjectName("Normal")
@@ -91,7 +90,7 @@ class MangaApp(QWidget):
         for group_name, group_details in self.groups.items():
             self.group_combobox.addItem(group_name, group_name)
 
-        self.group_combobox.currentIndexChanged.connect(lambda: self.update_list())
+        self.group_combobox.currentIndexChanged.connect(lambda: self.search_bar_handler.update_list())
         self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
         self.group_combobox.setStyleSheet(self.styles.get("dropdown"))
 
@@ -118,7 +117,7 @@ class MangaApp(QWidget):
         self.list_view.setItemDelegate(self.list_delegate)
         self.list_view.clicked.connect(self.display_detail)
         self.layout.addWidget(self.list_view)
-        self.update_list(False)
+        self.search_bar_handler.update_list(False)
 
         # Detail view (as a text edit for simplicity)
         self.detail_view = QTextEdit(self)
@@ -145,11 +144,7 @@ class MangaApp(QWidget):
             self.sort_combobox.setObjectName("Reversed")
         self.sort_combobox.setStyleSheet(self.styles["sorter"])  # Refresh the stylesheet to force the update.
         self.sort_order_reversed = not self.sort_order_reversed
-        self.update_list()
-
-    def secondary_sort_key(self, x):
-        sort_func = self.sorting_options[self.sort_combobox.currentIndex()][1]
-        return sort_func(x[0])
+        self.search_bar_handler.update_list()
 
     # Method to add new group creation window
     def add_group(self):
@@ -204,86 +199,7 @@ class MangaApp(QWidget):
                 self.group_combobox.addItem(group_name, group_name)
             else:
                 # Force refresh in case color changed
-                self.update_list()
-
-    def count_matches(self, value, target):
-        """
-        Count the number of times the target is present in the value or any of its items (if list/dict).
-        """
-        count = 0
-
-        if isinstance(value, (int, float)):
-            if str(value) == target:
-                count += 1
-        elif isinstance(value, list):
-            for item in value:
-                count += self.count_matches(item, target)
-        elif isinstance(value, dict):
-            for item_value in value.values():
-                count += self.count_matches(item_value, target)
-        elif target.lower() in str(value).lower():
-            count += 1
-
-        return count
-
-    def match_score(self, data, terms):
-        """Compute a score based on the number of matching terms."""
-        score = 0
-
-        for term in terms:
-            if ":" in term:
-                field, value = term.split(":", 1)
-                data_value = data.get(field, "")
-                score += self.count_matches(data_value, value)
-            else:
-                for data_value in data.values():
-                    score += self.count_matches(data_value, term)
-
-        return score
-
-    def update_list(self, forceRefresh=True):
-        search_terms = [term.strip() for term in self.search_bar.text().split(",")]
-
-        # Define sort in case we need it
-        _, sort_func = self.sorting_options[self.sort_combobox.currentIndex()]
-        selected_group = self.group_combobox.currentData()
-
-        if not selected_group:
-            mod_data = self.data
-        else:
-            # Can be optimized in case update_list gets called a lot
-            mod_data = [manga_entry for manga_entry in self.data if manga_entry.group == selected_group]
-
-        # If less than 3 characters and already showing all entries, return early
-        if len(self.search_bar.text()) < 3:
-            if self.showing_all_entries and not forceRefresh:
-                return
-            else:
-                sorted_data = sorted(mod_data, key=lambda x: sort_func(x), reverse=not self.sort_order_reversed)
-                self.list_model.clear()
-                for entry in sorted_data:
-                    self.create_list_item(entry)
-                self.showing_all_entries = True
-                return
-
-        # Compute scores for all manga entries and sort them based on the score
-        scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
-
-        self.list_model.clear()  # Clear the list before adding filtered results
-
-        for idx, (entry, score) in enumerate(sorted_data):
-            if score > 0 and idx < self.settings[search_thrshold]:
-                self.create_list_item(entry)
-            else:
-                break
-
-        self.showing_all_entries = False
-
-    def create_list_item(self, entry: dict):
-        item = QStandardItem()
-        item.setData(entry, Qt.UserRole)
-        self.list_model.appendRow(item)
+                self.search_bar_handler.update_list()
 
     def display_detail(self, index):
         data = index.data(Qt.UserRole)
@@ -297,7 +213,7 @@ class MangaApp(QWidget):
                 if entry.id == current_data['id']:
                     self.data[i] = current_data
                     save_json(MangaApp.data_file, self.data)
-                    self.update_list()
+                    self.search_bar_handler.update_list()
                     break
 
 
