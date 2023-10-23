@@ -90,7 +90,7 @@ class MangaApp(QWidget):
         self.sort_combobox = CustomComboBox()
         self.sorting_options = [
             ("By id", lambda entry: entry['id']),
-            ("By date added", lambda entry: self.data.index(entry)),
+            ("By date added", lambda entry: len(self.data) - self.data.index(entry) - 1),
             ("By score", lambda entry: entry.get('score', float('-inf')))
         ]
         for name, _ in self.sorting_options:
@@ -243,6 +243,26 @@ class MangaApp(QWidget):
         self.slider_label.setText(f"Search Cutoff Threshold: {self.search_cutoff_threshold}")
         self.save_settings()  # Save to the settings.json file
 
+    def count_matches(self, value, target):
+        """
+        Count the number of times the target is present in the value or any of its items (if list/dict).
+        """
+        count = 0
+
+        if isinstance(value, (int, float)):
+            if str(value) == target:
+                count += 1
+        elif isinstance(value, list):
+            for item in value:
+                count += self.count_matches(item, target)
+        elif isinstance(value, dict):
+            for item_value in value.values():
+                count += self.count_matches(item_value, target)
+        elif target.lower() in str(value).lower():
+            count += 1
+
+        return count
+
     def match_score(self, data, terms):
         """Compute a score based on the number of matching terms."""
         score = 0
@@ -251,14 +271,10 @@ class MangaApp(QWidget):
             if ":" in term:
                 field, value = term.split(":", 1)
                 data_value = data.get(field, "")
-                if isinstance(data_value, (int, float)):
-                    if str(data_value) == value:
-                        score += 1
-                elif value.lower() in str(data_value).lower():
-                    score += 1
+                score += self.count_matches(data_value, value)
             else:
-                if any(term.lower() in str(data_value).lower() for data_value in data.values()):
-                    score += 1
+                for data_value in data.values():
+                    score += self.count_matches(data_value, term)
 
         return score
 
@@ -276,7 +292,7 @@ class MangaApp(QWidget):
             mod_data = [manga_entry for manga_entry in self.data if manga_entry.group == selected_group]
 
         # If less than 3 characters and already showing all entries, return early
-        if len(search_terms) < 3:
+        if len(self.search_bar.text()) < 3:
             if self.showing_all_entries and not forceRefresh:
                 return
             else:
@@ -289,12 +305,12 @@ class MangaApp(QWidget):
 
         # Compute scores for all manga entries and sort them based on the score
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x)), reverse=not self.sort_order_reversed)
+        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
 
         self.list_model.clear()  # Clear the list before adding filtered results
 
         for idx, (entry, score) in enumerate(sorted_data):
-            if score == len(search_terms) and idx < self.search_cutoff_threshold:
+            if score > 0 and idx < self.search_cutoff_threshold:
                 self.create_list_item(entry)
             else:
                 break
