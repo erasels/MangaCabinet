@@ -17,17 +17,17 @@ class OptionsDialog(QDialog):
         super(OptionsDialog, self).__init__(parent)
         self.setWindowTitle("Options")
 
-        self.main_window = self.parent()
+        self.mw = self.parent()
 
         self.init_ui()
 
     def init_ui(self):
-        self.slider_label = QLabel(f"Search Cutoff Threshold: {self.main_window.settings[search_thrshold]}")
+        self.slider_label = QLabel(f"Search Cutoff Threshold: {self.mw.settings[search_thrshold]}")
 
         # Add a QSlider for the threshold value
         self.slider = QSlider(Qt.Horizontal, self)
         self.slider.setRange(10, 250)
-        self.slider.setValue(self.main_window.settings[search_thrshold])
+        self.slider.setValue(self.mw.settings[search_thrshold])
         self.slider.valueChanged.connect(self.slider_value_changed)
 
         tooltip_text = "The amount of results to return when using the search bar."
@@ -36,7 +36,7 @@ class OptionsDialog(QDialog):
 
         # Add a QCheckBox for the loose search matching option
         self.loose_match_checkbox = QCheckBox("Enable Loose Search Matching", self)
-        self.loose_match_checkbox.setChecked(self.main_window.settings[loose_match])
+        self.loose_match_checkbox.setChecked(self.mw.settings[loose_match])
         self.loose_match_checkbox.stateChanged.connect(self.loose_match_changed)
 
         tooltip_text = "When enabled only one term of your search needs to match something to be returned."
@@ -50,8 +50,8 @@ class OptionsDialog(QDialog):
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
-        self.main_window.settings[search_thrshold] = value
-        self.slider_label.setText(f"Search Cutoff Threshold: {self.main_window.settings[search_thrshold]}")
+        self.mw.settings[search_thrshold] = value
+        self.slider_label.setText(f"Search Cutoff Threshold: {self.mw.settings[search_thrshold]}")
 
     def loose_match_changed(self, state):
-        self.main_window.settings[loose_match] = bool(state)
+        self.mw.settings[loose_match] = bool(state)

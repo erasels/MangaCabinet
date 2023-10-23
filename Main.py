@@ -28,8 +28,6 @@ class MangaApp(QWidget):
         self.data = load_json(MangaApp.data_file, data_type="mangas")
         self.groups = load_json(MangaApp.groups_file)
         self.styles = load_styles(MangaApp.style_path)
-        self.showing_all_entries = False
-        self.sort_order_reversed = False
         self.settings = None
         self.load_settings()
         self.init_ui()
@@ -53,6 +51,9 @@ class MangaApp(QWidget):
 
         # Search bar
         self.search_bar = QLineEdit(self)
+        # Sort drop down
+        self.sort_combobox = RightClickableComboBox()
+
         self.search_bar_handler = SearchBarHandler(self)
 
         # Options Button
@@ -62,21 +63,6 @@ class MangaApp(QWidget):
         self.settings_button.setFixedSize(24, 24)  # Set the button size to match the icon size
         self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
         self.settings_button.clicked.connect(self.show_options_dialog)
-
-        # Sort drop down
-        self.sort_combobox = RightClickableComboBox()
-        self.sorting_options = [
-            ("By id", lambda entry: entry['id']),
-            ("By date added", lambda entry: len(self.data) - self.data.index(entry) - 1),
-            ("By Upload", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),
-            ("By score", lambda entry: entry.get('score', float('-inf')))
-        ]
-        for name, _ in self.sorting_options:
-            self.sort_combobox.addItem(name)
-        self.sort_combobox.currentIndexChanged.connect(lambda: self.search_bar_handler.update_list())
-        self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
-        self.sort_combobox.setStyleSheet(self.styles.get("sorter"))
-        self.sort_combobox.setObjectName("Normal")
 
         search_box = QHBoxLayout()  # Create a horizontal box layout
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
@@ -136,15 +122,6 @@ class MangaApp(QWidget):
         super().resizeEvent(event)
         self.list_view.updateGeometries()
         self.list_view.doItemsLayout()  # Force the view to relayout items.
-
-    def toggle_sort_order(self):
-        if self.sort_order_reversed:
-            self.sort_combobox.setObjectName("Normal")
-        else:
-            self.sort_combobox.setObjectName("Reversed")
-        self.sort_combobox.setStyleSheet(self.styles["sorter"])  # Refresh the stylesheet to force the update.
-        self.sort_order_reversed = not self.sort_order_reversed
-        self.search_bar_handler.update_list()
 
     # Method to add new group creation window
     def add_group(self):
