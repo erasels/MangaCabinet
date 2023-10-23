@@ -6,12 +6,13 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize
 
-from gui.ComboBoxDerivatives import CustomComboBox
+from auxillary.JSONMethods import load_json, save_json
+from gui.ComboBoxDerivatives import RightClickableComboBox
 from gui.MangaList import MangaDelegate
+from gui.Options import OptionsDialog, init_settings, search_thrshold
 from auxillary.DataAccess import MangaEntry
 
 
-# noinspection PyUnresolvedReferences
 class MangaApp(QWidget):
     image_path = os.path.join('assets', 'images')
     data_path = os.path.join('assets', 'data')
@@ -23,41 +24,31 @@ class MangaApp(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.data = self.load_json(MangaApp.data_file, data_type="mangas")
-        self.groups = self.load_json(MangaApp.groups_file)
+        self.data = load_json(MangaApp.data_file, data_type="mangas")
+        self.groups = load_json(MangaApp.groups_file)
         self.styles = self.load_styles()
         self.showing_all_entries = False
-        self.search_cutoff_threshold = 0
         self.sort_order_reversed = False
+        self.settings = None
         self.load_settings()
         self.init_ui()
 
-    def load_json(self, file_path: str, data_type='list'):
-        if os.path.exists(file_path):
-            with open(file_path, 'r') as file:
-                try:
-                    if data_type == "mangas":
-                        return json.load(file, object_pairs_hook=MangaEntry)
-                    else:
-                        return json.load(file)
-                except json.JSONDecodeError:
-                    print(f"Warning: The file {file_path} contains invalid JSON. Using default {data_type} instead.")
-                    return [] if data_type == 'list' else {}
-        else:
-            print(f"Warning: The file {file_path} does not exist. Using default {data_type} instead.")
-            return [] if data_type == 'list' else {}
-
-    def save_json(self, file_path: str, input_data):
-        with open(file_path, 'w') as file:
-            json.dump(input_data, file, indent=4)
-
     def load_settings(self):
-        settings = self.load_json(MangaApp.settings_file, "dict")
-        self.search_cutoff_threshold = settings.get("search_cutoff_threshold", 100)
+        settings = load_json(MangaApp.settings_file, "dict")
+        if settings:
+            self.settings = settings
+        else:
+            init_settings()
 
-    def save_settings(self):
-        settings = {"search_cutoff_threshold": self.search_cutoff_threshold}
-        self.save_json(MangaApp.settings_file, settings)
+    # Method to create settings window
+    def show_options_dialog(self):
+        self.dialog = OptionsDialog(parent=self, settings=self.settings)
+        print("in")
+        if self.dialog.exec_() == 0:
+            self.settings = self.dialog.settings  # Get updated settings
+            print(self.settings)
+            save_json(MangaApp.settings_file, self.settings)
+        print("out")
 
     def load_styles(self):
         styles = {}
@@ -87,7 +78,7 @@ class MangaApp(QWidget):
         self.settings_button.clicked.connect(self.show_options_dialog)
 
         # Sort drop down
-        self.sort_combobox = CustomComboBox()
+        self.sort_combobox = RightClickableComboBox()
         self.sorting_options = [
             ("By id", lambda entry: entry['id']),
             ("By date added", lambda entry: len(self.data) - self.data.index(entry) - 1),
@@ -107,7 +98,7 @@ class MangaApp(QWidget):
         self.layout.addLayout(search_box)
 
         # Groups bar
-        self.group_combobox = CustomComboBox(self)
+        self.group_combobox = RightClickableComboBox(self)
         self.group_combobox.addItem("None", None)
         for group_name, group_details in self.groups.items():
             self.group_combobox.addItem(group_name, group_name)
@@ -153,6 +144,7 @@ class MangaApp(QWidget):
 
         self.setLayout(self.layout)
 
+    # Override for updating list when resizing
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.list_view.updateGeometries()
@@ -170,27 +162,6 @@ class MangaApp(QWidget):
     def secondary_sort_key(self, x):
         sort_func = self.sorting_options[self.sort_combobox.currentIndex()][1]
         return sort_func(x[0])
-
-    # Method to create settings window
-    def show_options_dialog(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Options")
-
-        self.slider_label = QLabel(f"Search Cutoff Threshold: {self.search_cutoff_threshold}")
-
-        # Add a QSlider for the threshold value
-        self.slider = QSlider(Qt.Horizontal, dialog)
-        self.slider.setRange(10, 250)
-        self.slider.setValue(self.search_cutoff_threshold)  # Convert to percentage
-        self.slider.valueChanged.connect(self.slider_value_changed)
-
-        # Layout management
-        layout = QVBoxLayout()
-        layout.addWidget(self.slider_label)
-        layout.addWidget(self.slider)
-        dialog.setLayout(layout)
-
-        dialog.exec_()
 
     # Method to add new group creation window
     def add_group(self):
@@ -239,18 +210,13 @@ class MangaApp(QWidget):
                 self.groups[group_name] = {}
                 isNew = True
             self.groups[group_name].update({"color": picked_color[0].name()})
-            self.save_json(MangaApp.groups_file, self.groups)
+            save_json(MangaApp.groups_file, self.groups)
             if isNew:
                 # Add to the combobox
                 self.group_combobox.addItem(group_name, group_name)
             else:
                 # Force refresh in case color changed
                 self.update_list(forceRefresh=True)
-
-    def slider_value_changed(self, value):
-        self.search_cutoff_threshold = value
-        self.slider_label.setText(f"Search Cutoff Threshold: {self.search_cutoff_threshold}")
-        self.save_settings()  # Save to the settings.json file
 
     def count_matches(self, value, target):
         """
@@ -314,12 +280,13 @@ class MangaApp(QWidget):
 
         # Compute scores for all manga entries and sort them based on the score
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
+        sorted_data = sorted(scored_data, key=lambda x: (
+        -x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
 
         self.list_model.clear()  # Clear the list before adding filtered results
 
         for idx, (entry, score) in enumerate(sorted_data):
-            if score > 0 and idx < self.search_cutoff_threshold:
+            if score > 0 and idx < self.settings[search_thrshold]:
                 self.create_list_item(entry)
             else:
                 break
@@ -343,7 +310,7 @@ class MangaApp(QWidget):
                 if entry.id == current_data['id']:
                     self.data[i] = current_data
                     # TODO: Might want to optimize this
-                    self.save_json(MangaApp.data_file, self.data)
+                    save_json(MangaApp.data_file, self.data)
                     self.update_list(True)
                     break
 

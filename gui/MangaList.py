@@ -120,11 +120,11 @@ class MangaDelegate(QStyledItemDelegate):
 
         painter.setFont(original_font)
 
-        self.render_tag_area(entry, title_rect, option, painter, original_font, background_color)
+        self._render_tag_area(entry, title_rect, option, painter, original_font, background_color)
 
         painter.setFont(original_font)
 
-    def render_tag_area(self, entry, title_rect, option, painter, original_font, background_color):
+    def _render_tag_area(self, entry, title_rect, option, painter, original_font, background_color):
         """
         Renders tags for an item within specified bounds. Adjusts text by wrapping or scaling to ensure it fits
         within its tag, while drawing each tag with a rounded background. Also renders upload text below them.
