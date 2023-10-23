@@ -24,6 +24,8 @@ TAG_COLUMNS = 3
 TAG_MINIMUM_FONT_SIZE = 5
 TAG_BACKGROUND_COLOR = QColor("#D6D6D6")
 
+TITLE_MINIMUM_FONT_SIZE = 7
+
 
 class MangaDelegate(QStyledItemDelegate):
 
@@ -55,33 +57,63 @@ class MangaDelegate(QStyledItemDelegate):
         painter.strokePath(item_path, QPen(QColor("#B6B6B6"), 1))
         painter.restore()
 
-        # Draw the title and handle long titles
+        # Draw the title
         title = entry.display_title()
         title_rect = option.rect.adjusted(10, 10, -10, -10)  # Adjust as necessary
-
-        # Calculate total width for three tags with their spacing
         tags_total_width = TAG_COLUMNS * TAG_WIDTH + (TAG_COLUMNS - 1) * TAG_SPACING
-
-        # Adjust title rectangle width to avoid overlap with tags
         title_rect.setWidth(title_rect.width() - tags_total_width)
 
-        # Use QFontMetrics to elide the text if it's too long
         font_metrics = QFontMetrics(painter.font())
+        original_font = painter.font()
 
-        # Handle Title with a potential line break
-        words = title.split()
-        line1, line2 = "", ""
-        while words and font_metrics.width(line1 + words[0]) < title_rect.width():
-            line1 += (words.pop(0) + " ")
-        while words and font_metrics.width(line2 + words[0]) < title_rect.width():
-            line2 += (words.pop(0) + " ")
+        # Dynamically reduce the title size if it doesn't fit
+        font = painter.font()
+        while font_metrics.width(title) > title_rect.width() and font.pointSize() > TITLE_MINIMUM_FONT_SIZE:
+            font.setPointSize(font.pointSize() - 1)
+            painter.setFont(font)
+            font_metrics = QFontMetrics(font)
 
-        if words:  # If there are still words left, add '...' to line2
-            line2 = font_metrics.elidedText(line2, Qt.ElideRight, title_rect.width())
+        if font_metrics.width(title) > title_rect.width():
+            title = font_metrics.elidedText(title, Qt.ElideRight, title_rect.width())
 
-        painter.drawText(title_rect, Qt.AlignLeft, line1.strip())
-        title_rect.translate(0, font_metrics.height())  # Move down for second line
-        painter.drawText(title_rect, Qt.AlignLeft, line2.strip())
+        painter.drawText(title_rect, Qt.AlignLeft, title)
+
+        # Move down for authors
+        title_rect.translate(0, font_metrics.height())
+        painter.setFont(original_font)
+
+        # Display the authors
+        authors = entry.author
+        author_text = "Artist(s): " + ", ".join(authors)
+        painter.drawText(title_rect, Qt.AlignLeft, author_text)
+
+        # Prepare additional details
+        details_list = []
+
+        # Check and append language
+        languages = entry.language
+        if languages:
+            details_list.append("Language: " + ", ".join(languages))
+
+        # Append page count
+        details_list.append(f"Pages: {entry.pages}")
+
+        # Check and append parody (if not just "original")
+        parodies = entry.parody
+        if parodies and 'original' not in parodies:
+            details_list.append("Parody: " + ", ".join(parodies))
+
+        # Append upload date
+        details_list.append("Uploaded on: " + entry.upload)
+
+        # Concatenate the details
+        details_text = " | ".join(details_list)
+
+        # Move down to display additional details
+        title_rect.translate(0, font_metrics.height())
+        painter.drawText(title_rect, Qt.AlignLeft, details_text)
+
+        painter.setFont(original_font)
 
         # Handle tags (showing only the first six tags)
         tags = entry.tags[:6]  # TODO: Add logic to show important/interesting tags
@@ -89,7 +121,6 @@ class MangaDelegate(QStyledItemDelegate):
         # Start position for tags
         tag_x_start = title_rect.right() + TAG_SPACING
         tag_y_start = option.rect.center().y() - (2 * TAG_HEIGHT + TAG_SPACING) // 2
-        original_font = painter.font()
         for row in range(2):
             for col in range(TAG_COLUMNS):
                 idx = row * TAG_COLUMNS + col
