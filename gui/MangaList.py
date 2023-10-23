@@ -16,6 +16,13 @@ def blend_colors(color1, color2, alpha):
     return QColor(int(r), int(g), int(b))
 
 
+def wordwrap(text, width):
+    """
+    A simple word wrap function that wraps text at a given number of characters.
+    """
+    return [text[i:i + int(width)] for i in range(0, len(text), int(width))]
+
+
 # Constants for tags
 MAX_TAGS = 6
 TAG_WIDTH = 60
@@ -26,13 +33,6 @@ TAG_MINIMUM_FONT_SIZE = 7
 TAG_BACKGROUND_COLOR = QColor("#D6D6D6")
 
 TITLE_MINIMUM_FONT_SIZE = 7
-
-
-def wordwrap(text, width):
-    """
-    A simple word wrap function that wraps text at a given number of characters.
-    """
-    return [text[i:i + int(width)] for i in range(0, len(text), int(width))]
 
 
 class MangaDelegate(QStyledItemDelegate):
@@ -120,11 +120,11 @@ class MangaDelegate(QStyledItemDelegate):
 
         painter.setFont(original_font)
 
-        self.render_tag_area(entry, title_rect, option, painter, original_font)
+        self.render_tag_area(entry, title_rect, option, painter, original_font, background_color)
 
         painter.setFont(original_font)
 
-    def render_tag_area(self, entry, title_rect, option, painter, original_font):
+    def render_tag_area(self, entry, title_rect, option, painter, original_font, background_color):
         """
         Renders tags for an item within specified bounds. Adjusts text by wrapping or scaling to ensure it fits
         within its tag, while drawing each tag with a rounded background. Also renders upload text below them.
@@ -173,7 +173,7 @@ class MangaDelegate(QStyledItemDelegate):
                 # Draw background and text for the tag
                 tag_path = QPainterPath()
                 tag_path.addRoundedRect(QRectF(tag_rect), 5, 5)
-                painter.fillPath(tag_path, TAG_BACKGROUND_COLOR)
+                painter.fillPath(tag_path, blend_colors(TAG_BACKGROUND_COLOR, background_color, 0.85))
                 # painter.strokePath(tag_path, QPen(QColor("#000000"), 1))  # draw border
                 painter.drawText(tag_rect, Qt.AlignCenter | Qt.TextWordWrap, tag_text)
         painter.setFont(original_font)
