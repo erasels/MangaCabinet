@@ -5,7 +5,7 @@ class MangaEntry(dict):
         "group": ("MC_Grouping", ""),
         "title": ("title", None),
         "id": ("id", None),
-        "author": ("artist", []),
+        "author": ("artist", ["Missing"]),
         "language": ("language", []),
         "pages": ("pages", 0),
         "parody": ("parody", []),
