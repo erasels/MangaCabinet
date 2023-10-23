@@ -6,7 +6,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize
 
-from auxillary.JSONMethods import load_json, save_json
+from auxillary.JSONMethods import load_json, save_json, load_styles
 from gui.ComboBoxDerivatives import RightClickableComboBox
 from gui.MangaList import MangaDelegate
 from gui.Options import OptionsDialog, init_settings, search_thrshold
@@ -26,7 +26,7 @@ class MangaApp(QWidget):
         super().__init__()
         self.data = load_json(MangaApp.data_file, data_type="mangas")
         self.groups = load_json(MangaApp.groups_file)
-        self.styles = self.load_styles()
+        self.styles = load_styles(MangaApp.style_path)
         self.showing_all_entries = False
         self.sort_order_reversed = False
         self.settings = None
@@ -47,17 +47,6 @@ class MangaApp(QWidget):
             self.settings = self.dialog.settings  # Get updated settings
             self.update_list()
             save_json(MangaApp.settings_file, self.settings)
-
-    def load_styles(self):
-        styles = {}
-        if os.path.exists(MangaApp.style_path):
-            for file_name in os.listdir(MangaApp.style_path):
-                if file_name.endswith(".qss"):
-                    with open(os.path.join(MangaApp.style_path, file_name), "r") as f:
-                        stylesheet = f.read()
-                        # Store the style in the dictionary using the filename without the .qss extension
-                        styles[file_name.rsplit('.', 1)[0]] = stylesheet
-        return styles
 
     def init_ui(self):
         self.layout = QVBoxLayout()
@@ -262,7 +251,7 @@ class MangaApp(QWidget):
         if not selected_group:
             mod_data = self.data
         else:
-            # TODO: Inefficient, might need to be optimized
+            # Can be optimized in case update_list gets called a lot
             mod_data = [manga_entry for manga_entry in self.data if manga_entry.group == selected_group]
 
         # If less than 3 characters and already showing all entries, return early
@@ -307,7 +296,6 @@ class MangaApp(QWidget):
             for i, entry in enumerate(self.data):
                 if entry.id == current_data['id']:
                     self.data[i] = current_data
-                    # TODO: Might want to optimize this
                     save_json(MangaApp.data_file, self.data)
                     self.update_list()
                     break
