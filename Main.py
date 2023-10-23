@@ -45,7 +45,7 @@ class MangaApp(QWidget):
         self.dialog = OptionsDialog(parent=self, settings=self.settings)
         if self.dialog.exec_() == 0:
             self.settings = self.dialog.settings  # Get updated settings
-            self.update_list(True)
+            self.update_list()
             save_json(MangaApp.settings_file, self.settings)
 
     def load_styles(self):
@@ -64,7 +64,7 @@ class MangaApp(QWidget):
 
         # Search bar
         self.search_bar = QLineEdit(self)
-        self.search_bar.textChanged.connect(self.update_list)
+        self.search_bar.textChanged.connect(lambda: self.update_list(False))
         self.search_bar.setStyleSheet(self.styles.get("lineedit"))
 
         # Options Button
@@ -84,7 +84,7 @@ class MangaApp(QWidget):
         ]
         for name, _ in self.sorting_options:
             self.sort_combobox.addItem(name)
-        self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
+        self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list())
         self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
         self.sort_combobox.setStyleSheet(self.styles.get("sorter"))
         self.sort_combobox.setObjectName("Normal")
@@ -101,7 +101,7 @@ class MangaApp(QWidget):
         for group_name, group_details in self.groups.items():
             self.group_combobox.addItem(group_name, group_name)
 
-        self.group_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
+        self.group_combobox.currentIndexChanged.connect(lambda: self.update_list())
         self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
         self.group_combobox.setStyleSheet(self.styles.get("dropdown"))
 
@@ -128,7 +128,7 @@ class MangaApp(QWidget):
         self.list_view.setItemDelegate(self.list_delegate)
         self.list_view.clicked.connect(self.display_detail)
         self.layout.addWidget(self.list_view)
-        self.update_list()
+        self.update_list(False)
 
         # Detail view (as a text edit for simplicity)
         self.detail_view = QTextEdit(self)
@@ -155,7 +155,7 @@ class MangaApp(QWidget):
             self.sort_combobox.setObjectName("Reversed")
         self.sort_combobox.setStyleSheet(self.styles["sorter"])  # Refresh the stylesheet to force the update.
         self.sort_order_reversed = not self.sort_order_reversed
-        self.update_list(forceRefresh=True)
+        self.update_list()
 
     def secondary_sort_key(self, x):
         sort_func = self.sorting_options[self.sort_combobox.currentIndex()][1]
@@ -214,7 +214,7 @@ class MangaApp(QWidget):
                 self.group_combobox.addItem(group_name, group_name)
             else:
                 # Force refresh in case color changed
-                self.update_list(forceRefresh=True)
+                self.update_list()
 
     def count_matches(self, value, target):
         """
@@ -251,7 +251,7 @@ class MangaApp(QWidget):
 
         return score
 
-    def update_list(self, forceRefresh=False):
+    def update_list(self, forceRefresh=True):
         search_terms = [term.strip() for term in self.search_bar.text().split(",")]
 
         # Define sort in case we need it
@@ -278,8 +278,7 @@ class MangaApp(QWidget):
 
         # Compute scores for all manga entries and sort them based on the score
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        sorted_data = sorted(scored_data, key=lambda x: (
-        -x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
+        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
 
         self.list_model.clear()  # Clear the list before adding filtered results
 
@@ -309,7 +308,7 @@ class MangaApp(QWidget):
                     self.data[i] = current_data
                     # TODO: Might want to optimize this
                     save_json(MangaApp.data_file, self.data)
-                    self.update_list(True)
+                    self.update_list()
                     break
 
 
