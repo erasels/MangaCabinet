@@ -17,14 +17,22 @@ def blend_colors(color1, color2, alpha):
 
 
 # Constants for tags
+MAX_TAGS = 6
 TAG_WIDTH = 60
 TAG_HEIGHT = 20
 TAG_SPACING = 3
 TAG_COLUMNS = 3
-TAG_MINIMUM_FONT_SIZE = 5
+TAG_MINIMUM_FONT_SIZE = 7
 TAG_BACKGROUND_COLOR = QColor("#D6D6D6")
 
 TITLE_MINIMUM_FONT_SIZE = 7
+
+
+def wordwrap(text, width):
+    """
+    A simple word wrap function that wraps text at a given number of characters.
+    """
+    return [text[i:i + int(width)] for i in range(0, len(text), int(width))]
 
 
 class MangaDelegate(QStyledItemDelegate):
@@ -35,7 +43,7 @@ class MangaDelegate(QStyledItemDelegate):
 
         # Draw the background and border
         painter.save()
-        background_color = QColor("#F9F9F9")  # default background color
+        background_color = QColor("#F0F0F0")  # default background color
 
         # Set group-specific color
         group_name = entry.group
@@ -103,9 +111,6 @@ class MangaDelegate(QStyledItemDelegate):
         if parodies and 'original' not in parodies:
             details_list.append("Parody: " + ", ".join(parodies))
 
-        # Append upload date
-        details_list.append("Uploaded on: " + entry.upload)
-
         # Concatenate the details
         details_text = " | ".join(details_list)
 
@@ -115,13 +120,22 @@ class MangaDelegate(QStyledItemDelegate):
 
         painter.setFont(original_font)
 
+        self.render_tag_area(entry, title_rect, option, painter, original_font)
+
+        painter.setFont(original_font)
+
+    def render_tag_area(self, entry, title_rect, option, painter, original_font):
+        """
+        Renders tags for an item within specified bounds. Adjusts text by wrapping or scaling to ensure it fits
+        within its tag, while drawing each tag with a rounded background. Also renders upload text below them.
+        """
         # Handle tags (showing only the first six tags)
-        tags = entry.tags[:6]  # TODO: Add logic to show important/interesting tags
+        tags = entry.tags[:MAX_TAGS]  # TODO: Add logic to show important/interesting tags
 
         # Start position for tags
         tag_x_start = title_rect.right() + TAG_SPACING
-        tag_y_start = option.rect.center().y() - (2 * TAG_HEIGHT + TAG_SPACING) // 2
-        for row in range(2):
+        tag_y_start = option.rect.top() + 2  # small offset to not start at the very top of the item
+        for row in range(max(len(tags) // TAG_COLUMNS, 1)):
             for col in range(TAG_COLUMNS):
                 idx = row * TAG_COLUMNS + col
                 if idx >= len(tags):
@@ -134,18 +148,57 @@ class MangaDelegate(QStyledItemDelegate):
                 painter.setFont(original_font)
                 font = painter.font()
                 font_metrics = QFontMetrics(font)
-                while font_metrics.width(tags[idx]) > tag_rect.width() and font.pointSize() > TAG_MINIMUM_FONT_SIZE:  # Minimum font size of 5
-                    font.setPointSize(font.pointSize() - 1)
-                    painter.setFont(font)
-                    font_metrics = QFontMetrics(font)
+
+                tag_text = tags[idx]
+
+                # Check if tag name fits without wrapping
+                if font_metrics.boundingRect(tag_rect, Qt.AlignCenter,
+                                             tag_text).height() > tag_rect.height() or font_metrics.width(tag_text) > tag_rect.width():
+                    # Try wrapping the text
+                    wrapped_text = "\n".join(
+                        wordwrap(tag_text, width=tag_rect.width() / font_metrics.averageCharWidth()))
+
+                    if font_metrics.boundingRect(tag_rect, Qt.AlignCenter, wrapped_text).height() <= tag_rect.height():
+                        tag_text = wrapped_text
+                    else:
+                        while (font_metrics.width(tag_text) > tag_rect.width() or
+                               font_metrics.boundingRect(tag_rect, Qt.AlignCenter,
+                                                         tag_text).height() > tag_rect.height()):
+                            if font.pointSize() <= TAG_MINIMUM_FONT_SIZE:
+                                break
+                            font.setPointSize(font.pointSize() - 1)
+                            painter.setFont(font)
+                            font_metrics = QFontMetrics(font)
 
                 # Draw background and text for the tag
                 tag_path = QPainterPath()
                 tag_path.addRoundedRect(QRectF(tag_rect), 5, 5)
                 painter.fillPath(tag_path, TAG_BACKGROUND_COLOR)
-                painter.strokePath(tag_path, QPen(QColor("#000000"), 1))  # draw border
-                painter.drawText(tag_rect, Qt.AlignCenter, tags[idx])
+                # painter.strokePath(tag_path, QPen(QColor("#000000"), 1))  # draw border
+                painter.drawText(tag_rect, Qt.AlignCenter | Qt.TextWordWrap, tag_text)
         painter.setFont(original_font)
 
+        max_tag_y = tag_y_start + (len(tags) // TAG_COLUMNS) * (TAG_HEIGHT + TAG_SPACING)
+        upload_text_y_start = max_tag_y + 10
+
+        upload_text = "Uploaded on: " + entry.upload
+
+        remaining_space = option.rect.bottom() - max_tag_y  # Add small buffer so it doesn't reduce prematurely
+
+        font = painter.font()
+        font_metrics = QFontMetrics(font)
+
+        while font_metrics.height() > remaining_space and font.pointSize() > TAG_MINIMUM_FONT_SIZE:
+            font.setPointSize(font.pointSize() - 1)
+            painter.setFont(font)
+            font_metrics = QFontMetrics(font)
+
+        painter.drawText(tag_x_start, upload_text_y_start, upload_text)
+
+    # Defines size of item in the list
     def sizeHint(self, option, index):
-        return QSize(200, 60)
+        view_width = self.parent().width()
+        item_width = (view_width - 25) // 2  # Two items per row
+        view_column = self.parent().height()
+        item_column = view_width // 18  # Four items per column
+        return QSize(item_width, item_column)
