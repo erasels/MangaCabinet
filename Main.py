@@ -329,9 +329,9 @@ class MangaApp(QWidget):
     def save_changes(self):
         contents = self.detail_view.toPlainText()
         if len(contents) > 5:
-            current_data = json.loads(contents)
+            current_data = json.loads(contents, object_pairs_hook=MangaEntry)
             for i, entry in enumerate(self.data):
-                if entry['id'] == current_data['id']:
+                if entry.id == current_data['id']:
                     self.data[i] = current_data
                     # TODO: Might want to optimize this
                     self.save_json(MangaApp.data_file, self.data)
