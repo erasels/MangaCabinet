@@ -10,7 +10,9 @@ class MangaEntry(dict):
             return self.get('MC_Grouping', "")
         elif attr == "title":
             return self.get('title')
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{attr}'")
+        elif attr in self:
+            print("Using undefined access to variable for MangaEntry: " + attr)
+            return self[attr]
 
     def display_title(self) -> str:
         return self.get("title_short") or self.get("title_alt") or self.get("title", "")
