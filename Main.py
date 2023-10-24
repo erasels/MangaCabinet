@@ -26,7 +26,8 @@ class MangaApp(QWidget):
     def __init__(self):
         super().__init__()
         self.data = load_json(MangaApp.data_file, data_type="mangas")
-        self.groups = load_json(MangaApp.groups_file)
+        # Save entry to its reversed index so that sorting works quickly and as expected
+        self.entry_to_index_reversed = {entry['id']: len(self.data) - idx - 1 for idx, entry in enumerate(self.data)}
         self.styles = load_styles(MangaApp.style_path)
         self.settings = None
         self.load_settings()
