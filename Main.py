@@ -70,8 +70,8 @@ class MangaApp(QWidget):
         search_box = QHBoxLayout()  # Create a horizontal box layout
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
         search_box.addWidget(self.hits_label)
-        search_box.addWidget(self.settings_button)
         search_box.addWidget(self.sort_combobox)
+        search_box.addWidget(self.settings_button)
         self.layout.addLayout(search_box)
 
         # Groups bar
