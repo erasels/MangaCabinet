@@ -110,6 +110,7 @@ class SearchBarHandler:
                 for entry in sorted_data:
                     self.create_list_item(entry)
                 self.showing_all_entries = True
+                self.mw.hits_label.hide()
                 return
 
         # Compute scores for all manga entries and sort them based on the score
@@ -118,11 +119,21 @@ class SearchBarHandler:
 
         self.mw.list_model.clear()  # Clear the list before adding filtered results
 
+        hit_count = 0
+        threshold = self.mw.settings[search_thrshold]
         for idx, (entry, score) in enumerate(sorted_data):
-            if score > 0 and idx < self.mw.settings[search_thrshold]:
-                self.create_list_item(entry)
-            else:
-                break
+            if score > 0:
+                hit_count += 1
+                if threshold == 0 or idx < threshold:  # Show all entries if Threshold is 0
+                    self.create_list_item(entry)
+                else:
+                    break
+
+        if hit_count > 0 and search_terms:
+            self.mw.hits_label.setText(f"Hits: {hit_count}")
+            self.mw.hits_label.show()
+        else:
+            self.mw.hits_label.hide()
 
         self.showing_all_entries = False
 

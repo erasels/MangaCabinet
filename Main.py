@@ -51,6 +51,9 @@ class MangaApp(QWidget):
 
         # Search bar
         self.search_bar = QLineEdit(self)
+        # Hits label
+        self.hits_label = QLabel(self)
+        self.hits_label.hide()
         # Sort drop down
         self.sort_combobox = RightClickableComboBox()
 
@@ -66,6 +69,7 @@ class MangaApp(QWidget):
 
         search_box = QHBoxLayout()  # Create a horizontal box layout
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
+        search_box.addWidget(self.hits_label)
         search_box.addWidget(self.settings_button)
         search_box.addWidget(self.sort_combobox)
         self.layout.addLayout(search_box)

@@ -26,7 +26,7 @@ class OptionsDialog(QDialog):
 
         # Add a QSlider for the threshold value
         self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setRange(10, 250)
+        self.slider.setRange(0, 100)
         self.slider.setValue(self.mw.settings[search_thrshold])
         self.slider.valueChanged.connect(self.slider_value_changed)
 

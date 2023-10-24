@@ -1,4 +1,4 @@
 {
-    "search_cutoff_threshold": 250,
-    "loose_search_matching": true
+    "search_cutoff_threshold": 0,
+    "loose_search_matching": false
 }
