@@ -22,7 +22,7 @@ class OptionsDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        self.slider_label = QLabel(f"Search Cutoff Threshold: {self.mw.settings[search_thrshold]}")
+        self.slider_label = QLabel(self.get_search_cutoff_text())
 
         # Add a QSlider for the threshold value
         self.slider = QSlider(Qt.Horizontal, self)
@@ -50,7 +50,10 @@ class OptionsDialog(QDialog):
 
     def slider_value_changed(self, value):
         self.mw.settings[search_thrshold] = value
-        self.slider_label.setText(f"Search Cutoff Threshold: {self.mw.settings[search_thrshold]}")
+        self.slider_label.setText(self.get_search_cutoff_text())
+
+    def get_search_cutoff_text(self):
+        return f"Search Cutoff Threshold: {self.mw.settings[search_thrshold] if self.mw.settings[search_thrshold] else 'All'}"
 
     def loose_match_changed(self, state):
         self.mw.settings[loose_match] = bool(state)
