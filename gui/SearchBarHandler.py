@@ -2,13 +2,18 @@ import json
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItem
+from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout
 
+from gui.ComboBoxDerivatives import RightClickableComboBox
 from gui.Options import search_thrshold, loose_match
 
 
 class SearchBarHandler:
 
     def __init__(self, main_window):
+        self.sort_combobox = None
+        self.hits_label = None
+        self.search_bar = None
         self.mw = main_window
         self.sort_order_reversed = False
         self.showing_all_entries = False
@@ -22,35 +27,48 @@ class SearchBarHandler:
 
     def init_ui(self):
         # Search bar
-        self.mw.search_bar.textChanged.connect(lambda: self.update_list(False))
-        self.mw.search_bar.setStyleSheet(self.mw.styles.get("lineedit"))
+        self.search_bar = QLineEdit(self.mw)
+        self.search_bar.textChanged.connect(lambda: self.update_list(False))
+        self.search_bar.setStyleSheet(self.mw.styles.get("lineedit"))
+
+        # Hits label
+        self.hits_label = QLabel(self.mw)
+        self.hits_label.hide()
 
         # Sorting combo box
+        self.sort_combobox = RightClickableComboBox()
         for name, _ in self.sorting_options:
-            self.mw.sort_combobox.addItem(name)
-        self.mw.sort_combobox.currentIndexChanged.connect(lambda: self.update_list())
-        self.mw.sort_combobox.rightClicked.connect(self.toggle_sort_order)
-        self.mw.sort_combobox.setStyleSheet(self.mw.styles.get("sorter"))
-        self.mw.sort_combobox.setObjectName("Normal")
+            self.sort_combobox.addItem(name)
+        self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list())
+        self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
+        self.sort_combobox.setStyleSheet(self.mw.styles.get("sorter"))
+        self.sort_combobox.setObjectName("Normal")
+
+        search_box = QHBoxLayout()  # Create a horizontal box layout
+        search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
+        search_box.addWidget(self.hits_label)
+        search_box.addWidget(self.sort_combobox)
+        search_box.addWidget(self.mw.settings_button)
+        self.mw.layout.addLayout(search_box)
 
     def toggle_sort_order(self):
         if self.sort_order_reversed:
-            self.mw.sort_combobox.setObjectName("Normal")
+            self.sort_combobox.setObjectName("Normal")
         else:
-            self.mw.sort_combobox.setObjectName("Reversed")
-        self.mw.sort_combobox.setStyleSheet(self.mw.styles["sorter"])  # Refresh the stylesheet to force the update.
+            self.sort_combobox.setObjectName("Reversed")
+        self.sort_combobox.setStyleSheet(self.mw.styles["sorter"])  # Refresh the stylesheet to force the update.
         self.sort_order_reversed = not self.sort_order_reversed
         self.update_list()
 
     def secondary_sort_key(self, x):
-        sort_func = self.sorting_options[self.mw.sort_combobox.currentIndex()][1]
+        sort_func = self.sorting_options[self.sort_combobox.currentIndex()][1]
         return sort_func(x[0])
 
     def update_list(self, forceRefresh=True):
-        search_terms = [term.strip() for term in self.mw.search_bar.text().split(",")]
+        search_terms = [term.strip() for term in self.search_bar.text().split(",")]
 
         # Define sort in case we need it
-        _, sort_func = self.sorting_options[self.mw.sort_combobox.currentIndex()]
+        _, sort_func = self.sorting_options[self.sort_combobox.currentIndex()]
         selected_group = self.mw.group_handler.group_combobox.currentData()
 
         if not selected_group:
@@ -60,7 +78,7 @@ class SearchBarHandler:
             mod_data = [manga_entry for manga_entry in self.mw.data if manga_entry.group == selected_group]
 
         # If less than 3 characters and already showing all entries, return early
-        if len(self.mw.search_bar.text()) < 3:
+        if len(self.search_bar.text()) < 3:
             if self.showing_all_entries and not forceRefresh:
                 return
             else:
@@ -69,7 +87,7 @@ class SearchBarHandler:
                 for entry in sorted_data:
                     self.create_list_item(entry)
                 self.showing_all_entries = True
-                self.mw.hits_label.hide()
+                self.hits_label.hide()
                 return
 
         # Compute scores for all manga entries and sort them based on the score
@@ -89,10 +107,10 @@ class SearchBarHandler:
                     break
 
         if hit_count > 0 and search_terms:
-            self.mw.hits_label.setText(f"Hits: {hit_count}")
-            self.mw.hits_label.show()
+            self.hits_label.setText(f"Hits: {hit_count}")
+            self.hits_label.show()
         else:
-            self.mw.hits_label.hide()
+            self.hits_label.hide()
 
         self.showing_all_entries = False
 

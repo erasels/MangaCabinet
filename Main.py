@@ -1,18 +1,17 @@
+import json
 import os
 import sys
-import json
 
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QSize
 
+from auxillary.DataAccess import MangaEntry
 from auxillary.JSONMethods import load_json, save_json, load_styles
-from gui.ComboBoxDerivatives import RightClickableComboBox
 from gui.GroupHandler import GroupHandler
 from gui.MangaList import MangaDelegate
+from gui.Options import OptionsDialog, init_settings
 from gui.SearchBarHandler import SearchBarHandler
-from gui.Options import OptionsDialog, init_settings, search_thrshold
-from auxillary.DataAccess import MangaEntry
 
 
 class MangaApp(QWidget):
@@ -51,16 +50,6 @@ class MangaApp(QWidget):
     def init_ui(self):
         self.layout = QVBoxLayout()
 
-        # Search bar
-        self.search_bar = QLineEdit(self)
-        # Hits label
-        self.hits_label = QLabel(self)
-        self.hits_label.hide()
-        # Sort drop down
-        self.sort_combobox = RightClickableComboBox()
-
-        self.search_bar_handler = SearchBarHandler(self)
-
         # Options Button
         self.settings_button = QPushButton(self)
         self.settings_button.setIcon(QIcon(os.path.join(MangaApp.image_path, 'options_icon.png')))
@@ -69,13 +58,10 @@ class MangaApp(QWidget):
         self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
         self.settings_button.clicked.connect(self.show_options_dialog)
 
-        search_box = QHBoxLayout()  # Create a horizontal box layout
-        search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
-        search_box.addWidget(self.hits_label)
-        search_box.addWidget(self.sort_combobox)
-        search_box.addWidget(self.settings_button)
-        self.layout.addLayout(search_box)
+        # Handles entire search bar and accesses settings_buton
+        self.search_bar_handler = SearchBarHandler(self)
 
+        # Handles entire groups bar
         self.group_handler = GroupHandler(self)
 
         # List view
