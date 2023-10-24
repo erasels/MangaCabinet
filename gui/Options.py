@@ -53,7 +53,7 @@ class OptionsDialog(QDialog):
         self.slider_label.setText(self.get_search_cutoff_text())
 
     def get_search_cutoff_text(self):
-        return f"Search Cutoff Threshold: {self.mw.settings[search_thrshold] if self.mw.settings[search_thrshold] else 'All'}"
+        return f"Search Cutoff Threshold: {self.mw.settings[search_thrshold] if self.mw.settings[search_thrshold] else 'Unlimited'}"
 
     def loose_match_changed(self, state):
         self.mw.settings[loose_match] = bool(state)
