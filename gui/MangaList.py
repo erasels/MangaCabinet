@@ -178,7 +178,7 @@ class MangaDelegate(QStyledItemDelegate):
                 painter.drawText(tag_rect, Qt.AlignCenter | Qt.TextWordWrap, tag_text)
         painter.setFont(original_font)
 
-        max_tag_y = tag_y_start + (len(tags) // TAG_COLUMNS) * (TAG_HEIGHT + TAG_SPACING)
+        max_tag_y = tag_y_start + (max(1, len(tags) // TAG_COLUMNS)) * (TAG_HEIGHT + TAG_SPACING)
         upload_text_y_start = max_tag_y + 10
 
         upload_text = "Uploaded on: " + entry.upload

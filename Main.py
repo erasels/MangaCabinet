@@ -19,7 +19,7 @@ class MangaApp(QWidget):
     data_path = os.path.join('assets', 'data')
     style_path = os.path.join('assets', 'styles')
 
-    data_file = os.path.join(data_path, 'data_real.json')
+    data_file = os.path.join(data_path, 'data.json')
     settings_file = os.path.join(data_path, 'settings.json')
     groups_file = os.path.join(data_path, 'groups.json')
 
