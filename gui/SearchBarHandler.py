@@ -46,47 +46,6 @@ class SearchBarHandler:
         sort_func = self.sorting_options[self.mw.sort_combobox.currentIndex()][1]
         return sort_func(x[0])
 
-    def count_matches(self, value, target):
-        """
-        Count the number of times the target is present in the value or any of its items (if list/dict).
-        """
-        count = 0
-
-        if isinstance(value, (int, float)):
-            if str(value) == target:
-                count += 1
-        elif isinstance(value, list):
-            for item in value:
-                count += self.count_matches(item, target)
-        elif isinstance(value, dict):
-            for item_value in value.values():
-                count += self.count_matches(item_value, target)
-        elif target.lower() in str(value).lower():
-            count += 1
-
-        return count
-
-    def match_score(self, data, terms):
-        """Compute a score based on the number of matching terms."""
-        score = 0
-
-        for term in terms:
-            term_score = 0
-            if ":" in term:
-                field, value = term.split(":", 1)
-                data_value = data.get(field, "")
-                term_score = self.count_matches(data_value, value)
-            else:
-                for data_value in data.values():
-                    term_score += self.count_matches(data_value, term)
-
-            if not self.mw.settings[loose_match] and term_score == 0:
-                return 0  # If a term did not match any field, we return a score of 0 for the entire entry
-
-            score += term_score
-
-        return score
-
     def update_list(self, forceRefresh=True):
         search_terms = [term.strip() for term in self.mw.search_bar.text().split(",")]
 
@@ -142,3 +101,66 @@ class SearchBarHandler:
         item.setData(entry, Qt.UserRole)
         self.mw.list_model.appendRow(item)
 
+    def match_score(self, data, terms):
+        """Compute a score based on the number of matching terms."""
+        score = 0
+
+        for term in terms:
+            term_score = 0
+            if ":" in term:
+                field, value = term.split(":", 1)
+                data_value = data.get(field, "")
+                if value and value[0] in [">", "<"]:
+                    term_score = self.compare_match(data_value, value)
+                else:
+                    term_score = self.count_matches(data_value, value)
+            else:
+                for data_value in data.values():
+                    term_score += self.count_matches(data_value, term)
+
+            if not self.mw.settings[loose_match] and term_score == 0:
+                return 0  # If a term did not match any field, we return a score of 0 for the entire entry
+
+            score += term_score
+
+        return score
+
+    def count_matches(self, value, target):
+        """
+        Count the number of times the target is present in the value or any of its items (if list/dict).
+        """
+        count = 0
+
+        if isinstance(value, (int, float)):
+            if str(value) == target:
+                count += 1
+        elif isinstance(value, list):
+            for item in value:
+                count += self.count_matches(item, target)
+        elif isinstance(value, dict):
+            for item_value in value.values():
+                count += self.count_matches(item_value, target)
+        elif target.lower() in str(value).lower():
+            count += 1
+
+        return count
+
+    def compare_match(self, data_value, compare_term):
+        """Match > or < for field searches"""
+        operator = compare_term[0]
+        target_value = compare_term[1:]
+
+        if isinstance(data_value, (list, dict)):
+            value = len(data_value)
+        elif isinstance(data_value, (float, int)) or (isinstance(data_value, str) and data_value.isnumeric()):
+            value = int(data_value)
+        else:
+            value = len(str(data_value))
+
+        if target_value and target_value.isnumeric():
+            if operator == '>':
+                return 1 if value > int(target_value) else 0
+            elif operator == '<':
+                return 1 if value < int(target_value) else 0
+
+        return 0  # Default case
