@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QSize
 
 from auxillary.JSONMethods import load_json, save_json, load_styles
 from gui.ComboBoxDerivatives import RightClickableComboBox
+from gui.GroupHandler import GroupHandler
 from gui.MangaList import MangaDelegate
 from gui.SearchBarHandler import SearchBarHandler
 from gui.Options import OptionsDialog, init_settings, search_thrshold
@@ -75,25 +76,7 @@ class MangaApp(QWidget):
         search_box.addWidget(self.settings_button)
         self.layout.addLayout(search_box)
 
-        # Groups bar
-        self.group_combobox = RightClickableComboBox(self)
-        self.group_combobox.addItem("None", None)
-        for group_name, group_details in self.groups.items():
-            self.group_combobox.addItem(group_name, group_name)
-
-        self.group_combobox.currentIndexChanged.connect(lambda: self.search_bar_handler.update_list())
-        self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
-        self.group_combobox.setStyleSheet(self.styles.get("dropdown"))
-
-        # Add group button
-        self.add_group_btn = QPushButton("New Group", self)
-        self.add_group_btn.clicked.connect(self.add_group)
-        self.add_group_btn.setStyleSheet(self.styles.get("textbutton"))
-
-        groups_box = QHBoxLayout()
-        groups_box.addWidget(self.group_combobox, 1)
-        groups_box.addWidget(self.add_group_btn)
-        self.layout.addLayout(groups_box)
+        self.group_handler = GroupHandler(self)
 
         # List view
         self.list_view = QListView(self)
@@ -104,7 +87,7 @@ class MangaApp(QWidget):
         self.list_view.setFlow(QListView.LeftToRight)
         self.list_view.setLayoutMode(QListView.Batched)
 
-        self.list_delegate = MangaDelegate(self.list_view)
+        self.list_delegate = MangaDelegate(self, self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
         self.list_view.clicked.connect(self.display_detail)
         self.layout.addWidget(self.list_view)
@@ -127,61 +110,6 @@ class MangaApp(QWidget):
         super().resizeEvent(event)
         self.list_view.updateGeometries()
         self.list_view.doItemsLayout()  # Force the view to relayout items.
-
-    # Method to add new group creation window
-    def add_group(self):
-        dialog = QDialog(self)
-        layout = QVBoxLayout()
-
-        # Name input
-        name_label = QLabel("Group Name:", dialog)
-        name_input = QLineEdit(dialog)
-        name_input.setStyleSheet(self.styles.get("lineedit"))
-        layout.addWidget(name_label)
-        layout.addWidget(name_input)
-
-        # Color picker setup
-        picked_color = [Qt.white]  # Default color, using a mutable type like a list to store the selected color
-        pick_color_button = QPushButton("Pick Color", dialog)
-        pick_color_button.setStyleSheet(self.styles.get("textbutton"))
-        layout.addWidget(pick_color_button)
-
-        # Update the button's background color to show the picked color
-        def update_button_color(color):
-            pick_color_button.setStyleSheet(f"background-color: {color.name()};")
-            picked_color[0] = color
-
-        pick_color_button.clicked.connect(lambda: update_button_color(QColorDialog.getColor()))
-
-        # Save and Cancel buttons
-        save_btn = QPushButton("Save", dialog)
-        save_btn.clicked.connect(dialog.accept)
-        save_btn.setStyleSheet(self.styles.get("textbutton"))
-        cancel_btn = QPushButton("Cancel", dialog)
-        cancel_btn.clicked.connect(dialog.reject)
-        cancel_btn.setStyleSheet(self.styles.get("textbutton"))
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(save_btn)
-        btn_layout.addWidget(cancel_btn)
-        layout.addLayout(btn_layout)
-
-        dialog.setLayout(layout)
-
-        result = dialog.exec_()
-        if result == QDialog.Accepted:
-            group_name = name_input.text()
-            isNew = False
-            if group_name not in self.groups:
-                self.groups[group_name] = {}
-                isNew = True
-            self.groups[group_name].update({"color": picked_color[0].name()})
-            save_json(MangaApp.groups_file, self.groups)
-            if isNew:
-                # Add to the combobox
-                self.group_combobox.addItem(group_name, group_name)
-            else:
-                # Force refresh in case color changed
-                self.search_bar_handler.update_list()
 
     def display_detail(self, index):
         data = index.data(Qt.UserRole)

@@ -51,7 +51,7 @@ class SearchBarHandler:
 
         # Define sort in case we need it
         _, sort_func = self.sorting_options[self.mw.sort_combobox.currentIndex()]
-        selected_group = self.mw.group_combobox.currentData()
+        selected_group = self.mw.group_handler.group_combobox.currentData()
 
         if not selected_group:
             mod_data = self.mw.data

@@ -1,5 +1,7 @@
 import math
+import typing
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
@@ -39,6 +41,10 @@ TITLE_MINIMUM_FONT_SIZE = 7
 
 class MangaDelegate(QStyledItemDelegate):
 
+    def __init__(self, main_window, parent: typing.Optional[QtCore.QObject] = ...):
+        super().__init__(parent)
+        self.mw = main_window
+
     def paint(self, painter, option, index):
         # Retrieve item data from the model
         entry = index.data(Qt.UserRole)
@@ -49,8 +55,8 @@ class MangaDelegate(QStyledItemDelegate):
 
         # Set group-specific color
         group_name = entry.group
-        if group_name and group_name in self.parent().parent().groups:
-            color = self.parent().parent().groups[group_name].get("color")
+        if group_name and group_name in self.mw.group_handler.groups:
+            color = self.mw.group_handler.groups[group_name].get("color")
             if color:
                 background_color = QColor(color)
 
