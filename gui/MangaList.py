@@ -1,3 +1,5 @@
+import math
+
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
@@ -135,7 +137,7 @@ class MangaDelegate(QStyledItemDelegate):
         # Start position for tags
         tag_x_start = title_rect.right() + TAG_SPACING
         tag_y_start = option.rect.top() + 2  # small offset to not start at the very top of the item
-        for row in range(max(len(tags) // TAG_COLUMNS, 1)):
+        for row in range(math.ceil(len(tags) / TAG_COLUMNS)):
             for col in range(TAG_COLUMNS):
                 idx = row * TAG_COLUMNS + col
                 if idx >= len(tags):
@@ -178,7 +180,7 @@ class MangaDelegate(QStyledItemDelegate):
                 painter.drawText(tag_rect, Qt.AlignCenter | Qt.TextWordWrap, tag_text)
         painter.setFont(original_font)
 
-        max_tag_y = tag_y_start + (max(1, len(tags) // TAG_COLUMNS)) * (TAG_HEIGHT + TAG_SPACING)
+        max_tag_y = tag_y_start + (math.ceil(len(tags) / TAG_COLUMNS)) * (TAG_HEIGHT + TAG_SPACING)
         upload_text_y_start = max_tag_y + 10
 
         upload_text = "Uploaded on: " + entry.upload
