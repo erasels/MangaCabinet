@@ -2,15 +2,16 @@ import json
 import os
 import sys
 
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from auxillary.DataAccess import MangaEntry
 from auxillary.JSONMethods import load_json, save_json, load_styles
+from gui import Options
 from gui.GroupHandler import GroupHandler
 from gui.MangaList import MangaDelegate
-from gui.Options import OptionsDialog, init_settings
+from gui.Options import OptionsDialog
 from gui.SearchBarHandler import SearchBarHandler
 
 
@@ -29,34 +30,14 @@ class MangaApp(QWidget):
         # Save entry to its reversed index so that sorting works quickly and as expected
         self.entry_to_index_reversed = {entry.id: len(self.data) - idx - 1 for idx, entry in enumerate(self.data)}
         self.styles = load_styles(MangaApp.style_path)
-        self.settings = None
-        self.load_settings()
+        self.settings = Options.load_settings(self.settings_file)
         self.init_ui()
-
-    def load_settings(self):
-        settings = load_json(MangaApp.settings_file, "dict")
-        if settings:
-            self.settings = settings
-        else:
-            init_settings()
-
-    # Method to create settings window
-    def show_options_dialog(self):
-        self.dialog = OptionsDialog(parent=self)
-        if self.dialog.exec_() == 0:
-            self.search_bar_handler.update_list()
-            save_json(MangaApp.settings_file, self.settings)
 
     def init_ui(self):
         self.layout = QVBoxLayout()
 
-        # Options Button
-        self.settings_button = QPushButton(self)
-        self.settings_button.setIcon(QIcon(os.path.join(MangaApp.image_path, 'options_icon.png')))
-        self.settings_button.setIconSize(QSize(24, 24))
-        self.settings_button.setFixedSize(24, 24)  # Set the button size to match the icon size
-        self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
-        self.settings_button.clicked.connect(self.show_options_dialog)
+        # Init options button and add logic for it
+        self.options_handler = OptionsDialog(self)
 
         # Handles entire search bar and accesses settings_buton
         self.search_bar_handler = SearchBarHandler(self)

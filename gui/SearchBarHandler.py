@@ -48,7 +48,7 @@ class SearchBarHandler:
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
         search_box.addWidget(self.hits_label)
         search_box.addWidget(self.sort_combobox)
-        search_box.addWidget(self.mw.settings_button)
+        search_box.addWidget(self.mw.options_handler.settings_button)
         self.mw.layout.addLayout(search_box)
 
     def toggle_sort_order(self):
