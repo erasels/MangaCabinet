@@ -50,6 +50,9 @@ class OptionsHandler(QDialog):
 
         self.init_options_dialog()
 
+    def get_widget(self):
+        return self.settings_button
+
     # Method to create settings window
     def show_options_dialog(self):
         if self.exec_() == 0:

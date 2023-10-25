@@ -27,10 +27,11 @@ class GroupHandler:
         self.add_group_btn.clicked.connect(self.add_group)
         self.add_group_btn.setStyleSheet(self.mw.styles.get("textbutton"))
 
+    def get_layout(self):
         groups_box = QHBoxLayout()
         groups_box.addWidget(self.group_combobox, 1)
         groups_box.addWidget(self.add_group_btn)
-        self.mw.layout.addLayout(groups_box)
+        return groups_box
 
     # Method to add new group creation window
     def add_group(self):

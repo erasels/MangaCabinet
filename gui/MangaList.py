@@ -29,8 +29,8 @@ class ListViewHandler:
         self.list_view.setItemDelegate(self.list_delegate)
         self.list_view.clicked.connect(self.mw.display_detail)
 
-        # Attach the list view to the main window's layout
-        self.mw.layout.addWidget(self.list_view)
+    def get_widget(self):
+        return self.list_view
 
     def handle_resize(self):
         self.list_view.updateGeometries()
