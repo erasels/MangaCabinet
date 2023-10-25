@@ -19,8 +19,9 @@ class SearchBarHandler:
         self.showing_all_entries = False
         self.sorting_options = [
             ("By id", lambda entry: entry.id),
-            ("By date added", lambda entry: self.mw.entry_to_index_reversed.get(entry.id, 0)),
-            ("By Upload", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),
+            ("By upload date", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),
+            ("By data order", lambda entry: self.mw.entry_to_index_reversed.get(entry.id, 0)),
+            ("By name", lambda entry: [-ord(ch) for ch in entry.display_title().lower()]),
             ("By score", lambda entry: entry.get('score', float('-inf')))
         ]
         self.init_ui()
