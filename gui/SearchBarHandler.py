@@ -103,8 +103,8 @@ class SearchBarHandler:
                 hit_count += 1
                 if threshold == 0 or idx < threshold:  # Show all entries if Threshold is 0
                     self.create_list_item(entry)
-                else:
-                    break
+            else:
+                break
 
         if hit_count > 0 and search_terms:
             self.hits_label.setText(f"Hits: {hit_count}")
