@@ -11,7 +11,7 @@ from auxillary.JSONMethods import load_json, save_json, load_styles
 from gui import Options
 from gui.GroupHandler import GroupHandler
 from gui.MangaList import MangaDelegate
-from gui.Options import OptionsDialog
+from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
 
 
@@ -37,7 +37,7 @@ class MangaApp(QWidget):
         self.layout = QVBoxLayout()
 
         # Init options button and add logic for it
-        self.options_handler = OptionsDialog(self)
+        self.options_handler = OptionsHandler(self)
 
         # Handles entire search bar and accesses settings_buton
         self.search_bar_handler = SearchBarHandler(self)

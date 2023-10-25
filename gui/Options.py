@@ -25,9 +25,9 @@ def load_settings(settings_path):
         return init_settings()
 
 
-class OptionsDialog(QDialog):
+class OptionsHandler(QDialog):
     def __init__(self, parent):
-        super(OptionsDialog, self).__init__(parent)
+        super(OptionsHandler, self).__init__(parent)
         self.settings_button = None
         self.dialog = None
         self.setWindowTitle("Options")
