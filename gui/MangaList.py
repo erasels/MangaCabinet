@@ -27,7 +27,7 @@ class ListViewHandler:
 
         self.list_delegate = MangaDelegate(self.mw, self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
-        self.list_view.clicked.connect(self.mw.display_detail)
+        self.list_view.clicked.connect(self.mw.details_handler.display_detail)
 
     def get_widget(self):
         return self.list_view

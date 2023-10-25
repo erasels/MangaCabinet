@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import *
 from auxillary.DataAccess import MangaEntry
 from auxillary.JSONMethods import load_json, save_json, load_styles
 from gui import Options
+from gui.Details import DetailViewHandler
 from gui.GroupHandler import GroupHandler
 from gui.MangaList import MangaDelegate, ListViewHandler
 from gui.Options import OptionsHandler
@@ -38,34 +39,23 @@ class MangaApp(QWidget):
 
         # Init options button and add logic for it
         self.options_handler = OptionsHandler(self)
-
         # Handles entire search bar and accesses settings_buton
         self.search_bar_handler = SearchBarHandler(self)
-
+        # Handles looking at and modifying details of manga entries
+        self.details_handler = DetailViewHandler(self)
         # Handles entire groups bar
         self.group_handler = GroupHandler(self)
-
         # Handles the manga list view
         self.manga_list_handler = ListViewHandler(self)
-
         # Setup initial list once components are in place
         self.search_bar_handler.update_list(False)
-
-        # Detail view (as a text edit for simplicity)
-        self.detail_view = QTextEdit(self)
-        self.detail_view.setPlaceholderText("Select an item to edit it.")
-
-        # Save button
-        self.save_button = QPushButton("Save Changes", self)
-        self.save_button.clicked.connect(self.save_changes)
-        self.save_button.setStyleSheet(self.styles.get("textbutton"))
 
         # Setup layout (wdiget = single item, layout = group of items)
         self.layout.addLayout(self.search_bar_handler.get_layout(self.options_handler.get_widget()))
         self.layout.addLayout(self.group_handler.get_layout())
         self.layout.addWidget(self.manga_list_handler.get_widget())
-        self.layout.addWidget(self.detail_view)
-        self.layout.addWidget(self.save_button)
+        for widget in self.details_handler.get_widgets():
+            self.layout.addWidget(widget)
 
         self.setLayout(self.layout)
 
@@ -73,21 +63,6 @@ class MangaApp(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.manga_list_handler.handle_resize()
-
-    def display_detail(self, index):
-        data = index.data(Qt.UserRole)
-        self.detail_view.setText(json.dumps(data, indent=4))
-
-    def save_changes(self):
-        contents = self.detail_view.toPlainText()
-        if len(contents) > 5:
-            current_data = json.loads(contents, object_pairs_hook=MangaEntry)
-            for i, entry in enumerate(self.data):
-                if entry.id == current_data['id']:
-                    self.data[i] = current_data
-                    save_json(MangaApp.data_file, self.data)
-                    self.search_bar_handler.update_list()
-                    break
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
