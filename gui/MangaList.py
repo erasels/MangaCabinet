@@ -3,8 +3,46 @@ import typing
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
-from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath
-from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
+from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView
+
+
+class ListViewHandler:
+    def __init__(self, parent):
+        self.list_delegate = None
+        self.list_model = None
+        self.list_view = None
+        self.mw = parent
+        self.init_ui()
+
+    def init_ui(self):
+        # List view
+        self.list_view = QListView(self.mw)
+        self.list_model = QStandardItemModel(self.list_view)
+        self.list_view.setModel(self.list_model)
+
+        self.list_view.setWrapping(True)
+        self.list_view.setFlow(QListView.LeftToRight)
+        self.list_view.setLayoutMode(QListView.Batched)
+
+        self.list_delegate = MangaDelegate(self.mw, self.list_view)
+        self.list_view.setItemDelegate(self.list_delegate)
+        self.list_view.clicked.connect(self.mw.display_detail)
+
+        # Attach the list view to the main window's layout
+        self.mw.layout.addWidget(self.list_view)
+
+    def handle_resize(self):
+        self.list_view.updateGeometries()
+        self.list_view.doItemsLayout()  # Force the view to relayout items.
+
+    def clear_view(self):
+        self.list_model.clear()
+
+    def add_item(self, entry):
+        item = QStandardItem()
+        item.setData(entry, Qt.UserRole)
+        self.list_model.appendRow(item)
 
 
 def blend_colors(color1, color2, alpha):

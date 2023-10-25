@@ -83,9 +83,9 @@ class SearchBarHandler:
                 return
             else:
                 sorted_data = sorted(mod_data, key=lambda x: sort_func(x), reverse=not self.sort_order_reversed)
-                self.mw.list_model.clear()
+                self.mw.manga_list_handler.clear_view()
                 for entry in sorted_data:
-                    self.create_list_item(entry)
+                    self.mw.manga_list_handler.add_item(entry)
                 self.showing_all_entries = True
                 self.hits_label.hide()
                 return
@@ -94,7 +94,7 @@ class SearchBarHandler:
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
         sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
 
-        self.mw.list_model.clear()  # Clear the list before adding filtered results
+        self.mw.manga_list_handler.clear_view()  # Clear the list before adding filtered results
 
         hit_count = 0
         threshold = self.mw.settings[search_thrshold]
@@ -102,7 +102,7 @@ class SearchBarHandler:
             if score > 0:
                 hit_count += 1
                 if threshold == 0 or idx < threshold:  # Show all entries if Threshold is 0
-                    self.create_list_item(entry)
+                    self.mw.manga_list_handler.add_item(entry)
             else:
                 break
 
@@ -113,11 +113,6 @@ class SearchBarHandler:
             self.hits_label.hide()
 
         self.showing_all_entries = False
-
-    def create_list_item(self, entry: dict):
-        item = QStandardItem()
-        item.setData(entry, Qt.UserRole)
-        self.mw.list_model.appendRow(item)
 
     def match_score(self, data, terms):
         """Compute a score based on the number of matching terms."""

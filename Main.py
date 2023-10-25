@@ -10,7 +10,7 @@ from auxillary.DataAccess import MangaEntry
 from auxillary.JSONMethods import load_json, save_json, load_styles
 from gui import Options
 from gui.GroupHandler import GroupHandler
-from gui.MangaList import MangaDelegate
+from gui.MangaList import MangaDelegate, ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
 
@@ -45,19 +45,10 @@ class MangaApp(QWidget):
         # Handles entire groups bar
         self.group_handler = GroupHandler(self)
 
-        # List view
-        self.list_view = QListView(self)
-        self.list_model = QStandardItemModel(self.list_view)
-        self.list_view.setModel(self.list_model)
+        # Handles the manga list view
+        self.manga_list_handler = ListViewHandler(self)
 
-        self.list_view.setWrapping(True)
-        self.list_view.setFlow(QListView.LeftToRight)
-        self.list_view.setLayoutMode(QListView.Batched)
-
-        self.list_delegate = MangaDelegate(self, self.list_view)
-        self.list_view.setItemDelegate(self.list_delegate)
-        self.list_view.clicked.connect(self.display_detail)
-        self.layout.addWidget(self.list_view)
+        # Setup initial list once components are in place
         self.search_bar_handler.update_list(False)
 
         # Detail view (as a text edit for simplicity)
@@ -75,8 +66,7 @@ class MangaApp(QWidget):
     # Override for updating list when resizing
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.list_view.updateGeometries()
-        self.list_view.doItemsLayout()  # Force the view to relayout items.
+        self.manga_list_handler.handle_resize()
 
     def display_detail(self, index):
         data = index.data(Qt.UserRole)
