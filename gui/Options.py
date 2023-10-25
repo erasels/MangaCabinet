@@ -46,6 +46,8 @@ class OptionsHandler(QDialog):
         self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
         self.settings_button.clicked.connect(self.show_options_dialog)
 
+        self.settings_button.setToolTip("Options")
+
         self.init_options_dialog()
 
     # Method to create settings window
