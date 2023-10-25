@@ -1,8 +1,9 @@
 import json
+import random
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItem
-from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton
 
 from gui.ComboBoxDerivatives import RightClickableComboBox
 from gui.Options import search_thrshold, loose_match
@@ -46,13 +47,33 @@ class SearchBarHandler:
         self.sort_combobox.setStyleSheet(self.mw.styles.get("sorter"))
         self.sort_combobox.setObjectName("Normal")
 
+        # Random button
+        self.random_button = QPushButton("Random", self.mw)
+        self.random_button.clicked.connect(self.get_random_item)
+        self.random_button.setStyleSheet(self.mw.styles.get("textbutton"))
+
     def get_layout(self, options_button):
         search_box = QHBoxLayout()  # Create a horizontal box layout
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
         search_box.addWidget(self.hits_label)
         search_box.addWidget(self.sort_combobox)
+        search_box.addWidget(self.random_button)
         search_box.addWidget(options_button)
         return search_box
+
+    def get_random_item(self):
+        total_items = self.mw.manga_list_handler.list_model.rowCount()
+        if total_items <= 1:
+            return
+
+        current_index = self.mw.manga_list_handler.list_view.currentIndex().row()
+        random_index = random.randint(0, total_items - 1)
+        while random_index == current_index:
+            random_index = random.randint(0, total_items - 1)
+        index = self.mw.manga_list_handler.list_model.index(random_index, 0)
+
+        self.mw.manga_list_handler.list_view.setCurrentIndex(index)
+        self.mw.details_handler.display_detail(index)
 
     def toggle_sort_order(self):
         if self.sort_order_reversed:
