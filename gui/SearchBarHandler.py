@@ -30,6 +30,7 @@ class SearchBarHandler:
         self.search_bar = QLineEdit(self.mw)
         self.search_bar.textChanged.connect(lambda: self.update_list(False))
         self.search_bar.setStyleSheet(self.mw.styles.get("lineedit"))
+        self.search_bar.setPlaceholderText("Search...")
 
         # Hits label
         self.hits_label = QLabel(self.mw)

@@ -53,6 +53,7 @@ class MangaApp(QWidget):
 
         # Detail view (as a text edit for simplicity)
         self.detail_view = QTextEdit(self)
+        self.detail_view.setPlaceholderText("Select an item to edit it.")
         self.layout.addWidget(self.detail_view)
 
         # Save button

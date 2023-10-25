@@ -41,6 +41,7 @@ class GroupHandler:
         name_label = QLabel("Group Name:", dialog)
         name_input = QLineEdit(dialog)
         name_input.setStyleSheet(self.mw.styles.get("lineedit"))
+
         layout.addWidget(name_label)
         layout.addWidget(name_input)
 

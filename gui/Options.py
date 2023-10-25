@@ -65,16 +65,14 @@ class OptionsHandler(QDialog):
         self.slider.setValue(self.mw.settings[search_thrshold])
         self.slider.valueChanged.connect(self.slider_value_changed)
 
-        tooltip_text = "The amount of results to return when using the search bar."
-        self.slider.setToolTip(tooltip_text)
+        self.slider.setToolTip("The amount of results to return when using the search bar.")
 
         # Add a QCheckBox for the loose search matching option
         self.loose_match_checkbox = QCheckBox("Enable Loose Search Matching", self)
         self.loose_match_checkbox.setChecked(self.mw.settings[loose_match])
         self.loose_match_checkbox.stateChanged.connect(self.loose_match_changed)
 
-        tooltip_text = "When enabled only one term of your search needs to match something to be returned."
-        self.loose_match_checkbox.setToolTip(tooltip_text)
+        self.loose_match_checkbox.setToolTip("When enabled only one term of your search needs to match something to be returned.")
 
         # Layout management
         layout = QVBoxLayout()
