@@ -114,7 +114,8 @@ class SearchBarHandler:
 
         # Compute scores for all manga entries and sort them based on the score
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * (-1 if not self.sort_order_reversed else 1)))
+        reverse_modifier = -1 if not self.sort_order_reversed else 1
+        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * reverse_modifier))
 
         self.mw.manga_list_handler.clear_view()  # Clear the list before adding filtered results
 
