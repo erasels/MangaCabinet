@@ -2,37 +2,41 @@ import json
 import os
 import sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from auxillary.DataAccess import MangaEntry
-from auxillary.JSONMethods import load_json, save_json, load_styles
+from auxillary.JSONMethods import load_json, load_styles
 from gui import Options
 from gui.Details import DetailViewHandler
 from gui.GroupHandler import GroupHandler
-from gui.MangaList import MangaDelegate, ListViewHandler
+from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
 
 
 class MangaApp(QWidget):
-    image_path = os.path.join('assets', 'images')
-    data_path = os.path.join('assets', 'data')
-    style_path = os.path.join('assets', 'styles')
-
-    data_file = os.path.join(data_path, 'data.json')
-    settings_file = os.path.join(data_path, 'settings.json')
-    groups_file = os.path.join(data_path, 'groups.json')
+    config_path = os.path.join('assets', 'data')
 
     def __init__(self):
         super().__init__()
-        self.data = load_json(MangaApp.data_file, data_type="mangas")
+        self.load_paths()
+        self.data = load_json(self.data_file, data_type="mangas")
         # Save entry to its reversed index so that sorting works quickly and as expected
         self.entry_to_index_reversed = {entry.id: len(self.data) - idx - 1 for idx, entry in enumerate(self.data)}
-        self.styles = load_styles(MangaApp.style_path)
+        self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
         self.init_ui()
+
+    def load_paths(self):
+        config_file = os.path.join(MangaApp.config_path, "config.json")
+        default_config_file = os.path.join(MangaApp.config_path, "config_default.json")
+        config_file = config_file if os.path.exists(config_file) else default_config_file
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+            self.data_file = config["data_file"]
+            self.settings_file = config["settings_file"]
+            self.groups_file = config["groups_file"]
+            self.style_path = config["style_path"]
+            self.image_path = config["image_path"]
 
     def init_ui(self):
         self.layout = QVBoxLayout()

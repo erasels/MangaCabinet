@@ -1,0 +1,7 @@
+{
+    "data_file": "assets/data/data.json",
+    "settings_file": "assets/data/settings.json",
+    "groups_file": "assets/data/groups.json",
+    "style_path": "assets/styles",
+    "image_path": "assets/images"
+}

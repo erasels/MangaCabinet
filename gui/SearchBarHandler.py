@@ -12,6 +12,7 @@ from gui.Options import search_thrshold, loose_match
 class SearchBarHandler:
 
     def __init__(self, main_window):
+        self.random_button = None
         self.sort_combobox = None
         self.hits_label = None
         self.search_bar = None
