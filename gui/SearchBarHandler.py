@@ -1,8 +1,5 @@
-import json
 import random
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QStandardItem
 from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton
 
 from gui.ComboBoxDerivatives import RightClickableComboBox
