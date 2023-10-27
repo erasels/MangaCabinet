@@ -8,12 +8,14 @@ from auxillary.JSONMethods import save_json, load_json
 
 search_thrshold = "search_cutoff_threshold"
 loose_match = "loose_search_matching"
+multi_match = "count_multiple_matches"
 
 
 def init_settings():
     return {
         search_thrshold: 100,
-        loose_match: False
+        loose_match: False,
+        multi_match: False
     }
 
 
@@ -77,11 +79,19 @@ class OptionsHandler(QDialog):
 
         self.loose_match_checkbox.setToolTip("When enabled only one term of your search needs to match something to be returned.")
 
+        # Add a QCheckBox for the loose search matching option
+        self.multi_match_checkbox = QCheckBox("Enable Counting Matches", self)
+        self.multi_match_checkbox.setChecked(self.mw.settings[multi_match])
+        self.multi_match_checkbox.stateChanged.connect(self.multi_match_changed)
+
+        self.multi_match_checkbox.setToolTip("When enabled results which contain a search term in multiple fields will have higher precedence, this becomes unintuitive with sorting.")
+
         # Layout management
         layout = QVBoxLayout()
         layout.addWidget(self.slider_label)
         layout.addWidget(self.slider)
-        layout.addWidget(self.loose_match_checkbox)  # Add the checkbox to the layout
+        layout.addWidget(self.loose_match_checkbox)
+        layout.addWidget(self.multi_match_checkbox)
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
@@ -93,3 +103,7 @@ class OptionsHandler(QDialog):
 
     def loose_match_changed(self, state):
         self.mw.settings[loose_match] = bool(state)
+
+    def multi_match_changed(self, state):
+        self.mw.settings[multi_match] = bool(state)
+

@@ -22,12 +22,12 @@ class MangaApp(QWidget):
         self.is_data_modified = False
         self.load_paths()
         self.data = load_json(self.data_file, data_type="mangas")
-        self.entry_to_index_reversed = {}
+        self.entry_to_index = {}
         self.all_tags = set()
         self.all_ids = []
         for idx, entry in enumerate(self.data):
             # Save entry to its reversed index so that sorting works quickly and as expected
-            self.entry_to_index_reversed[entry.id] = len(self.data) - idx - 1
+            self.entry_to_index[entry.id] = idx
             self.all_tags.update(entry.tags)
             self.all_ids.append(str(entry.id))
         self.all_tags = sorted(self.all_tags, key=str.lower)

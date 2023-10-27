@@ -1,9 +1,12 @@
+import os
 import random
+from collections import defaultdict
+from typing import Tuple, Callable, Any, List
 
 from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton
 
 from gui.WidgetDerivatives import RightClickableComboBox
-from gui.Options import search_thrshold, loose_match
+from gui.Options import search_thrshold, loose_match, multi_match
 
 
 class SearchBarHandler:
@@ -17,12 +20,13 @@ class SearchBarHandler:
         self.sort_order_reversed = False
         self.showing_all_entries = False
         self.sorting_options = [
-            ("By id", lambda entry: entry.id),
-            ("By upload date", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),
-            ("By data order", lambda entry: self.mw.entry_to_index_reversed.get(entry.id, 0)),
-            ("By name", lambda entry: [-ord(ch) for ch in entry.display_title().lower()]),
-            ("By artist", lambda entry: [-ord(ch) for ch in entry.first_artist().lower()]),
-            ("By score", lambda entry: entry.get('score', float('-inf')))  # Reversed will show unrated first
+            # Name, algorithm, should be reversed by default
+            ("By id", lambda entry: entry.id, True),
+            ("By upload date", lambda entry: (0 if entry.upload is None else 1, entry.upload_date()), True),
+            ("By data order", lambda entry: self.mw.entry_to_index.get(entry.id, 0), False),
+            ("By name", lambda entry: entry.display_title().lower(), False),
+            ("By artist", lambda entry: entry.first_artist().lower(), False),
+            ("By score", lambda entry: entry.get('score', float('-inf')), True)  # Reversed will show unrated first
         ]
         self.init_ui()
 
@@ -39,7 +43,7 @@ class SearchBarHandler:
 
         # Sorting combo box
         self.sort_combobox = RightClickableComboBox()
-        for name, _ in self.sorting_options:
+        for name, _, _ in self.sorting_options:
             self.sort_combobox.addItem(name)
         self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list())
         self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
@@ -83,15 +87,12 @@ class SearchBarHandler:
         self.sort_order_reversed = not self.sort_order_reversed
         self.update_list()
 
-    def secondary_sort_key(self, x):
-        sort_func = self.sorting_options[self.sort_combobox.currentIndex()][1]
-        return sort_func(x[0])
-
     def update_list(self, forceRefresh=True):
         search_terms = [term.strip() for term in self.search_bar.text().split(",")]
 
         # Define sort in case we need it
-        _, sort_func = self.sorting_options[self.sort_combobox.currentIndex()]
+        sorting_option: tuple[str, Callable, bool] = self.sorting_options[self.sort_combobox.currentIndex()]
+        reverse_final = sorting_option[2] ^ self.sort_order_reversed  # XOR
         selected_group = self.mw.group_handler.group_combobox.currentData()
 
         if not selected_group:
@@ -105,7 +106,7 @@ class SearchBarHandler:
             if self.showing_all_entries and not forceRefresh:
                 return
             else:
-                sorted_data = sorted(mod_data, key=lambda x: sort_func(x), reverse=not self.sort_order_reversed)
+                sorted_data = sorted(mod_data, key=lambda x: sorting_option[1](x), reverse=reverse_final)
                 self.mw.manga_list_handler.clear_view()
                 for entry in sorted_data:
                     self.mw.manga_list_handler.add_item(entry)
@@ -115,20 +116,25 @@ class SearchBarHandler:
 
         # Compute scores for all manga entries and sort them based on the score
         scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        reverse_modifier = -1 if not self.sort_order_reversed else 1
-        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x) * reverse_modifier))
+        grouped_data = defaultdict(list)
+        for entry, score in scored_data:
+            if score != 0:  # prune non-hits early
+                grouped_data[score].append((entry, score))
+
+        # 2. Sort Each Group by Secondary Key
+        for score, group in grouped_data.items():
+            grouped_data[score] = sorted(group, key=lambda x: sorting_option[1](x[0]), reverse=reverse_final)
+
+        sorted_data = [item for score in sorted(grouped_data.keys(), reverse=True) for item in grouped_data[score]]
 
         self.mw.manga_list_handler.clear_view()  # Clear the list before adding filtered results
 
-        hit_count = 0
+        hit_count = len(sorted_data)
         threshold = self.mw.settings[search_thrshold]
+
         for idx, (entry, score) in enumerate(sorted_data):
-            if score > 0:
-                hit_count += 1
-                if threshold == 0 or idx < threshold:  # Show all entries if Threshold is 0
-                    self.mw.manga_list_handler.add_item(entry)
-            else:
-                break
+            if threshold == 0 or idx < threshold:  # Show all entries if Threshold is 0
+                self.mw.manga_list_handler.add_item(entry)
 
         if hit_count > 0 and search_terms:
             self.hits_label.setText(f"Hits: {hit_count}")
@@ -159,6 +165,9 @@ class SearchBarHandler:
                 return 0  # If a term did not match any field, we return a score of 0 for the entire entry
 
             score += term_score
+
+        if not self.mw.settings[multi_match] and score > 1:
+            score = 1  # Disable multiple match weighting to preserve proper sort order
 
         return score
 
@@ -200,4 +209,4 @@ class SearchBarHandler:
             elif operator == '<':
                 return 1 if value < int(target_value) else 0
 
-        return 0  # Default case
+        return 0
