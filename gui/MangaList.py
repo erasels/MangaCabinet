@@ -132,14 +132,14 @@ class MangaDelegate(QStyledItemDelegate):
 
         painter.drawText(title_rect, Qt.AlignLeft, title)
 
-        # Move down for authors
+        # Move down for artists
         title_rect.translate(0, font_metrics.height())
         painter.setFont(original_font)
 
-        # Display the authors
-        authors = entry.artist
-        author_text = "Artist(s): " + ", ".join(authors)
-        painter.drawText(title_rect, Qt.AlignLeft, author_text)
+        # Display the artists
+        artists = entry.artist
+        artist_text = "Artist(s): " + ", ".join(artists)
+        painter.drawText(title_rect, Qt.AlignLeft, artist_text)
 
         # Prepare additional details
         details_list = []
