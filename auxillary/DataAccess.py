@@ -3,15 +3,19 @@ from datetime import datetime
 
 class MangaEntry(dict):
     ATTRIBUTE_MAP = {
-        "tags": ("tag", []),
-        "group": ("MC_Grouping", ""),
-        "title": ("title", None),
         "id": ("id", None),
-        "author": ("artist", ["Missing"]),
+        "description": ("description", ""),
+        "title": ("title", ""),
+        "title_short": ("title_short", ""),
+        "tags": ("tag", []),
+        "artist": ("artist", []),
         "language": ("language", []),
         "pages": ("pages", 0),
         "parody": ("parody", []),
-        "upload": ("upload_date", None)
+        "upload": ("upload_date", None),
+        "score": ("score", 0),
+        "group": ("MC_Grouping", None),
+        "similar": ("similar", [])
     }
 
     def __init__(self, *args, **kwargs):
@@ -34,8 +38,29 @@ class MangaEntry(dict):
             return self[attr]
         raise AttributeError(f"'{type(self).__name__}' object has no attribute '{attr}'")
 
+    def __setattr__(self, attr, value):
+        # Check if the attribute is in the mapping
+        key, _ = self.ATTRIBUTE_MAP.get(attr, (None, None))
+        if key:
+            # If the attribute corresponds to a dictionary key, set it
+            self[key] = value
+        else:
+            # If not, set it as a regular attribute
+            super().__setattr__(attr, value)
+
+    def __delattr__(self, attr):
+        key, _ = self.ATTRIBUTE_MAP.get(attr, (None, None))
+        if key and key in self:
+            del self[key]
+        else:
+            super().__delattr__(attr)
+
     def display_title(self) -> str:
         return self.get("title_short") or self.get("title_alt") or self.get("title", "")
+
+    def first_artist(self):
+        artists = self.get("artist", [])
+        return artists[0] if artists else ""
 
     def is_translated(self):
         return self.get("language") and "translated" in self["language"]

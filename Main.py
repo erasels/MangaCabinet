@@ -2,9 +2,10 @@ import json
 import os
 import sys
 
+from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import *
 
-from auxillary.JSONMethods import load_json, load_styles
+from auxillary.JSONMethods import load_json, load_styles, save_json
 from gui import Options
 from gui.Details import DetailViewHandler
 from gui.GroupHandler import GroupHandler
@@ -18,10 +19,18 @@ class MangaApp(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.is_data_modified = False
         self.load_paths()
         self.data = load_json(self.data_file, data_type="mangas")
-        # Save entry to its reversed index so that sorting works quickly and as expected
-        self.entry_to_index_reversed = {entry.id: len(self.data) - idx - 1 for idx, entry in enumerate(self.data)}
+        self.entry_to_index_reversed = {}
+        self.all_tags = set()
+        self.all_ids = []
+        for idx, entry in enumerate(self.data):
+            # Save entry to its reversed index so that sorting works quickly and as expected
+            self.entry_to_index_reversed[entry.id] = len(self.data) - idx - 1
+            self.all_tags.update(entry.tags)
+            self.all_ids.append(str(entry.id))
+        self.all_tags = sorted(self.all_tags, key=str.lower)
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
         self.init_ui()
@@ -59,7 +68,8 @@ class MangaApp(QWidget):
         self.layout.addLayout(self.group_handler.get_layout())
         self.layout.addWidget(self.manga_list_handler.get_widget())
         for widget in self.details_handler.get_widgets():
-            self.layout.addWidget(widget)
+           self.layout.addWidget(widget)
+        self.layout.addLayout(self.details_handler.get_layout())
 
         self.setLayout(self.layout)
 
@@ -68,11 +78,23 @@ class MangaApp(QWidget):
         super().resizeEvent(event)
         self.manga_list_handler.handle_resize()
 
+    def save_changes(self):
+        if self.is_data_modified:
+            save_json(self.data_file, self.data)
+            print("Saved data.")
+
 
 def exception_hook(exc_type, exc_value, exc_traceback):
     """
-    Function to capture and display exceptions in a readable manner.
+    Function to capture and display exceptions in a readable manner and saves data to prevent loss.
     """
+    try:
+        window.save_changes()
+    except Exception as e:
+        # Log the error or print it out. This is to ensure that if the save fails,
+        # it doesn't prevent the original exception from being displayed.
+        print(f"Error during save: {e}")
+
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
     sys.exit(1)
 
@@ -85,4 +107,5 @@ if __name__ == '__main__':
     window.setWindowTitle("Manga Cabinet")
     window.resize(1280, 720)
     window.show()
+    app.aboutToQuit.connect(window.save_changes)
     sys.exit(app.exec_())

@@ -2,7 +2,7 @@ import random
 
 from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton
 
-from gui.ComboBoxDerivatives import RightClickableComboBox
+from gui.WidgetDerivatives import RightClickableComboBox
 from gui.Options import search_thrshold, loose_match
 
 
@@ -21,7 +21,8 @@ class SearchBarHandler:
             ("By upload date", lambda entry: (0 if entry.upload is None else 1, entry.upload_date())),
             ("By data order", lambda entry: self.mw.entry_to_index_reversed.get(entry.id, 0)),
             ("By name", lambda entry: [-ord(ch) for ch in entry.display_title().lower()]),
-            ("By score", lambda entry: entry.get('score', float('-inf')))
+            ("By artist", lambda entry: [-ord(ch) for ch in entry.first_artist().lower()]),
+            ("By score", lambda entry: entry.get('score', float('-inf')))  # Reversed will show unrated first
         ]
         self.init_ui()
 

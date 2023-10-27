@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QDialog, QVBoxLayout, QLabel, QLineEdit, QColorDialog
 
 from auxillary.JSONMethods import load_json, save_json
-from gui.ComboBoxDerivatives import RightClickableComboBox
+from gui.WidgetDerivatives import RightClickableComboBox
 
 
 class GroupHandler:

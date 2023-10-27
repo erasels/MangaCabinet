@@ -137,7 +137,7 @@ class MangaDelegate(QStyledItemDelegate):
         painter.setFont(original_font)
 
         # Display the authors
-        authors = entry.author
+        authors = entry.artist
         author_text = "Artist(s): " + ", ".join(authors)
         painter.drawText(title_rect, Qt.AlignLeft, author_text)
 

@@ -1,0 +1,16 @@
+QTextEdit {
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    padding: 2px 4px;
+    font-size: 12px;
+    background: #f5f5f5;
+}
+
+QTextEdit:focus {
+    border-color: #888888;
+}
+
+QTextEdit:disabled {
+    background: #e5e5e5;
+    color: #888;
+}
