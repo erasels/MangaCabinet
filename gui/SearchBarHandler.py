@@ -64,13 +64,14 @@ class SearchBarHandler:
         self.random_button.clicked.connect(self.get_random_item)
         self.random_button.setStyleSheet(self.mw.styles.get("textbutton"))
 
-    def get_layout(self, options_button):
+    def get_layout(self, widgets):
         search_box = QHBoxLayout()  # Create a horizontal box layout
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
         search_box.addWidget(self.hits_label)
         search_box.addWidget(self.sort_combobox)
         search_box.addWidget(self.random_button)
-        search_box.addWidget(options_button)
+        for widget in widgets:
+            search_box.addWidget(widget)
         return search_box
 
     def reset_search_timer(self):

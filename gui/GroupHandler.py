@@ -18,6 +18,7 @@ class GroupHandler:
         self.group_combobox.addItem("None", None)
         for group_name, group_details in self.groups.items():
             self.group_combobox.addItem(group_name, group_name)
+        self.group_combobox.setFixedWidth(100)
 
         self.group_combobox.currentIndexChanged.connect(lambda: self.mw.search_bar_handler.update_list())
         self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
@@ -27,11 +28,15 @@ class GroupHandler:
         self.add_group_btn.clicked.connect(self.add_group)
         self.add_group_btn.setStyleSheet(self.mw.styles.get("textbutton"))
 
+    # In case I want to make this its own bar
     def get_layout(self):
         groups_box = QHBoxLayout()
         groups_box.addWidget(self.group_combobox, 1)
         groups_box.addWidget(self.add_group_btn)
         return groups_box
+
+    def get_widgets(self):
+        return [self.group_combobox, self.add_group_btn]
 
     # Method to add new group creation window
     def add_group(self):
