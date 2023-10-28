@@ -29,7 +29,7 @@ class MangaApp(QWidget):
             # Save entry to its reversed index so that sorting works quickly and as expected
             self.entry_to_index[entry.id] = idx
             self.all_tags.update(entry.tags)
-            self.all_ids.append(str(entry.id))
+            self.all_ids.append(entry.id)
         self.all_tags = sorted(self.all_tags, key=str.lower)
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
