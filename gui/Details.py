@@ -1,8 +1,8 @@
 import json
 import os
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QPalette, QFont
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QPixmap, QPalette, QFont, QIcon
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QListWidget, QWidget, QComboBox, \
     QInputDialog, QListWidgetItem, QHBoxLayout, QListView, QScrollArea, QVBoxLayout, QCompleter
 
@@ -48,7 +48,8 @@ class DetailViewHandler:
         self.short_title_input = QLineEdit(self.mw)
         self.short_title_input.setStyleSheet(self.mw.styles.get("lineedit"))
         self.short_title_input.setPlaceholderText("Input shorter title for displaying")
-        self.short_title_input.textChanged.connect(lambda: self.short_title_input.setToolTip(self.short_title_input.text()))
+        self.short_title_input.textChanged.connect(
+            lambda: self.short_title_input.setToolTip(self.short_title_input.text()))
         self.short_title_input.editingFinished.connect(self.save_changes)
 
         # Create a new QHBoxLayout for the titles
@@ -134,6 +135,16 @@ class DetailViewHandler:
         self.layout.addWidget(QLabel("Similar:"), 5, 0)
         self.layout.addWidget(self.similar_input, 5, 1, 1, 3)
 
+        # Toggle edit mode button
+        self.toggle_button = QPushButton(self.mw)
+        self.toggle_button.setIcon(QIcon(os.path.join(self.mw.image_path, 'edit_icon.png')))
+        self.toggle_button.setIconSize(QSize(41, 41))
+        self.toggle_button.setFixedSize(41, 41)
+        self.toggle_button.setStyleSheet("QPushButton { border: none; }")
+        self.positionToggleButton()
+        self.toggle_button.clicked.connect(self.toggle_edit_mode)
+        self.toggle_button.raise_()
+
     # Json edit
     def get_widgets(self):
         return self.detail_view, self.save_button
@@ -142,8 +153,23 @@ class DetailViewHandler:
     def get_layout(self):
         return self.layout
 
-    def display_detail(self, index):
-        self.cur_data = index.data(Qt.UserRole)
+    def handle_resize(self):
+        self.positionToggleButton()
+
+    def positionToggleButton(self):
+        """Position the button in the bottom right corner of the window."""
+        button_width = self.toggle_button.width()
+        button_height = self.toggle_button.height()
+        x_position = self.mw.width() - button_width
+        y_position = self.mw.height() - button_height
+        self.toggle_button.setGeometry(x_position, y_position, button_width, button_height)
+
+    def display_detail(self, index, reload=False):
+        if not reload:
+            self.cur_data = index.data(Qt.UserRole)
+        if not self.cur_data:
+            return
+
         if self.json_edit_mode:
             self.detail_view.setText(json.dumps(self.cur_data, indent=4))
         else:
@@ -209,7 +235,8 @@ class DetailViewHandler:
                 'language': lambda: [lang.strip() for lang in self.language_input.text().split(",")],
                 'artist': lambda: [artist.strip() for artist in self.artist_input.text().split(",")],
                 'score': self.get_current_score,
-                'similar': lambda: [int(id_str.strip()) for id_str in self.similar_input.text().split(",") if self.similar_input.text()]
+                'similar': lambda: [int(id_str.strip()) for id_str in self.similar_input.text().split(",") if
+                                    self.similar_input.text()]
             }
 
             for attr, func in attributes_mapping.items():
@@ -328,3 +355,30 @@ class DetailViewHandler:
                 return i
         # If no empty stars were found, it means a score of 5.
         return 5
+
+    def toggle_edit_mode(self):
+        if not self.json_edit_mode:
+            for i in range(self.layout.count()):
+                self.recursively_toggle_visibility(self.layout.itemAt(i), False)
+            self.detail_view.show()
+            self.save_button.show()
+        else:
+            self.detail_view.hide()
+            self.save_button.hide()
+            for i in range(self.layout.count()):
+                self.recursively_toggle_visibility(self.layout.itemAt(i), True)
+
+        self.json_edit_mode = not self.json_edit_mode
+        self.display_detail(0, True)  # Index is skipped
+
+    def recursively_toggle_visibility(self, item, show: bool):
+        """Toggle the visibility of the widget, or if it's a layout, toggle all its items."""
+        widget = item.widget()
+        if widget:
+            widget.setVisible(show)
+        else:
+            layout = item.layout()
+            if layout:
+                for i in range(layout.count()):
+                    self.recursively_toggle_visibility(layout.itemAt(i), show)
+

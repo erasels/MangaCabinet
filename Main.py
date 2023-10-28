@@ -78,6 +78,7 @@ class MangaApp(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.manga_list_handler.handle_resize()
+        self.details_handler.handle_resize()
 
     def save_changes(self):
         if self.is_data_modified:
