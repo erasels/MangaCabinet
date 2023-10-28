@@ -6,6 +6,7 @@ from typing import Tuple, Callable, Any, List
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton
 
+from auxillary.DataAccess import MangaEntry
 from gui.WidgetDerivatives import RightClickableComboBox
 from gui.Options import search_thrshold, loose_match, multi_match
 
@@ -165,11 +166,14 @@ class SearchBarHandler:
             term_score = 0
             if ":" in term:
                 field, value = term.split(":", 1)
-                data_value = data.get(field, "")
-                if value and value[0] in [">", "<"]:
-                    term_score = self.compare_match(data_value, value)
-                else:
-                    term_score = self.count_matches(data_value, value)
+                fields_to_search = MangaEntry.FIELD_ALIASES_AND_GROUPING.get(field, [field])
+
+                for search_field in fields_to_search:
+                    data_value = data.get(search_field, "")
+                    if value and value[0] in [">", "<"]:
+                        term_score = self.compare_match(data_value, value)
+                    else:
+                        term_score = self.count_matches(data_value, value)
             else:
                 for data_value in data.values():
                     term_score += self.count_matches(data_value, term)
