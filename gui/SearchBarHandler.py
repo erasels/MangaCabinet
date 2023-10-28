@@ -3,6 +3,7 @@ import random
 from collections import defaultdict
 from typing import Tuple, Callable, Any, List
 
+from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton
 
 from gui.WidgetDerivatives import RightClickableComboBox
@@ -33,9 +34,16 @@ class SearchBarHandler:
     def init_ui(self):
         # Search bar
         self.search_bar = QLineEdit(self.mw)
-        self.search_bar.textChanged.connect(lambda: self.update_list(False))
         self.search_bar.setStyleSheet(self.mw.styles.get("lineedit"))
         self.search_bar.setPlaceholderText("Search...")
+
+        # Create a timer with an interval of 150 milliseconds
+        self.search_timer = QTimer(self.mw)
+        self.search_timer.setSingleShot(True)  # Ensure the timer only triggers once
+        self.search_timer.timeout.connect(lambda: self.update_list(False))
+
+        # Connect textChanged signal to restart the timer
+        self.search_bar.textChanged.connect(self.reset_search_timer)
 
         # Hits label
         self.hits_label = QLabel(self.mw)
@@ -63,6 +71,11 @@ class SearchBarHandler:
         search_box.addWidget(self.random_button)
         search_box.addWidget(options_button)
         return search_box
+
+    def reset_search_timer(self):
+        # Restart the timer every time this method is called
+        self.search_timer.stop()
+        self.search_timer.start(150)
 
     def get_random_item(self):
         total_items = self.mw.manga_list_handler.list_model.rowCount()
