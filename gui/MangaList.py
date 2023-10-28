@@ -138,18 +138,24 @@ class MangaDelegate(QStyledItemDelegate):
 
         # Display the artists
         artists = entry.artist
+        groups = entry.artist_group
         artist_text = "Artist(s): " + ", ".join(artists)
+        # Append groups in brackets in case there are few artists, and they're not the same as the groups
+        if groups and len(artists) <= 2 and groups != artists:
+            artist_text += " (" + ", ".join(groups) + ")"
         painter.drawText(title_rect, Qt.AlignLeft, artist_text)
 
         # Prepare additional details
         details_list = []
 
-        # Check and append language
         languages = entry.language
+        # Remove translated from here since it's uninteresting
+        if "translated" in languages:
+            languages.remove("translated")
+
         if languages:
             details_list.append("Language: " + ", ".join(languages))
 
-        # Append page count
         details_list.append(f"Pages: {entry.pages}")
 
         # Check and append parody (if not just "original")
@@ -157,7 +163,6 @@ class MangaDelegate(QStyledItemDelegate):
         if parodies and 'original' not in parodies:
             details_list.append("Parody: " + ", ".join(parodies))
 
-        # Concatenate the details
         details_text = " | ".join(details_list)
 
         # Move down to display additional details
