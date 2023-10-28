@@ -1,6 +1,8 @@
-## MangaCabinet
+## Manga Cabinet
 
-Manga Cabinet is a local application designed to help manga enthusiasts and collectors maintain an organized and searchable collection of manga metadata. With a simple yet efficient UI, this application lets you manage your manga details in one place. The data is ingested from a JSON file, allowing you to view, search, and edit the metadata conveniently.
+Manga Cabinet is a lightweight local application designed to help manga enthusiasts and collectors maintain an organized and searchable collection of manga metadata. With a simple yet efficient UI, this application lets you manage your manga details in one place. The data is ingested from a JSON file, allowing you to view, search, and edit the metadata conveniently.
+
+Due to its lightweight design it only requires the import of the PyQt package, no other 3rd party packages are required.
 
 ### Features
 
