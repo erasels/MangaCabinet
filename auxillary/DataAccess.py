@@ -9,6 +9,7 @@ class MangaEntry(dict):
         "title_short": ("title_short", ""),
         "tags": ("tag", []),
         "artist": ("artist", []),
+        "artist_group": ("group", []),
         "language": ("language", []),
         "pages": ("pages", 0),
         "parody": ("parody", []),
@@ -26,12 +27,7 @@ class MangaEntry(dict):
         key, default_value = self.ATTRIBUTE_MAP.get(attr, (None, None))
 
         # Special handling for "language"
-        if attr == "language":
-            langs = self.get(key, default_value)
-            if "translated" in langs:
-                langs.remove("translated")
-            return langs
-        elif key:
+        if key:
             return self.get(key, default_value)
         elif attr in self:  # If the attr is a direct key in the dictionary
             print(f"Using undefined access to variable for MangaEntry: {attr}")
@@ -60,7 +56,13 @@ class MangaEntry(dict):
 
     def first_artist(self):
         artists = self.get("artist", [])
-        return artists[0] if artists else ""
+        if not artists:
+            group = self.get("group", [])
+            if group:
+                return group[0]
+        else:
+            return artists[0]
+        return ""
 
     def is_translated(self):
         return self.get("language") and "translated" in self["language"]
