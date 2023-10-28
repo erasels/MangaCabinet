@@ -1,9 +1,10 @@
 import math
+import os
 import typing
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
-from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView
 
 
@@ -82,6 +83,10 @@ class MangaDelegate(QStyledItemDelegate):
     def __init__(self, main_window, parent: typing.Optional[QtCore.QObject] = ...):
         super().__init__(parent)
         self.mw = main_window
+        self.img_star = QPixmap(os.path.join(self.mw.image_path, 'star.png'))
+        self.img_star = self.img_star.scaled(int(self.img_star.width() * 0.5),
+                                             int(self.img_star.height() * 0.5),
+                                             Qt.KeepAspectRatio)
 
     def paint(self, painter, option, index):
         # Retrieve item data from the model
@@ -111,9 +116,38 @@ class MangaDelegate(QStyledItemDelegate):
         painter.strokePath(item_path, QPen(QColor("#B6B6B6"), 1))
         painter.restore()
 
+        title_rect = option.rect.adjusted(10, 10, -10, -10)
+
+        # Draw score
+        score = entry.score
+        if score:
+            star_spacing = 4  # adjust this based on your preferences
+            star_width = self.img_star.width()
+            star_height = self.img_star.height()
+            total_height_for_stars = score * star_height + (score - 1) * star_spacing
+
+            # Calculating the top-left point to start drawing stars
+            start_x = option.rect.x() + 5  # adding 8 pixels padding from left. Adjust as needed.
+            start_y = option.rect.y() + 5  # center align vertically
+
+            rect_width = star_width + 8
+            rect_height = score * star_height + (score - 1) * star_spacing + 10
+            rect_color = QColor("#000000")
+            rect_color = blend_colors(background_color, rect_color, 0.7)
+            painter.save()
+            painter.setBrush(rect_color)
+            painter.setPen(Qt.NoPen)
+            painter.drawRoundedRect(QRect(start_x - 4, start_y - 3, rect_width, rect_height), 5, 5)  # the 5,5 are the x,y radii of the rounded corners
+            painter.restore()
+
+            for i in range(score):
+                painter.drawPixmap(start_x, int(start_y + i * (star_height + star_spacing)), self.img_star)
+
+            # Adjust title_rect to avoid overlapping with the stars
+            title_rect = title_rect.adjusted(star_width, 0, 0, 0)
+
         # Draw the title
         title = entry.display_title()
-        title_rect = option.rect.adjusted(10, 10, -10, -10)  # Adjust as necessary
         tags_total_width = TAG_COLUMNS * TAG_WIDTH + (TAG_COLUMNS - 1) * TAG_SPACING
         title_rect.setWidth(title_rect.width() - tags_total_width)
 
