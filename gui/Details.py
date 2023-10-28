@@ -188,7 +188,15 @@ class DetailViewHandler:
 
             def update_attribute(attr, new_value):
                 nonlocal data_changed
-                if getattr(self.cur_data, attr) != new_value:
+
+                old_value = getattr(self.cur_data, attr)
+
+                # Check if old and new values are lists and normalize empty string lists
+                if isinstance(old_value, list) and isinstance(new_value, list):
+                    old_value = [item for item in old_value if item]
+                    new_value = [item for item in new_value if item]
+
+                if old_value != new_value:
                     setattr(self.cur_data, attr, new_value)
                     print(f"{self.cur_data.id}: {attr} was updated with:\n{new_value}")
                     data_changed = True
