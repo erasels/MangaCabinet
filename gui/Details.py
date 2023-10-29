@@ -67,6 +67,7 @@ class DetailViewHandler:
         # Tags Area with QGridLayout
         self.tags_widget = QWidget(self.mw)
         self.tags_layout = QGridLayout(self.tags_widget)
+        self.tags_layout.setAlignment(Qt.AlignTop)
         self.scroll_area = QScrollArea(self.mw)
         self.scroll_area.setWidget(self.tags_widget)
         self.scroll_area.setWidgetResizable(True)
