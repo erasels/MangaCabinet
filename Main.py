@@ -2,7 +2,8 @@ import json
 import os
 import sys
 
-from PyQt5.QtCore import QEvent
+from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
 from auxillary.JSONMethods import load_json, load_styles, save_json
@@ -19,6 +20,9 @@ class MangaApp(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.fonts = ["Tahoma", "Arial", "Verdana"]
+        self.font_index = 0
+        self.changeFont()
         self.is_data_modified = False
         self.load_paths()
         self.data = load_json(self.data_file, data_type="mangas")
@@ -85,6 +89,23 @@ class MangaApp(QWidget):
             save_json(self.data_file, self.data)
             print("Saved data.")
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_F2:
+            self.font_index = (self.font_index + 1) % len(self.fonts)
+        elif event.key() == Qt.Key_F1:
+            self.font_index = (self.font_index - 1) % len(self.fonts)
+        else:
+            super().keyPressEvent(event)
+            return
+
+        self.changeFont()
+
+    def changeFont(self):
+        prev_name = self.font().family()
+        font = QFont(self.fonts[self.font_index], 9)
+        self.setFont(font)
+        print(f"Changing from {prev_name} to {self.fonts[self.font_index]}")
+
 
 def exception_hook(exc_type, exc_value, exc_traceback):
     """
@@ -105,6 +126,21 @@ if __name__ == '__main__':
     sys.excepthook = exception_hook  # Set the exception hook to our function
 
     app = QApplication(sys.argv)
+    #palette = QPalette()
+    #palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    #palette.setColor(QPalette.WindowText, Qt.white)
+    #palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    #palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    #palette.setColor(QPalette.ToolTipBase, Qt.black)
+    #palette.setColor(QPalette.ToolTipText, Qt.white)
+    #palette.setColor(QPalette.Text, Qt.white)
+    #palette.setColor(QPalette.Button, QColor(53, 53, 53))
+    #palette.setColor(QPalette.ButtonText, Qt.white)
+    #palette.setColor(QPalette.BrightText, Qt.red)
+    #palette.setColor(QPalette.Link, QColor(42, 130, 218))
+    #palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    #palette.setColor(QPalette.HighlightedText, Qt.black)
+    #app.setPalette(palette)
     window = MangaApp()
     window.setWindowTitle("Manga Cabinet")
     window.resize(1280, 720)

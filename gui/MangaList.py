@@ -237,13 +237,12 @@ class MangaDelegate(QStyledItemDelegate):
                 tag_text = tags[idx]
 
                 # Check if tag name fits without wrapping
-                if font_metrics.boundingRect(tag_rect, Qt.AlignCenter,
-                                             tag_text).height() > tag_rect.height() or font_metrics.width(tag_text) > tag_rect.width():
+                if font_metrics.width(tag_text) > tag_rect.width():
                     # Try wrapping the text
                     wrapped_text = "\n".join(
                         wordwrap(tag_text, width=tag_rect.width() / font_metrics.averageCharWidth()))
 
-                    if font_metrics.boundingRect(tag_rect, Qt.AlignCenter, wrapped_text).height() <= tag_rect.height():
+                    if font_metrics.boundingRect(tag_rect, Qt.AlignCenter, wrapped_text).height() <= tag_rect.height() - 10:
                         tag_text = wrapped_text
                     else:
                         while (font_metrics.width(tag_text) > tag_rect.width() or
