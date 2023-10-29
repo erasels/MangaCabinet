@@ -145,7 +145,7 @@ if __name__ == '__main__':
     palette.setColor(QPalette.ButtonText, QColor(225, 225, 225))
     palette.setColor(QPalette.BrightText, Qt.red)
     palette.setColor(QPalette.Link, QColor(42, 130, 218))
-    palette.setColor(QPalette.Highlight, QColor(144, 55, 255))
+    palette.setColor(QPalette.Highlight, QColor(75, 35, 194))
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
     window = MangaApp()
