@@ -1,8 +1,9 @@
 import json
+import logging
 import os
 import sys
 
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
@@ -14,12 +15,17 @@ from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
+                    datefmt='%y/%m/%d %H:%M:%S')
+
 
 class MangaApp(QWidget):
     config_path = os.path.join('assets', 'data')
 
     def __init__(self):
         super().__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.fonts = ["Tahoma", "Arial", "Verdana"]
         self.font_index = 0
         self.is_data_modified = False
@@ -73,7 +79,7 @@ class MangaApp(QWidget):
         )
         self.layout.addWidget(self.manga_list_handler.get_widget())
         for widget in self.details_handler.get_widgets():
-           self.layout.addWidget(widget)
+            self.layout.addWidget(widget)
         self.layout.addLayout(self.details_handler.get_layout())
 
         self.setLayout(self.layout)
@@ -87,7 +93,7 @@ class MangaApp(QWidget):
     def save_changes(self):
         if self.is_data_modified:
             save_json(self.data_file, self.data)
-            print("Saved data.")
+            self.logger.info("Saved data.")
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_F2:
@@ -104,7 +110,7 @@ class MangaApp(QWidget):
         prev_name = self.font().family()
         font = QFont(self.fonts[self.font_index], 9)
         self.setFont(font)
-        print(f"Changing from {prev_name} to {self.fonts[self.font_index]}")
+        self.logger.info(f"Changing from {prev_name} to {self.fonts[self.font_index]}")
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
@@ -116,7 +122,8 @@ def exception_hook(exc_type, exc_value, exc_traceback):
     except Exception as e:
         # Log the error or print it out. This is to ensure that if the save fails,
         # it doesn't prevent the original exception from being displayed.
-        print(f"Error during save: {e}")
+        logger = logging.getLogger(__name__)
+        logger.critical(f"Error during save: {e}")
 
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
     sys.exit(1)

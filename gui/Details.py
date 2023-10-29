@@ -1,18 +1,19 @@
 import json
+import logging
 import os
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPixmap, QPalette, QFont, QIcon
-from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QListWidget, QWidget, QComboBox, \
-    QInputDialog, QListWidgetItem, QHBoxLayout, QListView, QScrollArea, QVBoxLayout, QCompleter
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QWidget, QComboBox, \
+    QInputDialog, QHBoxLayout, QScrollArea, QCompleter
 
 from auxillary.DataAccess import MangaEntry
-from auxillary.JSONMethods import save_json
 from gui.WidgetDerivatives import CommaCompleter, CustomTextEdit
 
 
 class DetailViewHandler:
     def __init__(self, parent):
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.cur_data = None
         self.save_button = None
         self.detail_view = None
@@ -225,7 +226,7 @@ class DetailViewHandler:
 
                 if old_value != new_value:
                     setattr(self.cur_data, attr, new_value)
-                    print(f"{self.cur_data.id}: {attr} was updated with:\n{new_value}")
+                    self.logger.debug(f"{self.cur_data.id}: {attr} was updated with: {new_value}")
                     data_changed = True
 
             attributes_mapping = {
@@ -247,6 +248,7 @@ class DetailViewHandler:
             group_value = self.group_combobox.currentText()
             if group_value == "None":
                 if self.cur_data.group:
+                    self.logger.debug(f"{self.cur_data.id}: group was updated with: deleted value")
                     delattr(self.cur_data, 'group')
                     data_changed = True
             else:

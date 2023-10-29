@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 
@@ -34,6 +35,7 @@ class MangaEntry(dict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def __getattr__(self, attr):
         # Using a mapping to get the key and default value
@@ -43,7 +45,7 @@ class MangaEntry(dict):
         if key:
             return self.get(key, default_value)
         elif attr in self:  # If the attr is a direct key in the dictionary
-            print(f"Using undefined access to variable for MangaEntry: {attr}")
+            self.logger.warning(f"Using undefined access to variable for MangaEntry: {attr}")
             return self[attr]
         raise AttributeError(f"'{type(self).__name__}' object has no attribute '{attr}'")
 

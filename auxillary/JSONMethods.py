@@ -1,7 +1,10 @@
 import json
+import logging
 import os
 
 from auxillary.DataAccess import MangaEntry
+
+logger = logging.getLogger(__name__)
 
 
 def load_json(file_path: str, data_type='list'):
@@ -13,10 +16,10 @@ def load_json(file_path: str, data_type='list'):
                 else:
                     return json.load(file)
             except json.JSONDecodeError:
-                print(f"Warning: The file {file_path} contains invalid JSON. Using default {data_type} instead.")
+                logger.error(f"The file {file_path} contains invalid JSON. Using default {data_type} instead.")
                 return [] if data_type == 'list' else {}
     else:
-        print(f"Warning: The file {file_path} does not exist. Using default {data_type} instead.")
+        logger.warning(f"The file {file_path} does not exist. Using default {data_type} instead.")
         return [] if data_type == 'list' else {}
 
 
