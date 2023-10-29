@@ -59,6 +59,12 @@ def blend_colors(color1, color2, alpha):
     return QColor(int(r), int(g), int(b))
 
 
+def is_dark_color(color: QColor) -> bool:
+    """Return True if the color is considered dark based on luminance."""
+    luminance = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue()
+    return luminance < 128
+
+
 def wordwrap(text, width):
     """
     A simple word wrap function that wraps text at a given number of characters.
@@ -73,9 +79,11 @@ TAG_HEIGHT = 20
 TAG_SPACING = 3
 TAG_COLUMNS = 3
 TAG_MINIMUM_FONT_SIZE = 7
-TAG_BACKGROUND_COLOR = QColor("#D6D6D6")
+TAG_BACKGROUND_COLOR = QColor("#505050")
 
 TITLE_MINIMUM_FONT_SIZE = 7
+DEFAULT_ITEM_BG_COLOR = QColor("#2A2A2A")
+STAR_DIM_BG_COLOR = QColor("#000000")
 
 
 class MangaDelegate(QStyledItemDelegate):
@@ -87,6 +95,7 @@ class MangaDelegate(QStyledItemDelegate):
         self.img_star = self.img_star.scaled(int(self.img_star.width() * 0.5),
                                              int(self.img_star.height() * 0.5),
                                              Qt.KeepAspectRatio)
+        self.base_pen_color = None
 
     def paint(self, painter, option, index):
         # Retrieve item data from the model
@@ -94,7 +103,11 @@ class MangaDelegate(QStyledItemDelegate):
 
         # Draw the background and border
         painter.save()
-        background_color = QColor("#F0F0F0")  # default background color
+
+        if not self.base_pen_color:
+            self.base_pen_color = painter.pen().color()
+
+        background_color = DEFAULT_ITEM_BG_COLOR
 
         # Set group-specific color
         group_name = entry.group
@@ -104,8 +117,8 @@ class MangaDelegate(QStyledItemDelegate):
                 background_color = QColor(color)
 
         if option.state & QStyle.State_MouseOver:
-            dim_color = QColor(0, 0, 0, 50)  # semi-transparent black to dim the color
-            background_color = blend_colors(background_color, dim_color, 0.7)
+            mod_color = QColor(255, 255, 255, 50)  # semi-transparent white to brighten the color
+            background_color = blend_colors(background_color, mod_color, 0.8)
 
         if option.state & QStyle.State_Selected:
             background_color = option.palette.highlight().color()
@@ -113,7 +126,7 @@ class MangaDelegate(QStyledItemDelegate):
         item_path = QPainterPath()
         item_path.addRoundedRect(QRectF(option.rect), 5, 5)
         painter.fillPath(item_path, background_color)
-        painter.strokePath(item_path, QPen(QColor("#B6B6B6"), 1))
+        painter.strokePath(item_path, QPen(QColor("#666666"), 1))
         painter.restore()
 
         title_rect = option.rect.adjusted(10, 10, -10, -10)
@@ -132,12 +145,12 @@ class MangaDelegate(QStyledItemDelegate):
 
             rect_width = star_width + 8
             rect_height = score * star_height + (score - 1) * star_spacing + 10
-            rect_color = QColor("#000000")
-            rect_color = blend_colors(background_color, rect_color, 0.7)
+            rect_color = blend_colors(background_color, STAR_DIM_BG_COLOR, 0.7)
             painter.save()
             painter.setBrush(rect_color)
             painter.setPen(Qt.NoPen)
-            painter.drawRoundedRect(QRect(start_x - 4, start_y - 3, rect_width, rect_height), 5, 5)  # the 5,5 are the x,y radii of the rounded corners
+            # the 5,5 are the x,y radii of the rounded corners
+            painter.drawRoundedRect(QRect(start_x - 4, start_y - 3, rect_width, rect_height), 5, 5)
             painter.restore()
 
             for i in range(score):
@@ -163,6 +176,10 @@ class MangaDelegate(QStyledItemDelegate):
 
         if font_metrics.width(title) > title_rect.width():
             title = font_metrics.elidedText(title, Qt.ElideRight, title_rect.width())
+
+        # Change text color if background is light
+        if not is_dark_color(background_color):
+            painter.setPen(Qt.black)
 
         painter.drawText(title_rect, Qt.AlignLeft, title)
 
@@ -208,6 +225,7 @@ class MangaDelegate(QStyledItemDelegate):
         self._render_tag_area(entry, title_rect, option, painter, original_font, background_color)
 
         painter.setFont(original_font)
+        painter.setPen(self.base_pen_color)
 
     def _render_tag_area(self, entry, title_rect, option, painter, original_font, background_color):
         """
@@ -215,7 +233,7 @@ class MangaDelegate(QStyledItemDelegate):
         within its tag, while drawing each tag with a rounded background. Also renders upload text below them.
         """
         # Handle tags (showing only the first six tags)
-        tags = entry.tags[:MAX_TAGS]  # TODO: Add logic to show important/interesting tags
+        tags = entry.tags[:MAX_TAGS]
 
         # Start position for tags
         tag_x_start = title_rect.right() + TAG_SPACING
@@ -257,7 +275,7 @@ class MangaDelegate(QStyledItemDelegate):
                 # Draw background and text for the tag
                 tag_path = QPainterPath()
                 tag_path.addRoundedRect(QRectF(tag_rect), 5, 5)
-                painter.fillPath(tag_path, blend_colors(TAG_BACKGROUND_COLOR, background_color, 0.85))
+                painter.fillPath(tag_path, blend_colors(TAG_BACKGROUND_COLOR, background_color, 0.7))
                 # painter.strokePath(tag_path, QPen(QColor("#000000"), 1))  # draw border
                 painter.drawText(tag_rect, Qt.AlignCenter | Qt.TextWordWrap, tag_text)
         painter.setFont(original_font)
