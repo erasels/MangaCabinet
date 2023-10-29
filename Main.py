@@ -17,7 +17,8 @@ from gui.SearchBarHandler import SearchBarHandler
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
-                    datefmt='%y/%m/%d %H:%M:%S')
+                    datefmt='%y/%m/%d %H:%M:%S',
+                    handlers=[logging.StreamHandler(sys.stdout)])
 
 
 class MangaApp(QWidget):
