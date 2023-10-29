@@ -114,7 +114,7 @@ class MangaDelegate(QStyledItemDelegate):
         if group_name and group_name in self.mw.group_handler.groups:
             color = self.mw.group_handler.groups[group_name].get("color")
             if color:
-                background_color = QColor(color)
+                background_color = blend_colors(DEFAULT_ITEM_BG_COLOR, QColor(color), 0.2)
 
         if option.state & QStyle.State_MouseOver:
             mod_color = QColor(255, 255, 255, 50)  # semi-transparent white to brighten the color
