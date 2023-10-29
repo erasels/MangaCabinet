@@ -141,6 +141,7 @@ class DetailViewHandler:
         self.toggle_button.setIconSize(QSize(41, 41))
         self.toggle_button.setFixedSize(41, 41)
         self.toggle_button.setStyleSheet("QPushButton { border: none; }")
+        self.toggle_button.setToolTip("Switch between json editing and easy edit.")
         self.positionToggleButton()
         self.toggle_button.clicked.connect(self.toggle_edit_mode)
         self.toggle_button.raise_()
