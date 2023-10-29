@@ -22,7 +22,6 @@ class MangaApp(QWidget):
         super().__init__()
         self.fonts = ["Tahoma", "Arial", "Verdana"]
         self.font_index = 0
-        self.changeFont()
         self.is_data_modified = False
         self.load_paths()
         self.data = load_json(self.data_file, data_type="mangas")
@@ -52,6 +51,7 @@ class MangaApp(QWidget):
             self.image_path = config["image_path"]
 
     def init_ui(self):
+        self.changeFont()
         self.layout = QVBoxLayout()
 
         # Init options button and add logic for it
