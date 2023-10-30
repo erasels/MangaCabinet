@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
     QInputDialog, QHBoxLayout, QScrollArea, QCompleter
 
 from auxillary.DataAccess import MangaEntry
-from gui.WidgetDerivatives import CommaCompleter, CustomTextEdit
+from gui.WidgetDerivatives import CustomTextEdit, IdMatcher
 
 
 class DetailViewHandler:
@@ -65,6 +65,7 @@ class DetailViewHandler:
         self.layout.addLayout(titles_layout, 0, 0, 1, 4)  # Span it across 4 columns
 
         # Tags Area with QGridLayout
+        # N-TODO: move into derivate
         self.tags_widget = QWidget(self.mw)
         self.tags_layout = QGridLayout(self.tags_widget)
         self.tags_layout.setAlignment(Qt.AlignTop)
@@ -79,6 +80,11 @@ class DetailViewHandler:
         self.layout.addWidget(self.scroll_area, 1, 1, 1, 1)
         self.layout.addWidget(self.add_tag_btn, 1, 2)
 
+        # Similar entry selector
+        self.similar_searcher = IdMatcher(self.mw)
+        self.similar_searcher.saveSignal.connect(self.save_changes)
+        self.layout.addWidget(self.similar_searcher, 1, 3, 1, 1)
+
         # Description
         self.description_input = CustomTextEdit(self.mw)
         self.description_input.setMaximumHeight(80)
@@ -88,21 +94,8 @@ class DetailViewHandler:
         self.layout.addWidget(QLabel("Description:"), 2, 0)
         self.layout.addWidget(self.description_input, 2, 1, 1, 3)  # Span over three columns
 
-        # Language and Artist
-        self.language_input = QLineEdit(self.mw)
-        self.artist_input = QLineEdit(self.mw)
-        self.language_input.setStyleSheet(self.mw.styles.get("lineedit"))
-        self.language_input.setPlaceholderText("Input languages here (seperated by comma)")
-        self.language_input.editingFinished.connect(self.save_changes)
-
-        self.artist_input.setStyleSheet(self.mw.styles.get("lineedit"))
-        self.artist_input.setPlaceholderText("Input artists/groups here (seperated by comma)")
-        self.artist_input.editingFinished.connect(self.save_changes)
-
-        self.layout.addWidget(QLabel("Languages:"), 3, 0)
-        self.layout.addWidget(self.language_input, 3, 1)
-        self.layout.addWidget(QLabel("Artists:"), 3, 2)
-        self.layout.addWidget(self.artist_input, 3, 3)
+        # Layout for misc data
+        misc_layout = QHBoxLayout()
 
         # Score
         self.score_widget = QWidget(self.mw)
@@ -116,26 +109,35 @@ class DetailViewHandler:
             self.score_layout.addWidget(star_label)
             self.stars.append(star_label)
 
-        self.layout.addWidget(QLabel("Score:"), 4, 0)
-        self.layout.addWidget(self.score_widget, 4, 1)
+        misc_layout.addWidget(QLabel("Score:"), 0)
+        misc_layout.addWidget(self.score_widget, 1)
 
         # Group
         self.group_combobox = QComboBox(self.mw)
         self.group_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
         self.group_combobox.currentIndexChanged.connect(self.save_changes)
-        self.layout.addWidget(QLabel("Group:"), 4, 2)
-        self.layout.addWidget(self.group_combobox, 4, 3)
+        misc_layout.addWidget(QLabel("Group:"), 0)
+        misc_layout.addWidget(self.group_combobox, 1)
 
-        # Similar
-        self.similar_input = QLineEdit(self.mw)
-        completer = CommaCompleter(self.mw.all_ids, self.similar_input)
-        completer.setCaseSensitivity(Qt.CaseInsensitive)
-        self.similar_input.setCompleter(completer)
-        self.similar_input.setPlaceholderText("Enter ids of similar works (seperated by comma)")
-        self.similar_input.setStyleSheet(self.mw.styles.get("lineedit"))
-        self.similar_input.editingFinished.connect(self.save_changes)
-        self.layout.addWidget(QLabel("Similar:"), 5, 0)
-        self.layout.addWidget(self.similar_input, 5, 1, 1, 3)
+        # Language and Artist
+        self.language_input = QLineEdit(self.mw)
+        self.artist_input = QLineEdit(self.mw)
+        self.language_input.setStyleSheet(self.mw.styles.get("lineedit"))
+        self.language_input.setPlaceholderText("Input languages here (csv)")
+        self.language_input.editingFinished.connect(self.save_changes)
+
+        self.artist_input.setStyleSheet(self.mw.styles.get("lineedit"))
+        self.artist_input.setPlaceholderText("Input artists/groups here (csv)")
+        self.artist_input.editingFinished.connect(self.save_changes)
+
+        misc_layout.addWidget(QLabel("Artists:"), 0)
+        misc_layout.addWidget(self.artist_input, 1)
+        misc_layout.addWidget(QLabel("Languages:"), 0)
+        misc_layout.addWidget(self.language_input, 1)
+
+        # Don't cover the edit button
+        misc_layout.insertSpacing(8, 50)
+        self.layout.addLayout(misc_layout, 3, 0, 1, 4)
 
         # Toggle edit mode button
         self.toggle_button = QPushButton(self.mw)
@@ -163,13 +165,16 @@ class DetailViewHandler:
         """Position the button in the bottom right corner of the window."""
         button_width = self.toggle_button.width()
         button_height = self.toggle_button.height()
-        x_position = self.mw.width() - button_width
-        y_position = self.mw.height() - button_height
+        x_position = self.mw.width() - button_width - 10
+        y_position = self.mw.height() - button_height - 10
         self.toggle_button.setGeometry(x_position, y_position, button_width, button_height)
 
     def display_detail(self, index, reload=False):
         if not reload:
-            self.cur_data = index.data(Qt.UserRole)
+            new_data = index.data(Qt.UserRole)
+            if self.cur_data == new_data:
+                return
+            self.cur_data = new_data
         if not self.cur_data:
             return
 
@@ -188,7 +193,7 @@ class DetailViewHandler:
 
             self.set_score(self.cur_data.score, saveChange=False)
 
-            self.similar_input.setText(", ".join(map(str, self.cur_data.similar)))
+            self.similar_searcher.load(self.cur_data)
 
             self.group_combobox.blockSignals(True)
             self.group_combobox.clear()
@@ -238,8 +243,7 @@ class DetailViewHandler:
                 'language': lambda: [lang.strip() for lang in self.language_input.text().split(",")],
                 'artist': lambda: [artist.strip() for artist in self.artist_input.text().split(",")],
                 'score': self.get_current_score,
-                'similar': lambda: [int(id_str.strip()) for id_str in self.similar_input.text().split(",") if
-                                    self.similar_input.text()]
+                'similar': lambda: self.similar_searcher.selected_items
             }
 
             for attr, func in attributes_mapping.items():
@@ -269,6 +273,12 @@ class DetailViewHandler:
 
         # Add the button to the layout
         self.tags_layout.addWidget(tag_btn, row, col)
+
+        # Update the current_row and current_col values
+        self.current_col += 1
+        if self.current_col > 1:
+            self.current_col = 0
+            self.current_row += 1
 
     def tag_clicked(self, tag_btn, original_text):
         # Handles graying out which will be used by save_changes to remove it later on
@@ -303,7 +313,7 @@ class DetailViewHandler:
         if ok and text:
             text = text.strip()
             # Update all tags in case it's a new one
-            self.mw.all_tags.add(text)
+            self.mw.all_tags.append(text)
 
             # Check for duplicate tags
             existing_tags = self.extract_tags_from_layout()
@@ -328,11 +338,6 @@ class DetailViewHandler:
         self.current_row, self.current_col = 0, 0
         for tag in tags_list:
             self.add_tag_to_layout(tag, self.current_row, self.current_col)
-            # Update the current_row and current_col values
-            self.current_col += 1
-            if self.current_col > 1:
-                self.current_col = 0
-                self.current_row += 1
 
     def clear_tags_layout(self):
         self.current_row = 0
