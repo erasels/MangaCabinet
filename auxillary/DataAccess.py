@@ -17,7 +17,8 @@ class MangaEntry(dict):
         "upload": ("upload_date", None),
         "score": ("score", 0),
         "group": ("MC_Grouping", None),
-        "similar": ("similar", [])
+        "similar": ("similar", []),
+        "open_url": ("open_url", "")
     }
 
     # Could be moved into a json file, but fits for now
