@@ -1,9 +1,10 @@
 import re
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidget, QLineEdit, QListWidget, QLabel, \
-    QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog
+    QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView
 
 
 class RightClickableComboBox(QComboBox):
@@ -13,6 +14,27 @@ class RightClickableComboBox(QComboBox):
         if event.button() == Qt.RightButton:
             self.rightClicked.emit()
         super(RightClickableComboBox, self).mousePressEvent(event)
+
+
+class CustomListView(QListView):
+    middleClicked = pyqtSignal(QtCore.QModelIndex)
+    rightClicked = pyqtSignal(QtCore.QModelIndex)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+
+    def mousePressEvent(self, event):
+        # Check if middle mouse button was clicked
+        btn = event.button()
+        if btn == Qt.MidButton or btn == Qt.RightButton:
+            index = self.indexAt(event.pos())
+            if index.isValid():
+                if btn == Qt.RightButton:
+                    self.rightClicked.emit(index)
+                elif btn == Qt.MidButton:
+                    self.middleClicked.emit(index)
+        super().mousePressEvent(event)
 
 
 class CommaCompleter(QCompleter):
@@ -35,7 +57,6 @@ class CommaCompleter(QCompleter):
 
 
 class CustomTextEdit(QTextEdit):
-    # Declare the custom signal
     contentEdited = pyqtSignal()
 
     def __init__(self, parent=None):

@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
+from auxillary.BrowserHandling import BrowserHandler
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from gui import Options
 from gui.Details import DetailViewHandler
@@ -30,7 +31,7 @@ class MangaApp(QWidget):
         self.fonts = ["Tahoma", "Arial", "Verdana"]
         self.font_index = 0
         self.is_data_modified = False
-        self.load_paths()
+        self.load_config_values()
         self.data = load_json(self.data_file, data_type="mangas")
         self.entry_to_index = {}
         self.all_tags = set()
@@ -43,9 +44,10 @@ class MangaApp(QWidget):
         self.all_tags = sorted(self.all_tags, key=str.lower)
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
+        self.browser_handler = BrowserHandler(self)
         self.init_ui()
 
-    def load_paths(self):
+    def load_config_values(self):
         config_file = os.path.join(MangaApp.config_path, "config.json")
         default_config_file = os.path.join(MangaApp.config_path, "config_default.json")
         config_file = config_file if os.path.exists(config_file) else default_config_file
@@ -56,6 +58,9 @@ class MangaApp(QWidget):
             self.groups_file = config["groups_file"]
             self.style_path = config["style_path"]
             self.image_path = config["image_path"]
+            self.browser_path = config["browser_executable_path"]
+            self.browser_flags = [flag.strip() for flag in config["browser_flags"].split(",")]
+            self.default_URL = config["default_url"]
 
     def init_ui(self):
         self.changeFont()

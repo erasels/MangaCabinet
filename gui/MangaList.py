@@ -7,6 +7,8 @@ from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView
 
+from gui.WidgetDerivatives import CustomListView
+
 
 class ListViewHandler:
     def __init__(self, parent):
@@ -18,13 +20,14 @@ class ListViewHandler:
 
     def init_ui(self):
         # List view
-        self.list_view = QListView(self.mw)
+        self.list_view = CustomListView(self.mw)
         self.list_model = QStandardItemModel(self.list_view)
         self.list_view.setModel(self.list_model)
 
         self.list_view.setWrapping(True)
         self.list_view.setFlow(QListView.LeftToRight)
         self.list_view.setLayoutMode(QListView.Batched)
+        self.list_view.middleClicked.connect(self.open_tab)
 
         self.list_delegate = MangaDelegate(self.mw, self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
@@ -44,6 +47,9 @@ class ListViewHandler:
         item = QStandardItem()
         item.setData(entry, Qt.UserRole)
         self.list_model.appendRow(item)
+
+    def open_tab(self, index):
+        self.mw.browser_handler.open_tab(index.data(Qt.UserRole))
 
 
 def blend_colors(color1, color2, alpha):
