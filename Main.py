@@ -141,7 +141,6 @@ if __name__ == '__main__':
     palette.setColor(QPalette.Base, QColor(25, 25, 25))
     palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
     palette.setColor(QPalette.Text, QColor(225, 225, 225))
-    palette.setColor(QPalette.Button, QColor(53, 53, 53))
     palette.setColor(QPalette.ButtonText, QColor(225, 225, 225))
     palette.setColor(QPalette.BrightText, Qt.red)
     palette.setColor(QPalette.Link, QColor(42, 130, 218))
