@@ -5,10 +5,10 @@ import os
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QWidget, QComboBox, \
-    QInputDialog, QHBoxLayout, QScrollArea, QCompleter
+    QHBoxLayout
 
 from auxillary.DataAccess import MangaEntry
-from gui.WidgetDerivatives import CustomTextEdit, IdMatcher
+from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget
 
 
 class DetailViewHandler:
@@ -65,20 +65,9 @@ class DetailViewHandler:
         self.layout.addLayout(titles_layout, 0, 0, 1, 4)  # Span it across 4 columns
 
         # Tags Area with QGridLayout
-        # N-TODO: move into derivate
-        self.tags_widget = QWidget(self.mw)
-        self.tags_layout = QGridLayout(self.tags_widget)
-        self.tags_layout.setAlignment(Qt.AlignTop)
-        self.scroll_area = QScrollArea(self.mw)
-        self.scroll_area.setWidget(self.tags_widget)
-        self.scroll_area.setWidgetResizable(True)
-
-        self.add_tag_btn = QPushButton("Add Tag", self.mw)
-        self.add_tag_btn.clicked.connect(self.add_new_tag)
-        self.add_tag_btn.setStyleSheet(self.mw.styles.get("textbutton"))
-        self.layout.addWidget(QLabel("Tags:"), 1, 0)
-        self.layout.addWidget(self.scroll_area, 1, 1, 1, 1)
-        self.layout.addWidget(self.add_tag_btn, 1, 2)
+        self.tags_widget = TagsWidget(self.mw)
+        self.tags_widget.saveSignal.connect(self.save_changes)
+        self.layout.addWidget(self.tags_widget, 1, 1)
 
         # Similar entry selector
         self.similar_searcher = IdMatcher(self.mw)
@@ -185,7 +174,7 @@ class DetailViewHandler:
             self.title_input.setText(self.cur_data.title)
             self.short_title_input.setText(self.cur_data.title_short)
 
-            self.load_tags(self.cur_data.tags)
+            self.tags_widget.load_tags(self.cur_data.tags)
 
             self.description_input.setText(self.cur_data.description)
             self.language_input.setText(", ".join(self.cur_data.language))
@@ -238,7 +227,7 @@ class DetailViewHandler:
             attributes_mapping = {
                 'title': self.title_input.text,
                 'title_short': self.short_title_input.text,
-                'tags': self.extract_tags_from_layout,
+                'tags': self.tags_widget.extract_tags_from_layout,
                 'description': self.description_input.toPlainText,
                 'language': lambda: [lang.strip() for lang in self.language_input.text().split(",")],
                 'artist': lambda: [artist.strip() for artist in self.artist_input.text().split(",")],
@@ -262,93 +251,6 @@ class DetailViewHandler:
             if data_changed:
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
-
-    def add_tag_to_layout(self, tag_name, row, col):
-        # Create the QPushButton with both the tag name and the '❌' symbol
-        tag_btn = QPushButton(f"❌ {tag_name}")
-        tag_btn.setStyleSheet(self.mw.styles.get("tagbutton"))
-        tag_btn.setObjectName("Unclicked")  # This allows us to use custom selectors
-        tag_btn.clicked.connect(lambda: self.tag_clicked(tag_btn, tag_name))
-        tag_btn.setProperty("greyed_out", False)
-
-        # Add the button to the layout
-        self.tags_layout.addWidget(tag_btn, row, col)
-
-        # Update the current_row and current_col values
-        self.current_col += 1
-        if self.current_col > 1:
-            self.current_col = 0
-            self.current_row += 1
-
-    def tag_clicked(self, tag_btn, original_text):
-        # Handles graying out which will be used by save_changes to remove it later on
-        if tag_btn.property("greyed_out"):
-            tag_btn.setObjectName("Unclicked")
-            tag_btn.setProperty("greyed_out", False)
-        else:
-            tag_btn.setObjectName("Clicked")
-            tag_btn.setProperty("greyed_out", True)
-        # Refresh style after changing the object name
-        tag_btn.style().unpolish(tag_btn)
-        tag_btn.style().polish(tag_btn)
-
-        self.save_changes()
-
-    def add_new_tag(self):
-        # Create a QInputDialog
-        dialog = QInputDialog(self.mw)
-        dialog.setInputMode(QInputDialog.TextInput)
-        dialog.setWindowTitle('Add Tag')
-        dialog.setLabelText('Enter new tag:')
-        dialog.setStyleSheet(self.mw.styles["lineedit"] + "\n" + self.mw.styles["textbutton"])
-
-        line_edit = dialog.findChild(QLineEdit)
-        completer = QCompleter(list(self.mw.all_tags), dialog)
-        completer.setCaseSensitivity(Qt.CaseInsensitive)
-        line_edit.setCompleter(completer)
-
-        ok = dialog.exec_()
-        text = dialog.textValue()
-
-        if ok and text:
-            text = text.strip()
-            # Update all tags in case it's a new one
-            self.mw.all_tags.append(text)
-
-            # Check for duplicate tags
-            existing_tags = self.extract_tags_from_layout()
-            if text not in existing_tags:
-                self.add_tag_to_layout(text, self.current_row, self.current_col)
-                self.save_changes()
-
-    def extract_tags_from_layout(self):
-        tags = []
-        for i in range(self.tags_layout.count()):
-            widget = self.tags_layout.itemAt(i).widget()
-            if isinstance(widget, QPushButton):
-                is_greyed_out = widget.property("greyed_out")
-                # If the button isn't greyed out, extract its tag text
-                if not is_greyed_out:
-                    tag_text = widget.text().replace("❌ ", "")
-                    tags.append(tag_text)
-        return tags
-
-    def load_tags(self, tags_list):
-        self.clear_tags_layout()
-        self.current_row, self.current_col = 0, 0
-        for tag in tags_list:
-            self.add_tag_to_layout(tag, self.current_row, self.current_col)
-
-    def clear_tags_layout(self):
-        self.current_row = 0
-        self.current_col = 0
-        for i in reversed(range(self.tags_layout.count())):
-            widget = self.tags_layout.itemAt(i).widget()
-            if widget is not None:
-                # Remove the widget from layout
-                self.tags_layout.removeWidget(widget)
-                # Destroy the widget (this will also remove it from the screen)
-                widget.deleteLater()
 
     def set_score(self, score, saveChange=True):
         for i, star_label in enumerate(self.stars):
