@@ -25,10 +25,11 @@ class ThumbnailManager(QObject):
     thumbnailDownloaded = pyqtSignal(MangaEntry, str)  # Signal emitted when a thumbnail is downloaded
     startEnsuring = pyqtSignal()
 
-    def __init__(self, data, tags_to_blur):
+    def __init__(self, data, download, tags_to_blur):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
         self.data = data
+        self.download = download
         self.tags_to_blur = tags_to_blur
         self.id_to_path = {}
         self.base_path = os.path.join('assets', 'thumbnails')
@@ -85,7 +86,7 @@ class ThumbnailManager(QObject):
                 self.id_to_path[manga.id] = os.path.join(self.base_path, manga.id + ".png")
         self.data = new_data
 
-        if len(self.data) > 0:
+        if len(self.data) > 0 and self.download:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             loop.run_until_complete(self.batch_ensure_thumbnails())

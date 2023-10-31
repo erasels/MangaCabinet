@@ -6,5 +6,6 @@
     "image_path": "assets/images",
     "browser_executable_path": "",
     "browser_flags": [],
-    "default_url": ""
+    "default_url": "",
+    "download_thumbnails": false
 }

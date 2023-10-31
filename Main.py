@@ -45,7 +45,7 @@ class MangaApp(QWidget):
         self.all_tags = sorted(self.all_tags, key=str.lower)
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
-        self.thumbnail_manager = ThumbnailManager(self.data, self.tags_to_blur)
+        self.thumbnail_manager = ThumbnailManager(self.data, self.download_thumbnails, self.tags_to_blur)
         self.thumbnail_manager.startEnsuring.emit()
         self.browser_handler = BrowserHandler(self)
         self.init_ui()
@@ -64,6 +64,7 @@ class MangaApp(QWidget):
             self.browser_path = config["browser_executable_path"]
             self.browser_flags = config["browser_flags"]
             self.default_URL = config["default_url"]
+            self.download_thumbnails = config["download_thumbnails"]
             self.tags_to_blur = config.get("tags_to_blur", [])
 
     def init_ui(self):
