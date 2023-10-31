@@ -121,7 +121,7 @@ class MangaApp(QWidget):
         prev_name = self.font().family()
         font = QFont(self.fonts[self.font_index], 9)
         self.setFont(font)
-        self.logger.info(f"Changing from {prev_name} to {self.fonts[self.font_index]}")
+        self.logger.info(f"Changing font from {prev_name} to {self.fonts[self.font_index]}")
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
