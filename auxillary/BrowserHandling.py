@@ -11,6 +11,9 @@ class BrowserHandler:
         self.mw = main_window
         self.browser = None
         self.unsupported, self.use_default = False, False
+        self.load_browser()
+
+    def load_browser(self):
         self.browser_path = self.mw.browser_path
         self.browser_flags = self.mw.browser_flags
         self.default_URL = self.mw.default_URL
