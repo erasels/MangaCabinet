@@ -11,7 +11,7 @@ from auxillary.BrowserHandling import BrowserHandler
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
-from gui.Details import DetailViewHandler
+from gui.Details import DetailEditorHandler
 from gui.GroupHandler import GroupHandler
 from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
@@ -76,7 +76,7 @@ class MangaCabinet(QWidget):
         # Handles entire search bar and accesses settings_buton
         self.search_bar_handler = SearchBarHandler(self)
         # Handles looking at and modifying details of manga entries
-        self.details_handler = DetailViewHandler(self)
+        self.details_handler = DetailEditorHandler(self)
         # Handles entire groups bar
         self.group_handler = GroupHandler(self)
         # Handles the manga list view

@@ -11,7 +11,7 @@ from auxillary.DataAccess import MangaEntry
 from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget
 
 
-class DetailViewHandler:
+class DetailEditorHandler:
     def __init__(self, parent):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.cur_data = None
