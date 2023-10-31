@@ -25,7 +25,7 @@ class CustomListView(QListView):
         self.parent = parent
 
     def mousePressEvent(self, event):
-        # Check if middle mouse button was clicked
+        # Check if other mouse button was clicked
         btn = event.button()
         if btn == Qt.MidButton or btn == Qt.RightButton:
             index = self.indexAt(event.pos())
@@ -34,7 +34,8 @@ class CustomListView(QListView):
                     self.rightClicked.emit(index)
                 elif btn == Qt.MidButton:
                     self.middleClicked.emit(index)
-        super().mousePressEvent(event)
+        else:
+            super().mousePressEvent(event)
 
 
 class CommaCompleter(QCompleter):
