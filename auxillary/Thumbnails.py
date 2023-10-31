@@ -21,6 +21,7 @@ def blur_image(input_path: str, output_path: str):
 class ThumbnailManager(QObject):
     BATCH_SIZE = 3
     DELAY = 0.75
+    DEFAULT_IMG = os.path.join("assets", "images", "star.png")
 
     thumbnailDownloaded = pyqtSignal(MangaEntry, str)  # Signal emitted when a thumbnail is downloaded
     startEnsuring = pyqtSignal()
@@ -114,3 +115,6 @@ class ThumbnailManager(QObject):
 
     def log_download(self, manga, file_path):
         self.logger.debug(f"Downloaded thumbnail of {manga.id} - {manga.display_title()}")
+
+    def get_thumbnail_path(self, id):
+        return self.id_to_path.get(id, ThumbnailManager.DEFAULT_IMG)
