@@ -124,7 +124,7 @@ class IdMatcher(QWidget):
             item = QListWidgetItem(f"{entry.id} - {entry.display_title()}")
 
             # Set custom data on the item
-            item.setData(Qt.UserRole, entry.id)
+            item.setData(Qt.UserRole, entry)
 
             self.list_widget.addItem(item)
 
@@ -137,7 +137,7 @@ class IdMatcher(QWidget):
 
         for idx in range(self.list_widget.count()):
             item = self.list_widget.item(idx)
-            entry_id = item.data(Qt.UserRole)
+            entry_id = item.data(Qt.UserRole).id
 
             if entry_id != self.base_id and (not input or input in item.text().lower()):
                 item.setHidden(False)
@@ -145,7 +145,7 @@ class IdMatcher(QWidget):
                 item.setHidden(True)
 
     def handle_item_click(self, item):
-        entry_id = item.data(Qt.UserRole)
+        entry_id = item.data(Qt.UserRole).id
         if entry_id in self.selected_items:
             # If already selected, deselect it
             item.setBackground(self.default_bg_col)
@@ -165,7 +165,7 @@ class IdMatcher(QWidget):
 
         for idx in range(self.list_widget.count()):
             item = self.list_widget.item(idx)
-            entry_id = item.data(Qt.UserRole)
+            entry_id = item.data(Qt.UserRole).id
             if entry_id == self.base_id:
                 item.setHidden(True)
             else:
