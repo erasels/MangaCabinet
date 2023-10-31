@@ -73,6 +73,7 @@ class CustomTextEdit(QTextEdit):
 class IdMatcher(QWidget):
     SELECTED_COLOR = QColor(26, 122, 39)
     saveSignal = pyqtSignal()
+    DEFAULT_RATIO = 0.65
 
     def __init__(self, mw, parent=None):
         super(IdMatcher, self).__init__(parent)
@@ -92,7 +93,6 @@ class IdMatcher(QWidget):
 
         self.list_widget = QListWidget(self)
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.list_widget.setMaximumHeight(125)
         self.list_widget.itemClicked.connect(self.handle_item_click)
 
         self.layout.addWidget(QLabel("Similar:"))
@@ -161,6 +161,12 @@ class IdMatcher(QWidget):
                 item.setBackground(IdMatcher.SELECTED_COLOR)
             else:
                 item.setBackground(self.default_bg_col)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+
+        new_height = self.height() * IdMatcher.DEFAULT_RATIO
+        self.list_widget.setFixedHeight(int(new_height))
 
 
 class TagsWidget(QWidget):
