@@ -38,6 +38,18 @@ class CustomListView(QListView):
             super().mousePressEvent(event)
 
 
+class CustomListWidget(QListWidget):
+    itemRightClicked = pyqtSignal(object)
+
+    def __init__(self, parent=None):
+        super(CustomListWidget, self).__init__(parent)
+
+    def contextMenuEvent(self, event):
+        item = self.itemAt(event.pos())
+        if item:
+            self.itemRightClicked.emit(item)
+
+
 class CommaCompleter(QCompleter):
     def pathFromIndex(self, index):
         # Current completion
@@ -92,9 +104,10 @@ class IdMatcher(QWidget):
         self.search_input.setStyleSheet(self.mw.styles.get("lineedit"))
         self.search_input.textChanged.connect(lambda: self.update_list())
 
-        self.list_widget = QListWidget(self)
+        self.list_widget = CustomListWidget(self)
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.list_widget.itemClicked.connect(self.handle_item_click)
+        self.list_widget.itemRightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
 
         self.layout.addWidget(QLabel("Similar:"))
         self.layout.addWidget(self.search_input)
