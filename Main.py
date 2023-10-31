@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG,
                     handlers=[logging.StreamHandler(sys.stdout)])
 
 
-class MangaApp(QWidget):
+class MangaCabinet(QWidget):
     config_path = os.path.join('assets', 'data')
 
     def __init__(self):
@@ -51,8 +51,8 @@ class MangaApp(QWidget):
         self.init_ui()
 
     def load_config_values(self):
-        config_file = os.path.join(MangaApp.config_path, "config.json")
-        default_config_file = os.path.join(MangaApp.config_path, "config_default.json")
+        config_file = os.path.join(MangaCabinet.config_path, "config.json")
+        default_config_file = os.path.join(MangaCabinet.config_path, "config_default.json")
         config_file = config_file if os.path.exists(config_file) else default_config_file
         with open(config_file, 'r') as f:
             config = json.load(f)
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     palette.setColor(QPalette.Highlight, QColor(75, 35, 194))
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
-    window = MangaApp()
+    window = MangaCabinet()
     window.setWindowTitle("Manga Cabinet")
     window.resize(1280, 720)
     window.show()
