@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import *
 
 from auxillary.BrowserHandling import BrowserHandler
 from auxillary.JSONMethods import load_json, load_styles, save_json
+from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
 from gui.Details import DetailViewHandler
 from gui.GroupHandler import GroupHandler
@@ -44,6 +45,8 @@ class MangaApp(QWidget):
         self.all_tags = sorted(self.all_tags, key=str.lower)
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
+        self.thumbnail_manager = ThumbnailManager(self.data, self.tags_to_blur)
+        self.thumbnail_manager.startEnsuring.emit()
         self.browser_handler = BrowserHandler(self)
         self.init_ui()
 
@@ -59,8 +62,9 @@ class MangaApp(QWidget):
             self.style_path = config["style_path"]
             self.image_path = config["image_path"]
             self.browser_path = config["browser_executable_path"]
-            self.browser_flags = [flag.strip() for flag in config["browser_flags"].split(",")]
+            self.browser_flags = config["browser_flags"]
             self.default_URL = config["default_url"]
+            self.tags_to_blur = config.get("tags_to_blur", [])
 
     def init_ui(self):
         self.changeFont()
@@ -137,6 +141,7 @@ def exception_hook(exc_type, exc_value, exc_traceback):
 
 if __name__ == '__main__':
     sys.excepthook = exception_hook  # Set the exception hook to our function
+    logging.getLogger('PIL').setLevel(logging.WARNING)
 
     app = QApplication(sys.argv)
     # Custom dark palette from https://stackoverflow.com/questions/48256772/dark-theme-for-qt-widgets

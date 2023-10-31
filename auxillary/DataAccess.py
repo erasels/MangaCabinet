@@ -18,7 +18,8 @@ class MangaEntry(dict):
         "score": ("score", 0),
         "group": ("MC_Grouping", None),
         "similar": ("similar", []),
-        "open_url": ("open_url", "")
+        "open_url": ("open_url", ""),
+        "thumbnail_url": ("thumbnail_url", "")
     }
 
     # Could be moved into a json file, but fits for now
