@@ -204,9 +204,6 @@ class DetailEditorHandler:
         if not self.cur_data:
             return
 
-        if self.mw.settings[bind_dview]:
-            self.mw.open_detail_view(self.cur_data)
-
         if self.json_edit_mode:
             contents = self.detail_view.toPlainText()
             if len(contents) > 5:  # saftey to not save bogus
