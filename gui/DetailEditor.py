@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
     QHBoxLayout
 
 from auxillary.DataAccess import MangaEntry
+from gui.Options import bind_dview
 from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget
 
 
@@ -162,10 +163,15 @@ class DetailEditorHandler:
         if not reload:
             new_data = index.data(Qt.UserRole)
             if self.cur_data == new_data:
+                if self.mw.settings[bind_dview]:
+                    self.mw.open_detail_view(self.cur_data)
                 return
             self.cur_data = new_data
         if not self.cur_data:
             return
+
+        if self.mw.settings[bind_dview]:
+            self.mw.open_detail_view(self.cur_data)
 
         if self.json_edit_mode:
             self.detail_view.setText(json.dumps(self.cur_data, indent=4))
@@ -197,6 +203,9 @@ class DetailEditorHandler:
     def save_changes(self):
         if not self.cur_data:
             return
+
+        if self.mw.settings[bind_dview]:
+            self.mw.open_detail_view(self.cur_data)
 
         if self.json_edit_mode:
             contents = self.detail_view.toPlainText()
