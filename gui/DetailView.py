@@ -24,8 +24,8 @@ class DetailViewHandler(QWidget):
         layout = QVBoxLayout()
 
         # Image
-        self.image_view = ImageViewer(self.mw.thumbnail_manager, parent=self)
-        self.image_view.setFixedSize(500, 400)
+        self.image_viewer = ImageViewer(self.mw.thumbnail_manager, parent=self)
+        self.image_viewer.setFixedSize(500, 400)
 
         # Two Labels next to each other
         self.id_label = QLabel()
@@ -49,7 +49,7 @@ class DetailViewHandler(QWidget):
         btn_layout.addWidget(self.blur_btn)
         btn_layout.addWidget(self.download_btn)
 
-        layout.addWidget(self.image_view)
+        layout.addWidget(self.image_viewer)
         layout.addWidget(self.title_label)
         layout.addLayout(label_layout)
         layout.addLayout(btn_layout)
@@ -66,7 +66,7 @@ class DetailViewHandler(QWidget):
             return
         self.entry = entry
 
-        self.image_view.load_image(self.entry.id)
+        self.image_viewer.load_image(self.entry.id)
 
         self.id_label.setText(f"Id: {self.entry.id}")
         self.artist_label.setText(f"Artist: {', '.join(self.entry.artist)}")
@@ -91,7 +91,7 @@ class DetailViewHandler(QWidget):
         img_path = self.thumb.get_thumbnail_path(self.entry.id)
         if img_path:
             Thumbnails.blur_image(img_path, img_path, 5)
-            self.image_view.load_image(self.entry.id)
+            self.image_viewer.load_image(self.entry.id)
         else:
             self.logger.warning("Tried to blur the default image.")
 
@@ -102,6 +102,6 @@ class DetailViewHandler(QWidget):
 
         if url:
             self.thumb.download_thumbnail(url, self.thumb.make_file_path(self.entry), self.entry)
-            self.image_view.load_image(self.entry.id)
+            self.image_viewer.load_image(self.entry.id)
         else:
             self.logger.warning("Tried downloading thumbnail without thumbnail_url set.")

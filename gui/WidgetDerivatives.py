@@ -337,6 +337,7 @@ class ImageViewer(QGraphicsView):
 
     def load_image(self, entry_id):
         self.entry_id = entry_id
+        self._zoom_factor = 1.0
         if not self.isHidden():
             img_path = self.thumb_manager.get_thumbnail_path(self.entry_id)
             if not img_path:
