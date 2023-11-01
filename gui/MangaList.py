@@ -27,11 +27,12 @@ class ListViewHandler:
         self.list_view.setWrapping(True)
         self.list_view.setFlow(QListView.LeftToRight)
         self.list_view.setLayoutMode(QListView.Batched)
-        self.list_view.middleClicked.connect(self.open_tab)
 
         self.list_delegate = MangaDelegate(self.mw, self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
         self.list_view.clicked.connect(self.mw.details_handler.display_detail)
+        self.list_view.middleClicked.connect(self.open_tab)
+        self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
 
     def get_widget(self):
         return self.list_view
@@ -266,7 +267,8 @@ class MangaDelegate(QStyledItemDelegate):
                     wrapped_text = "\n".join(
                         wordwrap(tag_text, width=tag_rect.width() / font_metrics.averageCharWidth()))
 
-                    if font_metrics.boundingRect(tag_rect, Qt.AlignCenter, wrapped_text).height() <= tag_rect.height() - 10:
+                    if font_metrics.boundingRect(tag_rect, Qt.AlignCenter,
+                                                 wrapped_text).height() <= tag_rect.height() - 10:
                         tag_text = wrapped_text
                     else:
                         while (font_metrics.width(tag_text) > tag_rect.width() or

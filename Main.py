@@ -11,7 +11,8 @@ from auxillary.BrowserHandling import BrowserHandler
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
-from gui.Details import DetailEditorHandler
+from gui.DetailEditor import DetailEditorHandler
+from gui.DetailView import DetailViewHandler
 from gui.GroupHandler import GroupHandler
 from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
@@ -43,6 +44,7 @@ class MangaCabinet(QWidget):
             self.all_tags.update(entry.tags)
             self.all_ids.append(entry.id)
         self.all_tags = sorted(self.all_tags, key=str.lower)
+        self.details_view = None
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
         self.thumbnail_manager = ThumbnailManager(self.data, self.download_thumbnails, self.tags_to_blur)
@@ -101,10 +103,21 @@ class MangaCabinet(QWidget):
         self.manga_list_handler.handle_resize()
         self.details_handler.handle_resize()
 
+    def closeEvent(self, event):
+        if self.details_view:
+            self.details_view.close()
+        super(MangaCabinet, self).closeEvent(event)
+
     def save_changes(self):
         if self.is_data_modified:
             save_json(self.data_file, self.data)
             self.logger.info("Saved data.")
+
+    def open_detail_view(self, entry):
+        if self.details_view:
+            self.details_view.update_data(entry)
+        else:
+            self.details_view = DetailViewHandler(self, entry)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_F2:
