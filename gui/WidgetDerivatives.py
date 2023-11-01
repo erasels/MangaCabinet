@@ -127,9 +127,13 @@ class IdMatcher(QWidget):
             item.setData(Qt.UserRole, entry)
 
             self.list_widget.addItem(item)
+            item.setHidden(True)
 
     def update_list(self):
         """Filter the list based on the input ID."""
+        if not self.base_id:
+            return
+
         input = self.search_input.text().strip().lower()
         # Skip filtering for first 2 letters but reset on clearing
         if input and len(input) < 3:
@@ -145,6 +149,9 @@ class IdMatcher(QWidget):
                 item.setHidden(True)
 
     def handle_item_click(self, item):
+        if not self.base_id:
+            return
+
         entry_id = item.data(Qt.UserRole).id
         if entry_id in self.selected_items:
             # If already selected, deselect it
