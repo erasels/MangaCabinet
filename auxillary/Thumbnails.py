@@ -11,17 +11,16 @@ from PyQt5.QtCore import QObject, pyqtSignal, QThread
 from auxillary.DataAccess import MangaEntry
 
 
-def blur_image(input_path: str, output_path: str):
+def blur_image(input_path: str, output_path: str, blur_strength: int = 10):
     # Blurs an image from the given input path and saves the result to the specified output path.
     with Image.open(input_path) as img:
-        blurred = img.filter(ImageFilter.GaussianBlur(10))
+        blurred = img.filter(ImageFilter.GaussianBlur(blur_strength))
         blurred.save(output_path)
 
 
 class ThumbnailManager(QObject):
     BATCH_SIZE = 3
     DELAY = 0.75
-    DEFAULT_IMG = os.path.join("assets", "images", "star.png")
 
     thumbnailDownloaded = pyqtSignal(MangaEntry, str)  # Signal emitted when a thumbnail is downloaded
     startEnsuring = pyqtSignal()
@@ -46,7 +45,7 @@ class ThumbnailManager(QObject):
     async def ensure_thumbnail(self, manga: MangaEntry):
         # Ensure the thumbnail for the given manga exists, downloading it if necessary.
         if manga.thumbnail_url:
-            file_path = os.path.join(self.base_path, manga.id + ".png")
+            file_path = self.make_file_path(manga)
             await self.async_download_thumbnail(manga, file_path)
 
     async def async_download_thumbnail(self, manga, file_path):
@@ -99,15 +98,15 @@ class ThumbnailManager(QObject):
         try:
             response = requests.get(url)
             if response.status_code == 200:
-                self.save_img(response.content, file_path, manga.id)
+                self.save_img(response.content, file_path, manga, autoBlur=False)
             else:
                 self.logger.error(f"Couldn't download thumbnail, resp:\n{response}")
         except requests.RequestException as e:
             self.logger.error(f"Error occurred while downloading the thumbnail: {e}")
 
-    def save_img(self, img_data, file_path, manga):
+    def save_img(self, img_data, file_path, manga, autoBlur=True):
         img = Image.open(BytesIO(img_data))
-        if any(tag in manga.tags for tag in self.tags_to_blur):
+        if autoBlur and any(tag in manga.tags for tag in self.tags_to_blur):
             img = img.filter(ImageFilter.GaussianBlur(10))
         img.save(file_path)
         self.id_to_path[manga.id] = file_path
@@ -117,4 +116,7 @@ class ThumbnailManager(QObject):
         self.logger.debug(f"Downloaded thumbnail of {manga.id} - {manga.display_title()}")
 
     def get_thumbnail_path(self, id):
-        return self.id_to_path.get(id, ThumbnailManager.DEFAULT_IMG)
+        return self.id_to_path.get(id)
+
+    def make_file_path(self, manga):
+        return os.path.join(self.base_path, manga.id + ".png")
