@@ -3,10 +3,12 @@ import os
 import typing
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QRect, QSize, QRectF
+from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap
-from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView
+from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
+    QLabel, QGraphicsDropShadowEffect
 
+from gui.Options import thumbnail_preview
 from gui.WidgetDerivatives import CustomListView
 
 
@@ -20,7 +22,7 @@ class ListViewHandler:
 
     def init_ui(self):
         # List view
-        self.list_view = CustomListView(self.mw)
+        self.list_view = SpecialListView(self.mw)
         self.list_model = QStandardItemModel(self.list_view)
         self.list_view.setModel(self.list_model)
 
@@ -314,3 +316,74 @@ class MangaDelegate(QStyledItemDelegate):
         view_column = self.parent().height()
         item_column = view_width // 18  # Four items per column
         return QSize(item_width, item_column)
+
+
+class ImagePreview(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(Qt.ToolTip)  # Makes it float above other widgets
+        self.setLayout(QVBoxLayout())
+        self.label = QLabel(self)
+        self.layout().addWidget(self.label)
+
+        # Optional: Add shadow effect
+        effect = QGraphicsDropShadowEffect(self)
+        effect.setBlurRadius(10)
+        effect.setColor(QColor(0, 0, 0, 80))
+        effect.setOffset(1, 1)
+        self.setGraphicsEffect(effect)
+
+        self._last_image_path = None
+        self._cached_pixmap = None
+
+    def set_image(self, image_path, max_width=250, max_height=300):
+        if self._last_image_path != image_path:
+            self._cached_pixmap = QPixmap(image_path).scaled(max_width, max_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self._last_image_path = image_path
+            self.label.setPixmap(self._cached_pixmap)
+            self.adjustSize()
+
+
+class SpecialListView(CustomListView):
+    def __init__(self, parent=None):
+        super(CustomListView, self).__init__(parent)
+        self.mw = parent
+        self.image_preview = ImagePreview(self)
+        self.setMouseTracking(True)
+
+    def mouseMoveEvent(self, event):
+        self.show_image_preview(event)
+        super().mouseMoveEvent(event)
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        self.image_preview.hide()
+
+    def wheelEvent(self, event):
+        self.show_image_preview(event)
+        super().wheelEvent(event)
+
+    def leaveEvent(self, event):
+        self.image_preview.hide()
+        super().leaveEvent(event)
+
+    def show_image_preview(self, event):
+        if self.mw.settings[thumbnail_preview]:
+            index = self.indexAt(event.pos())
+            if index.isValid():
+                entry = index.data(Qt.UserRole)
+
+                # Check if hovered item is the currently opened detail
+                current_detail = self.mw.details_handler.cur_data
+                if current_detail and current_detail.id == entry.id:
+                    self.image_preview.hide()
+                    return
+
+                image_path = self.mw.thumbnail_manager.get_thumbnail_path(entry.id)
+                if image_path:
+                    self.image_preview.set_image(image_path)
+                    self.image_preview.move(event.globalPos() + QPoint(5, 5))
+                    self.image_preview.show()
+                    return
+            self.image_preview.hide()
+            return

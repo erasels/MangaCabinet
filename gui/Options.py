@@ -10,6 +10,7 @@ search_thrshold = "search_cutoff_threshold"
 loose_match = "loose_search_matching"
 multi_match = "count_multiple_matches"
 bind_dview = "bind_detail_view"
+thumbnail_preview = "show_hover_thumbnail"
 
 
 def init_settings():
@@ -17,7 +18,8 @@ def init_settings():
         search_thrshold: 100,
         loose_match: False,
         multi_match: False,
-        bind_dview: True
+        bind_dview: False,
+        thumbnail_preview: True
     }
 
 
@@ -86,10 +88,14 @@ class OptionsHandler(QDialog):
         self.multi_match_checkbox.stateChanged.connect(self.multi_match_changed)
         self.multi_match_checkbox.setToolTip("When enabled results which contain a search term in multiple fields will have higher precedence, this becomes unintuitive with sorting.")
 
-        self.bind_view_checkbox = QCheckBox("Bind Detail view to Editor", self)
+        self.bind_view_checkbox = QCheckBox("Bind Detail View to Editor", self)
         self.bind_view_checkbox.setChecked(self.mw.settings[bind_dview])
         self.bind_view_checkbox.stateChanged.connect(self.bind_view_changed)
         self.bind_view_checkbox.setToolTip("Update the detail view when selecting a manga from the list.")
+
+        self.thumbnail_checkbox = QCheckBox("Show Thumbnail on Hover", self)
+        self.thumbnail_checkbox.setChecked(self.mw.settings[thumbnail_preview])
+        self.thumbnail_checkbox.stateChanged.connect(self.thumbnail_changed)
 
         # Layout management
         layout = QVBoxLayout()
@@ -98,6 +104,7 @@ class OptionsHandler(QDialog):
         layout.addWidget(self.loose_match_checkbox)
         layout.addWidget(self.multi_match_checkbox)
         layout.addWidget(self.bind_view_checkbox)
+        layout.addWidget(self.thumbnail_checkbox)
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
@@ -116,3 +123,6 @@ class OptionsHandler(QDialog):
     def bind_view_changed(self, state):
         self.mw.settings[bind_dview] = bool(state)
         self.bindViewChanged.emit(bool(state))
+
+    def thumbnail_changed(self, state):
+        self.mw.settings[thumbnail_preview] = bool(state)
