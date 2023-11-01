@@ -30,6 +30,8 @@ class MangaCabinet(QWidget):
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.setWindowTitle("Manga Cabinet")
+        self.resize(1280, 720)
         self.fonts = ["Tahoma", "Arial", "Verdana"]
         self.font_index = 0
         self.is_data_modified = False
@@ -51,6 +53,7 @@ class MangaCabinet(QWidget):
         self.thumbnail_manager.startEnsuring.emit()
         self.browser_handler = BrowserHandler(self)
         self.init_ui()
+        self.show()
 
     def load_config_values(self):
         config_file = os.path.join(MangaCabinet.config_path, "config.json")
@@ -79,6 +82,7 @@ class MangaCabinet(QWidget):
         self.search_bar_handler = SearchBarHandler(self)
         # Handles looking at and modifying details of manga entries
         self.details_handler = DetailEditorHandler(self)
+        self.options_handler.bindViewChanged.connect(lambda state: self.details_handler.image_view.set_dynamic_show(state))
         # Handles entire groups bar
         self.group_handler = GroupHandler(self)
         # Handles the manga list view
@@ -172,8 +176,5 @@ if __name__ == '__main__':
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
     window = MangaCabinet()
-    window.setWindowTitle("Manga Cabinet")
-    window.resize(1280, 720)
-    window.show()
     app.aboutToQuit.connect(window.save_changes)
     sys.exit(app.exec_())

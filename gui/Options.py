@@ -1,6 +1,6 @@
 import os
 
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton
 
@@ -30,6 +30,8 @@ def load_settings(settings_path):
 
 
 class OptionsHandler(QDialog):
+    bindViewChanged = pyqtSignal(bool)
+
     def __init__(self, parent):
         super(OptionsHandler, self).__init__(parent)
         self.settings_button = None
@@ -113,3 +115,4 @@ class OptionsHandler(QDialog):
 
     def bind_view_changed(self, state):
         self.mw.settings[bind_dview] = bool(state)
+        self.bindViewChanged.emit(bool(state))

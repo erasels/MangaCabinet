@@ -1,10 +1,13 @@
+import os
 import re
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import pyqtSignal, Qt, QRectF, QPointF
+from PyQt5.QtGui import QColor, QPainter, QPixmap, QWheelEvent, QMouseEvent, QShowEvent, QHideEvent
 from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidget, QLineEdit, QListWidget, QLabel, \
-    QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView
+    QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene
+
+from gui.Options import bind_dview
 
 
 class RightClickableComboBox(QComboBox):
@@ -305,3 +308,111 @@ class TagsWidget(QWidget):
                 self.tags_layout.removeWidget(widget)
                 # Destroy the widget (this will also remove it from the screen)
                 widget.deleteLater()
+
+
+class ImageViewer(QGraphicsView):
+    rightClicked = pyqtSignal()
+    DEFAULT_IMG = os.path.join("assets", "images", "no_thumbnail.png")
+    MAX_ZOOM = 4.0
+
+    def __init__(self, thumb_manager, parent=None, dynamic_show=False):
+        super(ImageViewer, self).__init__(parent)
+
+        self.thumb_manager = thumb_manager
+        self.dynamic_show = dynamic_show
+        self.entry_id = None
+        self.original_pixmap = None
+        self._drag = False
+        self._start_drag_pos = QPointF(0, 0)
+
+        # Setup view
+        self.image_scene = QGraphicsScene()
+        self.setScene(self.image_scene)
+        self.setRenderHint(QPainter.SmoothPixmapTransform)
+        self.setAlignment(Qt.AlignCenter)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self._zoom_factor = 1.0
+
+    def load_image(self, entry_id):
+        self.entry_id = entry_id
+        if not self.isHidden():
+            img_path = self.thumb_manager.get_thumbnail_path(self.entry_id)
+            if not img_path:
+                img_path = self.DEFAULT_IMG
+
+            self.original_pixmap = QPixmap(img_path)
+            self._update_pixmap()
+
+    def _update_pixmap(self):
+        if self.original_pixmap:
+            scaled_pixmap = self.original_pixmap.scaled(
+                self.size() * self._zoom_factor,
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+            self.image_scene.clear()
+            self.image_scene.addPixmap(scaled_pixmap)
+            self.image_scene.setSceneRect(QRectF(scaled_pixmap.rect()))
+
+    def resizeEvent(self, event):
+        self._update_pixmap()
+        super().resizeEvent(event)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if event.button() == Qt.RightButton:
+            self.rightClicked.emit()
+        elif event.button() == Qt.LeftButton:
+            self._drag = True
+            self._start_drag_pos = event.pos()
+            self.setCursor(Qt.ClosedHandCursor)
+        elif event.button() == Qt.MiddleButton:
+            self._zoom_factor = 1.0
+            self._update_pixmap()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if self._drag:
+            delta = event.pos() - self._start_drag_pos
+            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+            self._start_drag_pos = event.pos()
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        if event.button() == Qt.LeftButton:
+            self._drag = False
+            self.setCursor(Qt.ArrowCursor)
+        super().mouseReleaseEvent(event)
+
+    def wheelEvent(self, event: QWheelEvent):
+        delta = event.angleDelta().y()
+        if delta > 0:  # Zoom in
+            factor = 1.25
+            self._zoom_factor = min(factor * self._zoom_factor, ImageViewer.MAX_ZOOM)
+        elif delta < 0:  # Zoom out
+            factor = 0.8
+            self._zoom_factor = max(factor * self._zoom_factor, 1.0)
+        self._update_pixmap()
+
+        super().wheelEvent(event)
+
+    def showEvent(self, event: QShowEvent):
+        if self.dynamic_show:
+            if self.shouldShow():
+                super().showEvent(event)
+            else:
+                self.hide()
+
+    def hideEvent(self, event: QHideEvent):
+        super().hideEvent(event)
+
+    def shouldShow(self):
+        return not self.parent().settings[bind_dview]
+
+    def set_dynamic_show(self, state):
+        self.setHidden(state)
+        if self.isVisible():
+            self.load_image(self.entry_id)

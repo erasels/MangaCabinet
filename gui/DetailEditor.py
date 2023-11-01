@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
 
 from auxillary.DataAccess import MangaEntry
 from gui.Options import bind_dview
-from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget
+from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer
 
 
 class DetailEditorHandler:
@@ -65,15 +65,26 @@ class DetailEditorHandler:
         # Add the horizontal layout to the main grid layout
         self.layout.addLayout(titles_layout, 0, 0, 1, 4)  # Span it across 4 columns
 
+        # Image view
+        self.image_view = ImageViewer(self.mw.thumbnail_manager, parent=self.mw, dynamic_show=True)
+        self.image_view.rightClicked.connect(lambda: self.mw.open_detail_view(self.cur_data))
+
         # Tags Area with QGridLayout
         self.tags_widget = TagsWidget(self.mw)
         self.tags_widget.saveSignal.connect(self.save_changes)
-        self.layout.addWidget(self.tags_widget, 1, 1)
 
         # Similar entry selector
         self.similar_searcher = IdMatcher(self.mw)
         self.similar_searcher.saveSignal.connect(self.save_changes)
-        self.layout.addWidget(self.similar_searcher, 1, 3, 1, 1)
+
+        complex_layout = QHBoxLayout()
+        complex_layout.addWidget(self.image_view)
+        complex_layout.addWidget(self.tags_widget)
+        complex_layout.addWidget(self.similar_searcher)
+        complex_layout.setStretchFactor(self.image_view, 1)
+        complex_layout.setStretchFactor(self.tags_widget, 1)
+        complex_layout.setStretchFactor(self.similar_searcher, 2)
+        self.layout.addLayout(complex_layout, 1, 0, 1, -1)
 
         # Description
         self.description_input = CustomTextEdit(self.mw)
@@ -81,8 +92,11 @@ class DetailEditorHandler:
         self.description_input.setStyleSheet(self.mw.styles.get("textedit"))
         self.description_input.setPlaceholderText("Input description which can be searched")
         self.description_input.contentEdited.connect(self.save_changes)
-        self.layout.addWidget(QLabel("Description:"), 2, 0)
-        self.layout.addWidget(self.description_input, 2, 1, 1, 3)  # Span over three columns
+
+        description_layout = QHBoxLayout()
+        description_layout.addWidget(QLabel("Description:"))
+        description_layout.addWidget(self.description_input)
+        self.layout.addLayout(description_layout, 2, 0, 1, -1)
 
         # Layout for misc data
         misc_layout = QHBoxLayout()
@@ -199,6 +213,8 @@ class DetailEditorHandler:
             if current_group in self.mw.group_handler.groups:
                 self.group_combobox.setCurrentText(current_group)
             self.group_combobox.blockSignals(False)
+
+            self.image_view.load_image(self.cur_data.id)
 
     def save_changes(self):
         if not self.cur_data:

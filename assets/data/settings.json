@@ -2,5 +2,5 @@
     "search_cutoff_threshold": 0,
     "loose_search_matching": false,
     "count_multiple_matches": false,
-    "bind_detail_view": true
+    "bind_detail_view": false
 }
