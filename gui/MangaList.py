@@ -5,7 +5,7 @@ import typing
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap
-from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView
+from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView
 
 from gui.WidgetDerivatives import CustomListView
 
@@ -30,6 +30,8 @@ class ListViewHandler:
 
         self.list_delegate = MangaDelegate(self.mw, self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
+        # Prevent editing on double-click
+        self.list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.list_view.clicked.connect(self.mw.details_handler.display_detail)
         self.list_view.middleClicked.connect(self.open_tab)
         self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
