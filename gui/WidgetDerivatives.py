@@ -91,6 +91,7 @@ class CustomTextEdit(QTextEdit):
 
 class IdMatcher(QWidget):
     SELECTED_COLOR = QColor(26, 122, 39)
+    DEFAULT_COLOR = Qt.transparent
     saveSignal = pyqtSignal()
     DEFAULT_RATIO = 0.65
 
@@ -101,14 +102,21 @@ class IdMatcher(QWidget):
         self.selected_items = []
         # Id of entry to not show self
         self.base_id = None
-        self.default_bg_col = Qt.transparent
+        self.show_similar_toggle = False
 
         self.layout = QVBoxLayout(self)
 
+        input_layout = QHBoxLayout()
         self.search_input = QLineEdit(self)
         self.search_input.setPlaceholderText("Enter ID or title")
         self.search_input.setStyleSheet(self.mw.styles.get("lineedit"))
         self.search_input.textChanged.connect(lambda: self.update_list())
+        input_layout.addWidget(self.search_input, 1)
+
+        self.toggle_button = QPushButton("Show Similar", self)
+        self.toggle_button.setStyleSheet(self.mw.styles.get("textbutton"))
+        self.toggle_button.clicked.connect(self.toggle_similar_items)
+        input_layout.addWidget(self.toggle_button)
 
         self.list_widget = CustomListWidget(self)
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -116,7 +124,7 @@ class IdMatcher(QWidget):
         self.list_widget.itemRightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
 
         self.layout.addWidget(QLabel("Similar:"))
-        self.layout.addWidget(self.search_input)
+        self.layout.addLayout(input_layout)
         self.layout.addWidget(self.list_widget)
 
         self.populate_list()
@@ -145,14 +153,17 @@ class IdMatcher(QWidget):
         if input and len(input) < 3:
             return
 
-        for idx in range(self.list_widget.count()):
-            item = self.list_widget.item(idx)
-            entry_id = item.data(Qt.UserRole).id
+        self._update_item_visibility_and_color(input_filter=input)
 
-            if entry_id != self.base_id and (not input or input in item.text().lower()):
-                item.setHidden(False)
-            else:
-                item.setHidden(True)
+    def toggle_similar_items(self):
+        """Toggle the display of similar items in the list."""
+        self.show_similar_toggle = not self.show_similar_toggle
+        if self.show_similar_toggle:
+            self.toggle_button.setText("Show All")
+        else:
+            self.toggle_button.setText("Show Similar")
+
+        self.update_list()
 
     def handle_item_click(self, item):
         if not self.base_id:
@@ -176,18 +187,26 @@ class IdMatcher(QWidget):
         self.selected_items = [sim for sim in entry.similar]
         self.base_id = entry.id
 
+        self._update_item_visibility_and_color(update_color=True)
+
+    def _update_item_visibility_and_color(self, input_filter="", update_color=False):
         for idx in range(self.list_widget.count()):
             item = self.list_widget.item(idx)
             entry_id = item.data(Qt.UserRole).id
-            if entry_id == self.base_id:
-                item.setHidden(True)
-            else:
-                item.setHidden(False)
 
-            if entry_id in self.selected_items:
-                item.setBackground(IdMatcher.SELECTED_COLOR)
+            # Determine if the item should be hidden
+            if self.show_similar_toggle:
+                is_hidden = entry_id not in self.selected_items or entry_id == self.base_id
             else:
-                item.setBackground(self.default_bg_col)
+                is_hidden = entry_id == self.base_id or (len(input_filter) > 0 and input_filter not in item.text().lower())
+
+            item.setHidden(is_hidden)
+
+            if update_color:
+                if entry_id in self.selected_items:
+                    item.setBackground(IdMatcher.SELECTED_COLOR)
+                else:
+                    item.setBackground(IdMatcher.DEFAULT_COLOR)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
