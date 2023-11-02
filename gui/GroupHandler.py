@@ -1,12 +1,16 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QDialog, QVBoxLayout, QLabel, QLineEdit, QColorDialog
 
 from auxillary.JSONMethods import load_json, save_json
 from gui.WidgetDerivatives import RightClickableComboBox
 
 
-class GroupHandler:
+class GroupHandler(QObject):
+    group_added = pyqtSignal(str)
+
     def __init__(self, mw):
+        super().__init__()
         self.add_group_btn = None
         self.group_combobox = None
         self.groups = load_json(mw.groups_file)
@@ -22,6 +26,7 @@ class GroupHandler:
 
         self.group_combobox.currentIndexChanged.connect(lambda: self.mw.search_bar_handler.update_list())
         self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
+        self.group_added.connect(lambda grp: self.group_combobox.addItem(grp))
         self.group_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
 
         self.add_group_btn = QPushButton("New Group", self.mw)
@@ -52,7 +57,7 @@ class GroupHandler:
         layout.addWidget(name_input)
 
         # Color picker setup
-        picked_color = [Qt.white]  # Default color, using a mutable type like a list to store the selected color
+        picked_color = [QColor()]
         pick_color_button = QPushButton("Pick Color", dialog)
         pick_color_button.setStyleSheet(self.mw.styles.get("textbutton"))
         layout.addWidget(pick_color_button)
@@ -85,13 +90,11 @@ class GroupHandler:
             if group_name not in self.groups:
                 self.groups[group_name] = {}
                 isNew = True
-            self.groups[group_name].update({"color": picked_color[0].name()})
+            if picked_color[0].isValid():
+                self.groups[group_name].update({"color": picked_color[0].name()})
             save_json(self.mw.groups_file, self.groups)
             if isNew:
                 # Add to the combobox
-                self.group_combobox.addItem(group_name, group_name)
-            else:
-                # Force refresh in case color changed
-                self.mw.search_bar_handler.update_list()
+                self.group_added.emit(group_name)
     
     

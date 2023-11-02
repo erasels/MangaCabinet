@@ -118,8 +118,12 @@ class DetailEditorHandler:
 
         # Group
         self.group_combobox = QComboBox(self.mw)
+        self.group_combobox.addItem("None")
+        for group_name in self.mw.group_handler.groups.keys():
+            self.group_combobox.addItem(group_name)
         self.group_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
         self.group_combobox.currentIndexChanged.connect(self.save_changes)
+        self.mw.group_handler.group_added.connect(lambda grp: self.group_combobox.addItem(grp))
         misc_layout.addWidget(QLabel("Group:"), 0)
         misc_layout.addWidget(self.group_combobox, 1)
 
@@ -205,10 +209,7 @@ class DetailEditorHandler:
             self.similar_searcher.load(self.cur_data)
 
             self.group_combobox.blockSignals(True)
-            self.group_combobox.clear()
-            self.group_combobox.addItem("None")
-            for group_name in self.mw.group_handler.groups.keys():
-                self.group_combobox.addItem(group_name)
+            self.group_combobox.setCurrentIndex(0)
             current_group = self.cur_data.group
             if current_group in self.mw.group_handler.groups:
                 self.group_combobox.setCurrentText(current_group)

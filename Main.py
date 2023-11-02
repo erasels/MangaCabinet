@@ -80,11 +80,11 @@ class MangaCabinet(QWidget):
         self.options_handler = OptionsHandler(self)
         # Handles entire search bar and accesses settings_buton
         self.search_bar_handler = SearchBarHandler(self)
+        # Handles entire groups bar
+        self.group_handler = GroupHandler(self)
         # Handles looking at and modifying details of manga entries
         self.details_handler = DetailEditorHandler(self)
         self.options_handler.bindViewChanged.connect(lambda state: self.details_handler.image_view.set_dynamic_show(state))
-        # Handles entire groups bar
-        self.group_handler = GroupHandler(self)
         # Handles the manga list view
         self.manga_list_handler = ListViewHandler(self)
         # Setup initial list once components are in place
