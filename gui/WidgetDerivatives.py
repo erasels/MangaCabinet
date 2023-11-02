@@ -140,6 +140,23 @@ class IdMatcher(QWidget):
             # Set custom data on the item
             item.setData(Qt.UserRole, entry)
 
+            tooltip_lines = []
+
+            # Conditional tooltip content
+            tooltip_lines.append(f"<b>ID:</b> {entry.id}")
+            tooltip_lines.append(f"<b>Title:</b> {entry.display_title()}")
+            if entry.description:
+                tooltip_lines.append(f"<b>Description:</b> {entry.description}")
+            tooltip_lines.append(f"<b>Tags:</b> {', '.join(entry.tags)}")
+            if entry.artist and entry.artist != ['']:
+                tooltip_lines.append(f"<b>Artist(s):</b> {', '.join(entry.artist)}")
+
+            # Join the tooltip lines with a line break
+            tooltip_text = "<br>".join(tooltip_lines)
+
+            # Set the tooltip
+            item.setToolTip(tooltip_text)
+
             self.list_widget.addItem(item)
             item.setHidden(True)
 
@@ -198,7 +215,7 @@ class IdMatcher(QWidget):
             if self.show_similar_toggle:
                 is_hidden = entry_id not in self.selected_items or entry_id == self.base_id
             else:
-                is_hidden = entry_id == self.base_id or (len(input_filter) > 0 and input_filter not in item.text().lower())
+                is_hidden = entry_id == self.base_id or (len(input_filter)>0 and input_filter not in item.text().lower())
 
             item.setHidden(is_hidden)
 
