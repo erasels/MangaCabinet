@@ -369,6 +369,11 @@ class SpecialListView(CustomListView):
 
     def show_image_preview(self, event):
         if self.mw.settings[thumbnail_preview]:
+            # Fix bug that unshackles preview from leaveEvent when opening new window without leaving the app
+            if not self.is_cursor_within_view(event.pos()):
+                self.image_preview.hide()
+                return
+
             index = self.indexAt(event.pos())
             if index.isValid():
                 entry = index.data(Qt.UserRole)
@@ -387,3 +392,6 @@ class SpecialListView(CustomListView):
                     return
             self.image_preview.hide()
             return
+
+    def is_cursor_within_view(self, cursor_pos):
+        return self.viewport().rect().contains(cursor_pos)
