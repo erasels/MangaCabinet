@@ -247,7 +247,7 @@ class DetailEditorHandler:
                 'language': lambda: [lang.strip() for lang in self.language_input.text().split(",")],
                 'artist': lambda: [artist.strip() for artist in self.artist_input.text().split(",")],
                 'score': self.score_widget.get_current_score,
-                'similar': lambda: self.similar_searcher.selected_items
+                'similar': self.save_similar_changes
             }
 
             for attr, func in attributes_mapping.items():
@@ -266,6 +266,29 @@ class DetailEditorHandler:
             if data_changed:
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
+
+    def save_similar_changes(self):
+        """Save id of current data to ids that were added to this entry's similar works."""
+        old_ids = self.cur_data.similar
+        ids = self.similar_searcher.selected_items
+        # Update other entries if they're new
+        for id in ids:
+            if id not in old_ids:
+                entry: MangaEntry = self.mw.data[self.mw.entry_to_index[id]]
+                if self.cur_data.id not in entry.similar:
+                    if entry.similar:
+                        entry.similar.append(self.cur_data.id)
+                    else:
+                        entry.similar = [self.cur_data.id]
+                    self.logger.debug(f"{id}: similar was updated with: {self.cur_data.id}")
+        # Update old entries that were removed
+        for id in old_ids:
+            if id not in ids:
+                entry: MangaEntry = self.mw.data[self.mw.entry_to_index[id]]
+                if self.cur_data.id in entry.similar:
+                    entry.similar.remove(self.cur_data.id)
+                    self.logger.debug(f"{id}: similar was updated by removing: {self.cur_data.id}")
+        return ids
 
     def toggle_edit_mode(self):
         if not self.json_edit_mode:

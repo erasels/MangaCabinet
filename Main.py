@@ -41,7 +41,7 @@ class MangaCabinet(QWidget):
         self.all_tags = set()
         self.all_ids = []
         for idx, entry in enumerate(self.data):
-            # Save entry to its reversed index so that sorting works quickly and as expected
+            # Save entry to its index so that sorting works quickly and as expected
             self.entry_to_index[entry.id] = idx
             self.all_tags.update(entry.tags)
             self.all_ids.append(entry.id)
