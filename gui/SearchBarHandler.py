@@ -172,9 +172,9 @@ class SearchBarHandler:
                 for search_field in fields_to_search:
                     data_value = data.get(search_field, "")
                     if value and value[0] in [">", "<"]:
-                        term_score = self.compare_match(data_value, value)
+                        term_score += self.compare_match(data_value, value)
                     else:
-                        term_score = self.count_matches(data_value, value)
+                        term_score += self.count_matches(data_value, value)
             else:
                 for data_value in data.values():
                     term_score += self.count_matches(data_value, term)

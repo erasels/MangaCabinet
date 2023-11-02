@@ -26,12 +26,9 @@ class MangaEntry(dict):
     FIELD_ALIASES_AND_GROUPING = {
         "tags": ["tag"],
         "artist": ["artist", "group"],
-        "artists": ["artist", "group"],
         "author": ["artist", "group"],
         "upload": ["upload_date"],
-        "desc": ["description"],
         "title": ["title", "title_alt", "title_short"],
-        "lang": ["language"],
         "rating": ["score"]
     }
 
