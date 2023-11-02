@@ -1,10 +1,11 @@
 import os
 import random
+import re
 from collections import defaultdict
 from typing import Tuple, Callable, Any, List
 
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton
+from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton, QCompleter
 
 from auxillary.DataAccess import MangaEntry
 from gui.WidgetDerivatives import RightClickableComboBox
@@ -37,6 +38,9 @@ class SearchBarHandler:
         self.search_bar = QLineEdit(self.mw)
         self.search_bar.setStyleSheet(self.mw.styles.get("lineedit"))
         self.search_bar.setPlaceholderText("Search...")
+        completer = FieldSearchCompleter([field+":" for field in self.mw.common_attributes], self.search_bar)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.search_bar.setCompleter(completer)
 
         # Create a timer with an interval of 150 milliseconds
         self.search_timer = QTimer(self.mw)
@@ -228,3 +232,26 @@ class SearchBarHandler:
                 return 1 if value < int(target_value) else 0
 
         return 0
+
+
+class FieldSearchCompleter(QCompleter):
+    def pathFromIndex(self, index):
+        # Get the completion string from the index
+        completion = super().pathFromIndex(index)
+        # Get the text in the widget to the last comma
+        text = self.widget().text()
+        index = text.rfind(",")
+        if index != -1:
+            text = text[:index+1]
+        else:
+            text = ""
+        # Add completion to old text
+        return text + completion
+
+    def splitPath(self, path):
+        # Split the path at the last comma or space to find the prefix
+        last_comma = path.rfind(',')
+        if last_comma == -1:
+            return [path.strip()]
+        else:
+            return [path[last_comma + 1:].strip()]

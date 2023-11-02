@@ -8,6 +8,7 @@ from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
 from auxillary.BrowserHandling import BrowserHandler
+from auxillary.DataAccess import MangaEntry
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
@@ -37,6 +38,10 @@ class MangaCabinet(QWidget):
         self.is_data_modified = False
         self.load_config_values()
         self.data = load_json(self.data_file, data_type="mangas")
+        self.common_attributes = sorted(
+            set(MangaEntry.ATTRIBUTE_MAP) | set(MangaEntry.FIELD_ALIASES_AND_GROUPING),
+            key=str.lower
+        )
         self.entry_to_index = {}
         self.all_tags = set()
         self.all_ids = []

@@ -58,12 +58,8 @@ class CustomListWidget(QListWidget):
 
 class CommaCompleter(QCompleter):
     def pathFromIndex(self, index):
-        # Current completion
         completion = super().pathFromIndex(index)
-
-        # Text till the current cursor position
         text_till_cursor = self.widget().text()[:self.widget().cursorPosition()]
-
         # Split based on comma followed by any amount of whitespace
         split_text = re.split(r',\s*', text_till_cursor)
 
