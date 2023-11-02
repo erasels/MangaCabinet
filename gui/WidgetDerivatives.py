@@ -172,7 +172,7 @@ class IdMatcher(QWidget):
         entry_id = item.data(Qt.UserRole).id
         if entry_id in self.selected_items:
             # If already selected, deselect it
-            item.setBackground(self.default_bg_col)
+            item.setBackground(IdMatcher.DEFAULT_COLOR)
             self.selected_items.remove(entry_id)
         else:
             self.selected_items.append(entry_id)
