@@ -26,6 +26,7 @@ class CustomListView(QListView):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
+        self.setUniformItemSizes(True)
 
     def mousePressEvent(self, event):
         # Check if other mouse button was clicked
@@ -46,6 +47,7 @@ class CustomListWidget(QListWidget):
 
     def __init__(self, parent=None):
         super(CustomListWidget, self).__init__(parent)
+        self.setUniformItemSizes(True)
 
     def contextMenuEvent(self, event):
         item = self.itemAt(event.pos())
