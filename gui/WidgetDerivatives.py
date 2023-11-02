@@ -5,7 +5,8 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QRectF, QPointF
 from PyQt5.QtGui import QColor, QPainter, QPixmap, QWheelEvent, QMouseEvent, QShowEvent, QHideEvent
 from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidget, QLineEdit, QListWidget, QLabel, \
-    QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene
+    QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene, \
+    QHBoxLayout
 
 from gui.Options import bind_dview
 
@@ -419,3 +420,41 @@ class ImageViewer(QGraphicsView):
         self.setHidden(state)
         if self.isVisible():
             self.load_image(self.entry_id)
+
+
+class RatingWidget(QWidget):
+    scoreChanged = pyqtSignal(int)
+
+    def __init__(self, parent=None, initial_score=0, max_stars=5):
+        super().__init__(parent)
+        self.stars = None
+        self.max_stars = max_stars
+        self.current_score = initial_score
+        self.img_empty_star = os.path.join(parent.image_path, 'star_empty.png')
+        self.img_star = os.path.join(parent.image_path, 'star.png')
+        self.init_ui(initial_score)
+
+    def init_ui(self, initial_score):
+        layout = QHBoxLayout(self)
+        self.stars = []
+
+        for i in range(self.max_stars):
+            star_label = QLabel(self)
+            pixmap = QPixmap(self.img_empty_star)
+            star_label.setPixmap(pixmap)
+            star_label.mousePressEvent = lambda event, i=i: self.set_score(i + 1)
+            layout.addWidget(star_label)
+            self.stars.append(star_label)
+
+        self.set_score(initial_score, saveChange=False)
+
+    def set_score(self, score, saveChange=True):
+        self.current_score = score
+        for i, star_label in enumerate(self.stars):
+            pixmap = QPixmap(self.img_star if i < score else self.img_empty_star)
+            star_label.setPixmap(pixmap)
+        if saveChange:
+            self.scoreChanged.emit(score)  # Emit the scoreChanged signal
+
+    def get_current_score(self):
+        return self.current_score

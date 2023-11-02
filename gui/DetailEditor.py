@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
 
 from auxillary.DataAccess import MangaEntry
 from gui.Options import bind_dview
-from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer
+from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget
 
 
 class DetailEditorHandler:
@@ -102,16 +102,8 @@ class DetailEditorHandler:
         misc_layout = QHBoxLayout()
 
         # Score
-        self.score_widget = QWidget(self.mw)
-        self.score_layout = QHBoxLayout(self.score_widget)
-        self.stars = []
-        for i in range(5):
-            star_label = QLabel(self.score_widget)
-            pixmap = QPixmap(self.img_empty_star)
-            star_label.setPixmap(pixmap)
-            star_label.mousePressEvent = lambda event, i=i: self.set_score(i + 1)
-            self.score_layout.addWidget(star_label)
-            self.stars.append(star_label)
+        self.score_widget = RatingWidget(self.mw)
+        self.score_widget.scoreChanged.connect(lambda: self.save_changes())
 
         misc_layout.addWidget(QLabel("Score:"), 0)
         misc_layout.addWidget(self.score_widget, 1)
@@ -204,7 +196,7 @@ class DetailEditorHandler:
             self.language_input.setText(", ".join(self.cur_data.language))
             self.artist_input.setText(", ".join(self.cur_data.artist))
 
-            self.set_score(self.cur_data.score, saveChange=False)
+            self.score_widget.set_score(self.cur_data.score, saveChange=False)
 
             self.similar_searcher.load(self.cur_data)
 
@@ -254,7 +246,7 @@ class DetailEditorHandler:
                 'description': self.description_input.toPlainText,
                 'language': lambda: [lang.strip() for lang in self.language_input.text().split(",")],
                 'artist': lambda: [artist.strip() for artist in self.artist_input.text().split(",")],
-                'score': self.get_current_score,
+                'score': self.score_widget.get_current_score,
                 'similar': lambda: self.similar_searcher.selected_items
             }
 
@@ -274,21 +266,6 @@ class DetailEditorHandler:
             if data_changed:
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
-
-    def set_score(self, score, saveChange=True):
-        for i, star_label in enumerate(self.stars):
-            pixmap = QPixmap(self.img_star if i < score else self.img_empty_star)
-            star_label.setPixmap(pixmap)
-        if saveChange:
-            self.save_changes()
-
-    def get_current_score(self):
-        for i, star_label in enumerate(self.stars):
-            # When an empty star is found, return i (because we start counting from 1)
-            if star_label.pixmap().cacheKey() == QPixmap(self.img_empty_star).cacheKey():
-                return i
-        # If no empty stars were found, it means a score of 5.
-        return 5
 
     def toggle_edit_mode(self):
         if not self.json_edit_mode:
