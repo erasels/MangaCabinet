@@ -35,6 +35,7 @@ class ListViewHandler:
         # Prevent editing on double-click
         self.list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.list_view.clicked.connect(self.mw.details_handler.display_detail)
+        self.list_view.clicked.connect(lambda index: self.list_view.dataChanged(index, index))
         self.list_view.middleClicked.connect(self.open_tab)
         self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
 
@@ -131,7 +132,7 @@ class MangaDelegate(QStyledItemDelegate):
             mod_color = QColor(255, 255, 255, 50)  # semi-transparent white to brighten the color
             background_color = blend_colors(background_color, mod_color, 0.8)
 
-        if option.state & QStyle.State_Selected:
+        if self.mw.details_handler.cur_data and self.mw.details_handler.cur_data.id == entry.id:
             background_color = option.palette.highlight().color()
 
         item_path = QPainterPath()
