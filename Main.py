@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from logging.handlers import RotatingFileHandler
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor
@@ -19,10 +20,15 @@ from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
 
+log_dir = 'assets/logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+log_file_path = os.path.join(log_dir, 'log.txt')
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
                     datefmt='%y/%m/%d %H:%M:%S',
-                    handlers=[logging.StreamHandler(sys.stdout)])
+                    handlers=[RotatingFileHandler(log_file_path, maxBytes=15*1024*1024, backupCount=2),
+                              logging.StreamHandler(sys.stdout)])
 
 
 class MangaCabinet(QWidget):
@@ -59,6 +65,7 @@ class MangaCabinet(QWidget):
         self.browser_handler = BrowserHandler(self)
         self.init_ui()
         self.show()
+        self.logger.info(f"Successfully initialized with {len(self.data)} entires.")
 
     def load_config_values(self):
         config_file = os.path.join(MangaCabinet.config_path, "config.json")
@@ -66,6 +73,7 @@ class MangaCabinet(QWidget):
         config_file = config_file if os.path.exists(config_file) else default_config_file
         with open(config_file, 'r') as f:
             config = json.load(f)
+            self.logger.debug(f"Loaded config: {config_file}\n{config}")
             self.data_file = config["data_file"]
             self.settings_file = config["settings_file"]
             self.groups_file = config["groups_file"]
@@ -121,6 +129,7 @@ class MangaCabinet(QWidget):
         if self.is_data_modified:
             save_json(self.data_file, self.data)
             self.logger.info("Saved data.")
+        self.logger.info("Terminated.")
 
     def open_detail_view(self, entry):
         if self.details_view:
