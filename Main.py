@@ -20,7 +20,7 @@ from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
 
-log_dir = 'assets/logs'
+log_dir = 'logs'
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 log_file_path = os.path.join(log_dir, 'log.txt')
