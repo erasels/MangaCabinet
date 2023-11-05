@@ -355,6 +355,8 @@ class SpecialListView(CustomListView):
         self.mw = parent
         self.image_preview = ImagePreview(self)
         self.setMouseTracking(True)
+        # Amount of items to scroll
+        self.scroll_speed = 1
 
     def mouseMoveEvent(self, event):
         self.show_image_preview(event)
@@ -365,8 +367,17 @@ class SpecialListView(CustomListView):
         self.image_preview.hide()
 
     def wheelEvent(self, event):
+        # Get the number of degrees the wheel has rotated
+        degrees = event.angleDelta() / 8
+        # Get the number of steps the wheel has rotated (a step is 15 degrees)
+        steps = degrees.y() // 15
+        # Calculate the scroll distance
+        scroll_distance = steps * self.scroll_speed
+        # Scroll the view
+        self.verticalScrollBar().setValue(self.verticalScrollBar().value() - scroll_distance)
+        # Accept the event to indicate that it has been handled
+        event.accept()
         self.show_image_preview(event)
-        super().wheelEvent(event)
 
     def leaveEvent(self, event):
         self.image_preview.hide()
