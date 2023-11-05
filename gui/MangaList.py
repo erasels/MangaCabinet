@@ -232,6 +232,10 @@ class MangaDelegate(QStyledItemDelegate):
         title_rect.translate(0, font_metrics.height())
         painter.drawText(title_rect, Qt.AlignLeft, details_text)
 
+        # Display Id
+        title_rect.translate(0, font_metrics.height())
+        painter.drawText(title_rect, Qt.AlignLeft, "#" + entry.id)
+
         painter.setFont(original_font)
 
         self._render_tag_area(entry, title_rect, option, painter, original_font, background_color)
