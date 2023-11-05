@@ -1,3 +1,4 @@
+import logging
 import math
 import os
 import typing
@@ -14,6 +15,7 @@ from gui.WidgetDerivatives import CustomListView
 
 class ListViewHandler:
     def __init__(self, parent):
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.list_delegate = None
         self.list_model = None
         self.list_view = None
@@ -55,7 +57,14 @@ class ListViewHandler:
         self.list_model.appendRow(item)
 
     def open_tab(self, index):
-        self.mw.browser_handler.open_tab(index.data(Qt.UserRole))
+        entry = index.data(Qt.UserRole)
+        if not self.mw.browser_handler.unsupported:
+            entry.opens += 1
+            self.mw.is_data_modified = True
+            self.logger.debug(f"{entry.id}: MC_num_opens was updated with: {entry.opens}")
+            if self.mw.details_handler.json_edit_mode:
+                self.mw.details_handler.display_detail(index, True)
+        self.mw.browser_handler.open_tab(entry)
 
 
 def blend_colors(color1, color2, alpha):

@@ -19,7 +19,8 @@ class MangaEntry(dict):
         "group": ("MC_Grouping", None),
         "similar": ("similar", []),
         "open_url": ("open_url", ""),
-        "thumbnail_url": ("thumbnail_url", "")
+        "thumbnail_url": ("thumbnail_url", ""),
+        "opens": ("MC_num_opens", 0)
     }
 
     # Could be moved into a json file, but fits for now

@@ -3,8 +3,8 @@ import logging
 import os
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QWidget, QComboBox, \
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QComboBox, \
     QHBoxLayout
 
 from auxillary.DataAccess import MangaEntry
