@@ -24,9 +24,9 @@ class SearchBarHandler:
         self.showing_all_entries = False
         self.sorting_options = [
             # Name, algorithm, should be reversed by default
+            ("By data order", lambda entry: self.mw.entry_to_index.get(entry.id, 0), False),
             ("By id", lambda entry: (0, int(entry.id)) if entry.id.isdigit() else (1, entry.id), True),  # number id or UUID
             ("By upload date", lambda entry: (0 if entry.upload is None else 1, entry.upload_date()), True),
-            ("By data order", lambda entry: self.mw.entry_to_index.get(entry.id, 0), False),
             ("By name", lambda entry: entry.display_title().lower(), False),
             ("By artist", lambda entry: entry.first_artist().lower(), False),
             ("By score", lambda entry: entry.get('score', float('-inf')), True)  # Reversed will show unrated first
