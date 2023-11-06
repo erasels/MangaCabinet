@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
     QHBoxLayout
 
 from auxillary.DataAccess import MangaEntry
+from gui.GroupHandler import fill_groups_box
 from gui.Options import bind_dview
 from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget
 
@@ -110,12 +111,10 @@ class DetailEditorHandler:
 
         # Group
         self.group_combobox = QComboBox(self.mw)
-        self.group_combobox.addItem("None")
-        for group_name in self.mw.group_handler.groups.keys():
-            self.group_combobox.addItem(group_name)
+        fill_groups_box(self.mw.group_handler.groups, self.group_combobox)
         self.group_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
         self.group_combobox.currentIndexChanged.connect(self.save_changes)
-        self.mw.group_handler.group_added.connect(lambda grp: self.group_combobox.addItem(grp))
+        self.mw.group_handler.group_modified.connect(lambda: fill_groups_box(self.mw.group_handler.groups, self.group_combobox))
         misc_layout.addWidget(QLabel("Group:"), 0)
         misc_layout.addWidget(self.group_combobox, 1)
 
@@ -127,7 +126,7 @@ class DetailEditorHandler:
         self.language_input.editingFinished.connect(self.save_changes)
 
         self.artist_input.setStyleSheet(self.mw.styles.get("lineedit"))
-        self.artist_input.setPlaceholderText("Input artists/groups here (csv)")
+        self.artist_input.setPlaceholderText("Input artists here (csv)")
         self.artist_input.editingFinished.connect(self.save_changes)
 
         misc_layout.addWidget(QLabel("Artists:"), 0)

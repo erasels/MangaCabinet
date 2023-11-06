@@ -56,6 +56,17 @@ class CustomListWidget(QListWidget):
             self.itemRightClicked.emit(item)
 
 
+class DraggableListWidget(QListWidget):
+    itemMoved = pyqtSignal(int, int)  # Signal to emit when item is moved
+
+    def dropEvent(self, event):
+        """ Reimplemented to emit the itemMoved signal """
+        before_drop_row = self.currentRow()
+        super().dropEvent(event)
+        after_drop_row = self.currentRow()
+        self.itemMoved.emit(before_drop_row, after_drop_row)
+
+
 class CommaCompleter(QCompleter):
     def pathFromIndex(self, index):
         completion = super().pathFromIndex(index)
