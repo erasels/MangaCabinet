@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
 from auxillary.DataAccess import MangaEntry
 from gui.GroupHandler import fill_groups_box
 from gui.Options import bind_dview
-from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget
+from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget, CommaCompleter
 
 
 class DetailEditorHandler:
@@ -125,6 +125,9 @@ class DetailEditorHandler:
         self.language_input.setPlaceholderText("Input languages here (csv)")
         self.language_input.editingFinished.connect(self.save_changes)
 
+        completer = CommaCompleter(list(self.mw.all_artists), self.artist_input)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.artist_input.setCompleter(completer)
         self.artist_input.setStyleSheet(self.mw.styles.get("lineedit"))
         self.artist_input.setPlaceholderText("Input artists here (csv)")
         self.artist_input.editingFinished.connect(self.save_changes)
