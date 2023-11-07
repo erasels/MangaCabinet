@@ -2,11 +2,12 @@ import os
 
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton
+from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton, QComboBox, QHBoxLayout
 
 from auxillary.JSONMethods import save_json, load_json
 
 show_removed = "show_removed_entries"
+default_sort = "default_sort_option"
 search_thrshold = "search_cutoff_threshold"
 loose_match = "loose_search_matching"
 multi_match = "count_multiple_matches"
@@ -17,6 +18,7 @@ thumbnail_preview = "show_hover_thumbnail"
 def init_settings():
     return {
         show_removed: False,
+        default_sort: "By data order",
         search_thrshold: 100,
         loose_match: False,
         multi_match: False,
@@ -40,6 +42,7 @@ class OptionsHandler(QDialog):
         super(OptionsHandler, self).__init__(parent)
         self.settings_button = None
         self.dialog = None
+        self.setup = False
         self.setWindowTitle("Options")
 
         self.mw = self.parent()
@@ -58,13 +61,15 @@ class OptionsHandler(QDialog):
 
         self.settings_button.setToolTip("Options")
 
-        self.init_options_dialog()
-
     def get_widget(self):
         return self.settings_button
 
     # Method to create settings window
     def show_options_dialog(self):
+        if not self.setup:
+            self.init_options_dialog()
+            self.setup = True
+
         if self.exec_() == 0:
             self.mw.search_bar_handler.update_list()
             save_json(self.mw.settings_file, self.mw.settings)
@@ -75,12 +80,22 @@ class OptionsHandler(QDialog):
         self.show_removed_checkbox.stateChanged.connect(lambda state: self.simple_change(show_removed, state))
         self.show_removed_checkbox.setToolTip("Show removed entries in the main manga list.")
 
+        self.default_sort_label = QLabel("Default Sort:", self)
+
+        self.default_sort_combobox = QComboBox(self)
+        sort_options = [name for name, _, _ in self.mw.search_bar_handler.sorting_options]
+        self.default_sort_combobox.addItems(sort_options)
+        current_sort_index = sort_options.index(self.mw.settings.get(default_sort, sort_options[0]))
+        self.default_sort_combobox.setCurrentIndex(current_sort_index)
+        self.default_sort_combobox.currentIndexChanged.connect(self.set_default_sort_option)
+        self.default_sort_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
+        self.default_sort_combobox.setToolTip("Select the default sort option for the manga list.")
+
         self.slider_label = QLabel(self.get_search_cutoff_text())
         self.slider = QSlider(Qt.Horizontal, self)
         self.slider.setRange(0, 100)
         self.slider.setValue(self.mw.settings[search_thrshold])
         self.slider.valueChanged.connect(self.slider_value_changed)
-
         self.slider.setToolTip("The amount of results to return when using the search bar.")
 
         self.loose_match_checkbox = QCheckBox("Enable Loose Search Matching", self)
@@ -102,9 +117,14 @@ class OptionsHandler(QDialog):
         self.thumbnail_checkbox.setChecked(self.mw.settings[thumbnail_preview])
         self.thumbnail_checkbox.stateChanged.connect(lambda state: self.simple_change(thumbnail_preview, state))
 
+        sort_layout = QHBoxLayout()
+        sort_layout.addWidget(self.default_sort_label)
+        sort_layout.addWidget(self.default_sort_combobox)
+
         # Layout management
         layout = QVBoxLayout()
         layout.addWidget(self.show_removed_checkbox)
+        layout.addLayout(sort_layout)
         layout.addWidget(self.slider_label)
         layout.addWidget(self.slider)
         layout.addWidget(self.loose_match_checkbox)
@@ -126,3 +146,7 @@ class OptionsHandler(QDialog):
     def bind_view_changed(self, state):
         self.mw.settings[bind_dview] = bool(state)
         self.bindViewChanged.emit(bool(state))
+
+    def set_default_sort_option(self, index):
+        sort_option = self.mw.search_bar_handler.sorting_options[index][0]
+        self.mw.settings[default_sort] = sort_option

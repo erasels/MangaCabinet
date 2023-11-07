@@ -1,5 +1,6 @@
 {
     "show_removed_entries": false,
+    "default_sort_option": "By data order",
     "search_cutoff_threshold": 0,
     "loose_search_matching": false,
     "count_multiple_matches": false,

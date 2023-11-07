@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton, QComple
 
 from auxillary.DataAccess import MangaEntry
 from gui.WidgetDerivatives import RightClickableComboBox
-from gui.Options import search_thrshold, loose_match, multi_match, show_removed
+from gui.Options import search_thrshold, loose_match, multi_match, show_removed, default_sort
 
 
 class SearchBarHandler:
@@ -58,6 +58,8 @@ class SearchBarHandler:
         self.sort_combobox = RightClickableComboBox()
         for name, _, _ in self.sorting_options:
             self.sort_combobox.addItem(name)
+        default_sort_index = next((i for i, (name, _, _) in enumerate(self.sorting_options) if name == self.mw.settings[default_sort]), 0)
+        self.sort_combobox.setCurrentIndex(default_sort_index)
         self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list())
         self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
         self.sort_combobox.setStyleSheet(self.mw.styles.get("sorter"))
