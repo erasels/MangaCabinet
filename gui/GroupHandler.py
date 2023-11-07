@@ -14,7 +14,8 @@ def fill_groups_box(groups, combobox):
     current_text = combobox.currentText()
     combobox.clear()
     combobox.addItem("None")
-    combobox.addItems(groups.keys())
+    for group in groups.keys():
+        combobox.addItem(group, group)
     index = combobox.findText(current_text)
     # If the current text is not in the new list and was not "None", unblock signals before resetting to "None"
     if current_text not in groups and current_text != "None":
