@@ -20,7 +20,8 @@ class MangaEntry(dict):
         "similar": ("similar", []),
         "open_url": ("open_url", ""),
         "thumbnail_url": ("thumbnail_url", ""),
-        "opens": ("MC_num_opens", 0)
+        "opens": ("MC_num_opens", 0),
+        "removed": ("removed", False)
     }
 
     # Could be moved into a json file, but fits for now
@@ -30,7 +31,8 @@ class MangaEntry(dict):
         "author": ["artist", "group"],
         "upload": ["upload_date"],
         "title": ["title", "title_alt", "title_short"],
-        "rating": ["score"]
+        "rating": ["score"],
+        "deprecated": ["removed"]
     }
 
     def __init__(self, *args, **kwargs):

@@ -125,6 +125,10 @@ class MangaDelegate(QStyledItemDelegate):
         # Draw the background and border
         painter.save()
 
+        # Reduce background opacity if removed
+        if entry.removed:
+            painter.setOpacity(0.2)
+
         if not self.base_pen_color:
             self.base_pen_color = painter.pen().color()
 
@@ -179,6 +183,14 @@ class MangaDelegate(QStyledItemDelegate):
 
             # Adjust title_rect to avoid overlapping with the stars
             title_rect = title_rect.adjusted(star_width, 0, 0, 0)
+
+        # Reduce text opacity if removed
+        if entry.removed:
+            pen = painter.pen()
+            color = pen.color()
+            color.setAlpha(45)
+            pen.setColor(color)
+            painter.setPen(pen)
 
         # Draw the title
         title = entry.display_title()
@@ -251,6 +263,7 @@ class MangaDelegate(QStyledItemDelegate):
 
         painter.setFont(original_font)
         painter.setPen(self.base_pen_color)
+        painter.restore()
 
     def _render_tag_area(self, entry, title_rect, option, painter, original_font, background_color):
         """

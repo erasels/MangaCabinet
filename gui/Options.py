@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QP
 
 from auxillary.JSONMethods import save_json, load_json
 
+show_removed = "show_removed_entries"
 search_thrshold = "search_cutoff_threshold"
 loose_match = "loose_search_matching"
 multi_match = "count_multiple_matches"
@@ -15,6 +16,7 @@ thumbnail_preview = "show_hover_thumbnail"
 
 def init_settings():
     return {
+        show_removed: False,
         search_thrshold: 100,
         loose_match: False,
         multi_match: False,
@@ -68,9 +70,12 @@ class OptionsHandler(QDialog):
             save_json(self.mw.settings_file, self.mw.settings)
 
     def init_options_dialog(self):
-        self.slider_label = QLabel(self.get_search_cutoff_text())
+        self.show_removed_checkbox = QCheckBox("Show Removed Entries", self)
+        self.show_removed_checkbox.setChecked(self.mw.settings[show_removed])
+        self.show_removed_checkbox.stateChanged.connect(lambda state: self.simple_change(show_removed, state))
+        self.show_removed_checkbox.setToolTip("Show removed entries in the main manga list.")
 
-        # Add a QSlider for the threshold value
+        self.slider_label = QLabel(self.get_search_cutoff_text())
         self.slider = QSlider(Qt.Horizontal, self)
         self.slider.setRange(0, 100)
         self.slider.setValue(self.mw.settings[search_thrshold])
@@ -80,12 +85,12 @@ class OptionsHandler(QDialog):
 
         self.loose_match_checkbox = QCheckBox("Enable Loose Search Matching", self)
         self.loose_match_checkbox.setChecked(self.mw.settings[loose_match])
-        self.loose_match_checkbox.stateChanged.connect(self.loose_match_changed)
+        self.loose_match_checkbox.stateChanged.connect(lambda state: self.simple_change(loose_match, state))
         self.loose_match_checkbox.setToolTip("When enabled only one term of your search needs to match something to be returned.")
 
         self.multi_match_checkbox = QCheckBox("Enable Counting Matches", self)
         self.multi_match_checkbox.setChecked(self.mw.settings[multi_match])
-        self.multi_match_checkbox.stateChanged.connect(self.multi_match_changed)
+        self.multi_match_checkbox.stateChanged.connect(lambda state: self.simple_change(multi_match, state))
         self.multi_match_checkbox.setToolTip("When enabled results which contain a search term in multiple fields will have higher precedence, this becomes unintuitive with sorting.")
 
         self.bind_view_checkbox = QCheckBox("Bind Detail View to Editor", self)
@@ -95,10 +100,11 @@ class OptionsHandler(QDialog):
 
         self.thumbnail_checkbox = QCheckBox("Show Thumbnail on Hover", self)
         self.thumbnail_checkbox.setChecked(self.mw.settings[thumbnail_preview])
-        self.thumbnail_checkbox.stateChanged.connect(self.thumbnail_changed)
+        self.thumbnail_checkbox.stateChanged.connect(lambda state: self.simple_change(thumbnail_preview, state))
 
         # Layout management
         layout = QVBoxLayout()
+        layout.addWidget(self.show_removed_checkbox)
         layout.addWidget(self.slider_label)
         layout.addWidget(self.slider)
         layout.addWidget(self.loose_match_checkbox)
@@ -114,15 +120,9 @@ class OptionsHandler(QDialog):
     def get_search_cutoff_text(self):
         return f"Search Cutoff Threshold: {self.mw.settings[search_thrshold] if self.mw.settings[search_thrshold] else 'Unlimited'}"
 
-    def loose_match_changed(self, state):
-        self.mw.settings[loose_match] = bool(state)
-
-    def multi_match_changed(self, state):
-        self.mw.settings[multi_match] = bool(state)
+    def simple_change(self, setting, state):
+        self.mw.settings[setting] = bool(state)
 
     def bind_view_changed(self, state):
         self.mw.settings[bind_dview] = bool(state)
         self.bindViewChanged.emit(bool(state))
-
-    def thumbnail_changed(self, state):
-        self.mw.settings[thumbnail_preview] = bool(state)

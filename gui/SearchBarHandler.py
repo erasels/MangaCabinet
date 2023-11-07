@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton, QComple
 
 from auxillary.DataAccess import MangaEntry
 from gui.WidgetDerivatives import RightClickableComboBox
-from gui.Options import search_thrshold, loose_match, multi_match
+from gui.Options import search_thrshold, loose_match, multi_match, show_removed
 
 
 class SearchBarHandler:
@@ -106,6 +106,10 @@ class SearchBarHandler:
         self.sort_order_reversed = not self.sort_order_reversed
         self.update_list()
 
+    def apply_filters(self, entry, filters):
+        # Apply all filters; if any filter returns False, the entry is excluded
+        return all(filter_func(entry) for filter_func in filters)
+
     def update_list(self, forceRefresh=True):
         search_terms = [term.strip() for term in self.search_bar.text().split(",")]
 
@@ -114,11 +118,18 @@ class SearchBarHandler:
         reverse_final = sorting_option[2] ^ self.sort_order_reversed  # XOR
         selected_group = self.mw.group_handler.group_combobox.currentData()
 
-        if not selected_group:
-            mod_data = self.mw.data
+        # Aggregate applicable filters
+        filters = []
+        if selected_group:
+            filters.append(lambda e: e.group == selected_group)
+        if not self.mw.settings[show_removed]:
+            filters.append(lambda e: not e.removed)
+
+        # Now filter the data using a single list comprehension
+        if filters:
+            mod_data = [entry for entry in self.mw.data if self.apply_filters(entry, filters)]
         else:
-            # Can be optimized in case update_list gets called a lot
-            mod_data = [manga_entry for manga_entry in self.mw.data if manga_entry.group == selected_group]
+            mod_data = self.mw.data
 
         # If less than 3 characters and already showing all entries, return early
         if len(self.search_bar.text()) < 3:
