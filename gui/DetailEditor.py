@@ -221,6 +221,7 @@ class DetailEditorHandler:
                 modified_data = json.loads(contents, object_pairs_hook=MangaEntry)
                 self.cur_data.clear()  # Done to update inplace references
                 self.cur_data.update(modified_data)
+                self.logger.debug(f"{self.cur_data.id} was updated with manually")
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
         else:
