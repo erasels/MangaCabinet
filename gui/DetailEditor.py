@@ -257,8 +257,8 @@ class DetailEditorHandler:
                 update_attribute(attr, func())
 
             # Special case for the group combobox
-            group_value = self.group_combobox.currentText()
-            if group_value == "None":
+            group_value = self.group_combobox.currentData()
+            if not group_value:
                 if self.cur_data.group:
                     self.logger.debug(f"{self.cur_data.id}: group was updated with: deleted value")
                     delattr(self.cur_data, 'group')
