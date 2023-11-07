@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QStringListModel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QComboBox, \
     QHBoxLayout
@@ -120,17 +120,17 @@ class DetailEditorHandler:
 
         # Language and Artist
         self.language_input = QLineEdit(self.mw)
-        self.artist_input = QLineEdit(self.mw)
         self.language_input.setStyleSheet(self.mw.styles.get("lineedit"))
         self.language_input.setPlaceholderText("Input languages here (csv)")
         self.language_input.editingFinished.connect(self.save_changes)
 
+        self.artist_input = QLineEdit(self.mw)
         completer = CommaCompleter(list(self.mw.all_artists), self.artist_input)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.artist_input.setCompleter(completer)
         self.artist_input.setStyleSheet(self.mw.styles.get("lineedit"))
         self.artist_input.setPlaceholderText("Input artists here (csv)")
-        self.artist_input.editingFinished.connect(self.save_changes)
+        self.artist_input.editingFinished.connect(self.on_artist_editing_finished)
 
         misc_layout.addWidget(QLabel("Artists:"), 0)
         misc_layout.addWidget(self.artist_input, 1)
@@ -293,6 +293,18 @@ class DetailEditorHandler:
                     self.logger.debug(f"{id}: similar was updated by removing: {self.cur_data.id}")
         return ids
 
+    def on_artist_editing_finished(self):
+        current_artists = set([artist.strip() for artist in self.artist_input.text().split(",") if artist.strip()])
+        # Find any new artists that aren't in the known list.
+        new_artists = current_artists - self.mw.all_artists
+
+        if new_artists:
+            self.mw.all_artists.update(new_artists)
+            completer_model = QStringListModel(list(self.mw.all_artists))
+            self.artist_input.completer().setModel(completer_model)
+
+        self.save_changes()
+
     def toggle_edit_mode(self):
         if not self.json_edit_mode:
             for i in range(self.layout.count()):
@@ -318,4 +330,3 @@ class DetailEditorHandler:
             if layout:
                 for i in range(layout.count()):
                     self.recursively_toggle_visibility(layout.itemAt(i), show)
-
