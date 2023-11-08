@@ -16,8 +16,8 @@ While using 3rd-party packages has been avoided where possible to keep setup sim
 3. **Edit & Save**: Modify the metadata in the detailed view and save your changes back to the original JSON file.
 4. **Completely Local**: No internet? No problem. Everything runs locally, ensuring your data remains private.
 5. **Upcoming Features**: 
-    - Foldering to categorize your manga collection.
-    - Enhanced UI for a better user experience.
+    - First time user experience guide to explain all the intricacies and keybinds
+    - Tag explorer
 
 ### Enhanced Search Functionality:
 1. **Simple Search**: 
@@ -38,4 +38,3 @@ While using 3rd-party packages has been avoided where possible to keep setup sim
     - You can also narrow down your searches within specific groups.
     - Sort the results by upload date, score, id or data order
     - Enable loose matching so only one of your search terms needs to be a hit for the result to show
-
