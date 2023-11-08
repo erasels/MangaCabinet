@@ -19,6 +19,7 @@ from gui.GroupHandler import GroupHandler
 from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
+from gui.WidgetDerivatives import ToastNotification
 
 log_dir = 'logs'
 if not os.path.exists(log_dir):
@@ -37,6 +38,7 @@ class MangaCabinet(QWidget):
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.toast = None
         self.setWindowTitle("Manga Cabinet")
         self.resize(1280, 720)
         self.fonts = ["Tahoma", "Arial", "Verdana"]
@@ -115,6 +117,7 @@ class MangaCabinet(QWidget):
         self.layout.addLayout(self.details_handler.get_layout())
 
         self.setLayout(self.layout)
+        self.toast = ToastNotification(self)
 
     # Override for updating list when resizing
     def resizeEvent(self, event):
