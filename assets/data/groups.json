@@ -1,11 +1,13 @@
 {
-    "Test": {
-        "color": "#FF0000"
+    "Watched": {
+        "description": "Finished works.",
+        "color": "#0c8214"
     },
-    "Green": {
-        "color": "#55aa00"
+    "Dropped": {
+        "color": "#700000"
     },
-    "Red": {
-        "color": "#cb4040"
+    "Planned": {
+        "description": "Works to be read in the future.",
+        "color": "#aaaaff"
     }
 }
