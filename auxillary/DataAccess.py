@@ -14,6 +14,7 @@ class MangaEntry(dict):
         "language": ("language", []),
         "pages": ("pages", 0),
         "parody": ("parody", []),
+        "character": ("character", []),
         "upload": ("upload_date", None),
         "score": ("score", 0),
         "group": ("MC_Grouping", None),
