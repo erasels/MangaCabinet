@@ -2,11 +2,11 @@ import os
 import re
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt, QRectF, QPointF
+from PyQt5.QtCore import pyqtSignal, Qt, QRectF, QPointF, QPoint, pyqtSlot, QTimer, QPropertyAnimation
 from PyQt5.QtGui import QColor, QPainter, QPixmap, QWheelEvent, QMouseEvent, QShowEvent, QHideEvent
 from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidget, QLineEdit, QListWidget, QLabel, \
     QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene, \
-    QHBoxLayout
+    QHBoxLayout, QGraphicsDropShadowEffect
 
 from gui.Options import bind_dview
 
@@ -94,6 +94,77 @@ class CustomTextEdit(QTextEdit):
 
         # Emit the custom signal
         self.contentEdited.emit()
+
+
+class ToastNotification(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setFixedSize(250, 100)
+
+        self.label = QLabel(self)
+        self.label.setAlignment(Qt.AlignCenter)
+
+        # Apply drop shadow effect
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 180))
+        shadow.setOffset(2)
+        self.setGraphicsEffect(shadow)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.label)
+        self.setLayout(layout)
+
+        # Animation
+        self.animation = QPropertyAnimation(self, b"pos")
+        self.animation.setDuration(500)
+        self.timer = QTimer()
+        self.timer.setInterval(3000)
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.hide_notification)
+
+    @pyqtSlot()
+    def show_notification(self, message, background_color='#6a4a4a', text_color='#FFF'):
+        # Stop any existing animation and timer
+        self.animation.stop()
+        self.timer.stop()
+
+        self.label.setText(message)
+        self.label.setStyleSheet(
+            f"QLabel {{ background-color: {background_color}; color: {text_color}; border-radius: 10px; padding: 10px; }}")
+
+        parent_geometry = self.parent().geometry()
+        right = parent_geometry.right() - self.width() - 20
+        bottom = parent_geometry.bottom() - self.height() - 20
+
+        # Position the notification in the bottom-right corner of the parent's geometry
+        self.move(right, bottom)
+        self.show()
+
+        # Start animation
+        self.animation.setStartValue(QPoint(self.x(), bottom))
+        self.animation.setEndValue(QPoint(self.x(), bottom - self.height() - 20))
+        self.animation.start()
+
+        # Start timer to auto-hide notification
+        self.timer.start()
+
+    @pyqtSlot()
+    def hide_notification(self):
+        self.timer.stop()
+
+        bottom = self.parent().geometry().bottom() - self.height() - 20
+        # Slide out animation
+        self.animation.setStartValue(QPoint(self.x(), bottom - self.height() - 20))
+        self.animation.setEndValue(QPoint(self.x(), bottom + 20))
+        self.animation.finished.connect(self.finish_anim)  # Ensure widget is closed after animation
+        self.animation.start()
+
+    def finish_anim(self):
+        self.close()
+        self.animation.finished.disconnect()
 
 
 class IdMatcher(QWidget):
@@ -222,7 +293,8 @@ class IdMatcher(QWidget):
             if self.show_similar_toggle:
                 is_hidden = entry_id not in self.selected_items or entry_id == self.base_id
             else:
-                is_hidden = entry_id == self.base_id or (len(input_filter)>0 and input_filter not in item.text().lower())
+                is_hidden = entry_id == self.base_id or (
+                            len(input_filter) > 0 and input_filter not in item.text().lower())
 
             item.setHidden(is_hidden)
 
