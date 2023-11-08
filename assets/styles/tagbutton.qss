@@ -1,0 +1,27 @@
+/* Style for the tag button */
+QPushButton#Unclicked {
+    border: none;
+    text-align: left;
+    background-color: transparent;
+    margin: 0px;
+}
+
+QPushButton#Unclicked:hover {
+    background-color: #943d3d;
+    font-weight: bold;
+}
+
+QPushButton#Clicked:hover {
+    background-color: #357a35;
+    font-weight: bold;
+}
+
+/* Style for the greyed-out tag button */
+QPushButton#Clicked {
+    border: none;
+    text-align: left;
+    background-color: transparent;
+    color: gray;
+    text-decoration: line-through;
+    margin: 0px;
+}

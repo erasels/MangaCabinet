@@ -1,22 +1,1007 @@
 [
     {
-        "id": 1,
-        "title": "Manga A",
-        "author": "Author A",
-        "tags": [
-            "action",
-            "fantasy"
+        "id": "225174",
+        "title": "Tsuki ga Kirei Special 5th Edition",
+        "title_short": "Tsuki ga Kirei Special",
+        "tag": [
+            "tanks",
+            "explosions",
+            "romance",
+            "alchemy",
+            "war"
         ],
-        "score": 7,
-        "MC_Grouping": "Red"
+        "language": [
+            "spanish"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Lyndy Debbie"
+        ],
+        "pages": 22,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/6/56819t.jpg",
+        "upload_date": "2023/02/23 21:03",
+        "check_date": "2023/10/22",
+        "similar": [
+            "342253",
+            "4408039",
+            "205555"
+        ],
+        "description": "In a world torn apart by war, two unlikely allies find solace in each other's company. As they navigate the treacherous battlefields of Europe, their bond deepens amidst the deafening roar of tank engines and the ear-splitting boom of explosives. But as they uncover a dangerous secret involving ancient alchemical practices, they must choose between their love for each other and their duty to their respective armies. Will their passion survive the brutality of war, or will it be consumed by the flames of conflict? Only time will tell in this gripping tale of love, war, and the power of alchemy.",
+        "MC_Grouping": "Watched",
+        "score": 4
     },
     {
-        "id": 2,
-        "title": "Manga sdfdsfsdfsfsdfsd dgjd fgj fgj dgj dj ertj eje dfg dsg sdfsdf sffwefsdfjhj sj fdjdgjd jdfgjd fgj  sfwef sf wef B",
-        "author": "Author B",
-        "tags": [
-            "romance"
+        "id": "342253",
+        "title": "Jinshin Yuugi",
+        "title_short": "Jinshin Yuugi",
+        "tag": [
+            "plot continuity",
+            "alternative past",
+            "zoo"
         ],
-        "score": 6
+        "language": [
+            "french"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Cecilla Nikolia"
+        ],
+        "group": [
+            "Ingunna Theodora"
+        ],
+        "pages": 29,
+        "favourites_at_check": 3800,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1166/132355t.jpg",
+        "upload_date": "2022/09/23 10:03",
+        "check_date": "2022/10/28",
+        "similar": [
+            "225174",
+            "34707e91-3d6f-498b-b763-1e3a1ab99265"
+        ],
+        "description": "In this gripping tale of alternate history, discover how the world's most famous landmarks have been transformed into a sprawling network of animal enclosures. As our heroes navigate the twists and turns of this bizarre new reality, they uncover a sinister conspiracy that threatens to upend centuries-old assumptions about human evolution and cast doubt on the very foundations of modern society. Buckle in for an exhilarating ride through a world you never knew existed!",
+        "MC_Grouping": "Dropped",
+        "score": 1
+    },
+    {
+        "id": "1231",
+        "title": "Gekiganger 3: The Movie",
+        "title_short": "Gekiganger 3",
+        "tag": [
+            "pve",
+            "mercenaries",
+            "nurse",
+            "superpower",
+            "thief",
+            "musical",
+            "transported into a novel",
+            "surfing",
+            "female teacher",
+            "mina"
+        ],
+        "language": [
+            "japanese"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Valentine Junina"
+        ],
+        "character": [
+            "Winna Jeanie"
+        ],
+        "pages": 110,
+        "favourites_at_check": 243,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/12/60225t.jpg",
+        "upload_date": "2023/10/07 21:03",
+        "check_date": "2023/10/28",
+        "similar": [
+            "2065913",
+            "2976476",
+            "2553072",
+            "1435844"
+        ],
+        "score": 3,
+        "MC_Grouping": "Watched"
+    },
+    {
+        "id": "871337",
+        "title": "Ice",
+        "title_short": "Ice",
+        "tag": [
+            "culinary school",
+            "dragon",
+            "feudal japan"
+        ],
+        "language": [
+            "indonesian"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Marisa Jennica"
+        ],
+        "group": [
+            "Berenice Roselle"
+        ],
+        "pages": 28,
+        "favourites_at_check": 5454,
+        "thumbnail_url": "https://media.kitsu.io/anime/poster_images/44616/tiny.jpg",
+        "upload_date": "2023/07/11 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "34707e91-3d6f-498b-b763-1e3a1ab99265",
+        "title": "Santarou Anime",
+        "title_short": "Santarou",
+        "tag": [
+            "stalkers",
+            "psychopaths",
+            "working life",
+            "feet",
+            "award winning",
+            "space"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Raye Meggy"
+        ],
+        "group": [
+            "Lynda Joannes"
+        ],
+        "pages": 113,
+        "favourites_at_check": 1945,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1712/129433t.jpg",
+        "upload_date": "2013/09/09 21:03",
+        "check_date": "2019/01/18",
+        "similar": [
+            "342253"
+        ],
+        "MC_Grouping": "Dropped",
+        "description": "In this gripping thriller, a successful astronaut battles a deranged stalker fixated on her size-13 feet while navigating the cutthroat world of space exploration and striving to win a prestigious industry award.\nIt's the feet focus that turned me off of this one.",
+        "score": 2
+    },
+    {
+        "id": "9840954",
+        "title": "Kimi wa Tennen Shoku",
+        "title_short": "Kimi wa Tennen Shoku",
+        "tag": [
+            "boarding school",
+            "card battle",
+            "cats",
+            "jungle",
+            "bodyguards",
+            "food protagonists",
+            "twins",
+            "parody",
+            "framed for a crime"
+        ],
+        "language": [
+            "german"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "marvel"
+        ],
+        "artist": [
+            "Phillis Roshelle"
+        ],
+        "pages": 65,
+        "favourites_at_check": 1957,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1686/128971t.jpg",
+        "upload_date": "2023/09/29 21:03",
+        "check_date": "2023/10/28",
+        "MC_Grouping": "Planned"
+    },
+    {
+        "id": "4408039",
+        "title": "Poppin' Party: Romeo to Cinderella",
+        "title_short": "Poppin' Party: Romeo to Cinderella",
+        "tag": [
+            "divorce",
+            "stereotypes",
+            "assassins",
+            "neighbors",
+            "time loop",
+            "netflix original",
+            "art school",
+            "7th century"
+        ],
+        "language": [
+            "german"
+        ],
+        "category": [
+            "Collection"
+        ],
+        "parody": [
+            "cinderella"
+        ],
+        "artist": [
+            "Claresta Randie"
+        ],
+        "pages": 91,
+        "favourites_at_check": 3736,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/5/86975t.jpg",
+        "upload_date": "2023/09/29 21:03",
+        "check_date": "2023/10/28",
+        "removed": true,
+        "similar": [
+            "225174"
+        ]
+    },
+    {
+        "id": "4775445",
+        "title": "Zujou Kazoku Cavigliano",
+        "title_short": "Zujou Kazoku Cavigliano",
+        "tag": [
+            "meta"
+        ],
+        "language": [
+            "french"
+        ],
+        "category": [
+            "Anthology"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Carolan Guglielma"
+        ],
+        "group": [
+            "Laryssa Karisa"
+        ],
+        "pages": 25,
+        "favourites_at_check": 882,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1987/130470t.jpg",
+        "upload_date": "2023/09/17 21:03",
+        "check_date": "2023/10/28",
+        "MC_Grouping": "Watched",
+        "score": 2,
+        "description": "Very meta."
+    },
+    {
+        "id": "205555",
+        "title": "Yinhe Zhi Xin",
+        "title_short": "Yinhe Zhi Xin",
+        "tag": [
+            "body swapping",
+            "chibi style",
+            "painting",
+            "age regression",
+            "high fantasy",
+            "necromancy"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "Collection"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Edith Joanie"
+        ],
+        "group": [
+            "Marinna Gabriel"
+        ],
+        "pages": 136,
+        "favourites_at_check": 476,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/5/89919t.jpg",
+        "upload_date": "2023/07/27 21:03",
+        "check_date": "2023/10/28",
+        "similar": [
+            "225174"
+        ],
+        "MC_Grouping": "Planned"
+    },
+    {
+        "id": "6888987",
+        "title": "UFO-koku no Koutsuu Anzen",
+        "title_short": "UFO-koku no Koutsuu Anzen",
+        "tag": [
+            "christmas"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "Collection"
+        ],
+        "parody": [
+            "naruto"
+        ],
+        "artist": [
+            "Jeanine Cherri"
+        ],
+        "pages": 135,
+        "favourites_at_check": 9079,
+        "upload_date": "2023/03/06 21:03",
+        "check_date": "2023/03/11"
+    },
+    {
+        "id": "8567503",
+        "title": "Uchuu Show e Youkoso",
+        "title_short": "Uchuu Show e Youkoso",
+        "tag": [
+            "okinawa",
+            "idols",
+            "elementary school",
+            "dystopia",
+            "primarily child cast",
+            "office lady"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Phoebe Deerdre"
+        ],
+        "group": [
+            "Gus Kettie"
+        ],
+        "pages": 121,
+        "favourites_at_check": 7921,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1003/134010t.jpg",
+        "upload_date": "2023/07/23 21:03",
+        "check_date": "2023/10/28",
+        "MC_Grouping": "Planned"
+    },
+    {
+        "id": "6996381",
+        "title": "Natsume Mito: Maegami Kiri Sugita",
+        "title_short": "Natsume Mito: Maegami Kiri Sugita",
+        "tag": [
+            "butler",
+            "performance",
+            "cg animation",
+            "karuta",
+            "gaming card games",
+            "esports"
+        ],
+        "language": [
+            "english"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Madlin Frayda"
+        ],
+        "group": [
+            "Marni Kerrie"
+        ],
+        "pages": 121,
+        "favourites_at_check": 2561,
+        "thumbnail_url": "https://u.livechart.me/anime/1659/poster_image/d6a5a1a1d2f3c4ba4d8cc8eaf54c22b5.png/small.jpg",
+        "upload_date": "2023/06/03 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "816912",
+        "title": "Yumemiru Jump",
+        "title_short": "Yumemiru Jump",
+        "tag": [
+            "anime influenced",
+            "tourism"
+        ],
+        "language": [
+            "indonesian"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "pokemon"
+        ],
+        "artist": [
+            "Joby Madeline"
+        ],
+        "pages": 128,
+        "favourites_at_check": 2281,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1166/99139t.jpg",
+        "upload_date": "2023/10/02 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "2553072",
+        "title": "Oshougatsuda yo! Pokemon Special!",
+        "title_short": "Oshougatsuda yo! Pokemon Special!",
+        "tag": [
+            "band",
+            "zombie",
+            "bathhouse",
+            "ghibli museum shorts"
+        ],
+        "language": [
+            "french"
+        ],
+        "category": [
+            "Anthology"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Wendye Blondell"
+        ],
+        "group": [
+            "Flss Joscelin"
+        ],
+        "pages": 28,
+        "favourites_at_check": 1935,
+        "thumbnail_url": "https://cdn.anime-planet.com/anime/primary/shanhai-jing-mima-1-285x399.webp?t=1697431994",
+        "upload_date": "2023/07/11 21:03",
+        "check_date": "2023/10/28",
+        "similar": [
+            "1231"
+        ]
+    },
+    {
+        "id": "4817700",
+        "title": "Utsukushiki Sei no Dendoushi Reirei",
+        "title_short": "Utsukushiki Sei no Dendoushi Reirei",
+        "tag": [
+            "fairy",
+            "novel industry",
+            "slavery",
+            "comedy",
+            "found family",
+            "meta",
+            "alchemy",
+            "mmorpg",
+            "space"
+        ],
+        "language": [
+            "german"
+        ],
+        "category": [
+            "Collection"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Isabella Amil"
+        ],
+        "group": [
+            "Marilyn Kit"
+        ],
+        "pages": 75,
+        "favourites_at_check": 279,
+        "thumbnail_url": "https://www.anisearch.com/images/anime/cover/full/14/14472.webp",
+        "upload_date": "2023/06/19 11:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "4075113",
+        "title": "Carnival Phantasm EX Season",
+        "title_short": "Carnival Phantasm EX Season",
+        "tag": [
+            "ojou-sama",
+            "androids",
+            "roommates",
+            "reluctant hero",
+            "virtual reality"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Charmion Ferdinanda"
+        ],
+        "group": [
+            "Kayley Timmie"
+        ],
+        "pages": 27,
+        "favourites_at_check": 4766,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/5/50055t.jpg",
+        "upload_date": "2023/10/11 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "8629483",
+        "title": "Re:Zero kara Hajimeru Break Time (2021)",
+        "title_short": "Re:Zero kara Hajimeru Break Time",
+        "tag": [
+            "work",
+            "fake romance",
+            "japanese anime classic collection"
+        ],
+        "language": [
+            "french"
+        ],
+        "category": [
+            "Anthology"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Kit Brandise"
+        ],
+        "group": [
+            "Maure Stormie"
+        ],
+        "pages": 100,
+        "favourites_at_check": 8390,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1266/100537t.jpg",
+        "upload_date": "2023/08/28 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "2976476",
+        "title": "Gangtie Feilong: Ultraman Jueqi",
+        "title_short": "Gangtie Feilong: Ultraman Jueqi",
+        "tag": [
+            "ghibli museum shorts",
+            "demons",
+            "surreal comedy"
+        ],
+        "language": [
+            "spanish"
+        ],
+        "category": [
+            "Collection"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Roxine Clarisse"
+        ],
+        "group": [
+            "Paule Helga"
+        ],
+        "pages": 126,
+        "favourites_at_check": 5339,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1987/135870t.jpg",
+        "upload_date": "2023/08/04 21:03",
+        "check_date": "2023/10/28",
+        "removed": true,
+        "similar": [
+            "1231"
+        ]
+    },
+    {
+        "id": "2065913",
+        "title": "Juugo Shounen Hyouryuuki",
+        "title_short": "Juugo Shounen Hyouryuuki",
+        "tag": [
+            "military",
+            "special squads",
+            "island"
+        ],
+        "language": [
+            "german"
+        ],
+        "category": [
+            "Collection"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Lela Wylma"
+        ],
+        "group": [
+            "Loretta Jocelyn"
+        ],
+        "pages": 146,
+        "favourites_at_check": 1803,
+        "thumbnail_url": "https://media.kitsu.io/anime/poster_images/44026/tiny.jpg",
+        "upload_date": "2023/07/28 21:03",
+        "check_date": "2023/10/28",
+        "removed": true,
+        "similar": [
+            "1231"
+        ]
+    },
+    {
+        "id": "856530",
+        "title": "Hug tto! Precure\u2661Futari wa Precure Movie: All Stars Memories",
+        "title_short": "Hug tto! Precure\u2661Futari wa Precure Movie: All Stars Memories",
+        "tag": [
+            "parody",
+            "feudal warfare",
+            "combat sports",
+            "stop motion animation",
+            "parasite",
+            "vietnam",
+            "possessive lovers",
+            "working life"
+        ],
+        "language": [
+            "german"
+        ],
+        "category": [
+            "Anthology"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Dorothee Adriena"
+        ],
+        "group": [
+            "Shanta Jacinda"
+        ],
+        "pages": 99,
+        "favourites_at_check": 6980,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/5/32171t.jpg",
+        "upload_date": "2023/07/15 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "8292322",
+        "title": "Huan Yue Zuofang",
+        "title_short": "Huan Yue Zuofang",
+        "tag": [
+            "treasure hunters",
+            "natural disaster",
+            "association football",
+            "chimera",
+            "thievery",
+            "philosophy",
+            "monster",
+            "slow life"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Bonny Aeriel"
+        ],
+        "group": [
+            "Zena Violet"
+        ],
+        "pages": 118,
+        "favourites_at_check": 8742,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/3/64891t.jpg",
+        "upload_date": "2011/07/05 01:03",
+        "check_date": "2012/10/28"
+    },
+    {
+        "id": "1435844",
+        "title": "Weiba Menghuan Qu: Baike 150 Wen",
+        "title_short": "Weiba Menghuan Qu: Baike 150 Wen",
+        "tag": [
+            "political",
+            "parental abandonment",
+            "rabbits",
+            "serial killers",
+            "aliens",
+            "star-crossed lovers",
+            "short episodes"
+        ],
+        "language": [
+            "english"
+        ],
+        "category": [
+            "Anthology"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Bev Bernardina"
+        ],
+        "group": [
+            "Mirilla Jocelyn"
+        ],
+        "pages": 89,
+        "favourites_at_check": 3816,
+        "thumbnail_url": "https://www.anisearch.com/images/anime/cover/full/6/6994.webp",
+        "upload_date": "2023/10/09 21:03",
+        "check_date": "2023/10/28",
+        "removed": true,
+        "similar": [
+            "1231"
+        ]
+    },
+    {
+        "id": "1394192",
+        "title": "Agi Sangeo Olliewa William",
+        "title_short": "Agi Sangeo Olliewa William",
+        "tag": [
+            "new york",
+            "apocalyptic fiction",
+            "genetic modification",
+            "anime influenced",
+            "space opera",
+            "historical",
+            "lost civilization",
+            "tanks"
+        ],
+        "language": [
+            "french"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Tonia Cecil"
+        ],
+        "group": [
+            "Kasey Gilli"
+        ],
+        "pages": 150,
+        "favourites_at_check": 3857,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/8/68677t.jpg",
+        "upload_date": "2023/06/29 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "2855433",
+        "title": "Arknights: Ideal City - Endless Carnvial Event PV",
+        "title_short": "Arknights: Ideal City - Endless Carnvial Event PV",
+        "tag": [
+            "psychopaths",
+            "master-servant relationship",
+            "ice skating",
+            "medium breasts",
+            "nobleman",
+            "rugby",
+            "magic school",
+            "kyoto"
+        ],
+        "language": [
+            "spanish"
+        ],
+        "category": [
+            "Anthology"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Leigh Minette"
+        ],
+        "group": [
+            "Felipa Aveline"
+        ],
+        "pages": 129,
+        "favourites_at_check": 5790,
+        "thumbnail_url": "https://cdn.anime-planet.com/anime/primary/keina-suda-amador-1-190x265.jpg?t=1625908346",
+        "upload_date": "2023/08/25 21:03",
+        "check_date": "2023/10/28",
+        "removed": true
+    },
+    {
+        "id": "2042824",
+        "title": "Ginga Tetsudou 999: Shounen no Tabidachi to Wakare",
+        "title_short": "Ginga Tetsudou 999: Shounen no Tabidachi to Wakare",
+        "tag": [
+            "archery",
+            "fitness"
+        ],
+        "language": [
+            "indonesian"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Joane Courtnay"
+        ],
+        "group": [
+            "Jolyn Yoshi"
+        ],
+        "pages": 90,
+        "favourites_at_check": 4345,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1305/122829t.jpg",
+        "upload_date": "2023/06/27 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "6096216",
+        "title": "Rise of the Teenage Mutant Ninja Turtles",
+        "title_short": "Rise of the Teenage Mutant Ninja Turtles",
+        "tag": [
+            "american football",
+            "slice of life",
+            "board games"
+        ],
+        "language": [
+            "english"
+        ],
+        "category": [
+            "Anthology"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Esma Coralyn"
+        ],
+        "group": [
+            "Nessie Vivyan"
+        ],
+        "pages": 58,
+        "favourites_at_check": 5566,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1174/124759t.jpg",
+        "upload_date": "2023/10/10 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "5153",
+        "title": "Kobo-chan no Koutsuu Anzen",
+        "title_short": "Kobo-chan no Koutsuu Anzen",
+        "tag": [
+            "ice skating",
+            "boarding house",
+            "female teacher",
+            "philosophy",
+            "ghost",
+            "environmental",
+            "dark comedy"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Corenda Drusilla"
+        ],
+        "group": [
+            "Austin Quinn"
+        ],
+        "pages": 106,
+        "favourites_at_check": 769,
+        "thumbnail_url": "https://cdn.anime-planet.com/anime/primary/katei-sekken-1-285x400.webp?t=1653605346",
+        "upload_date": "2023/09/16 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "3196338",
+        "title": "Ben Ben de Xingfu Shenghuo: Kaixin Linju",
+        "title_short": "Ben Ben de Xingfu Shenghuo: Kaixin Linju",
+        "tag": [
+            "china",
+            "monster-of-the-week"
+        ],
+        "language": [
+            "chinese"
+        ],
+        "category": [
+            "One-Shot"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Anastassia Idaline"
+        ],
+        "group": [
+            "Pauline Serene"
+        ],
+        "pages": 18,
+        "favourites_at_check": 5130,
+        "upload_date": "1600/10/05 12:53",
+        "check_date": "1700/10/22"
+    },
+    {
+        "id": "7350901",
+        "title": "Gakuen Handsome: Shuumatsu no Mellow Dance",
+        "title_short": "Gakuen Handsome: Shuumatsu no Mellow Dance",
+        "tag": [
+            "rock music",
+            "journalism"
+        ],
+        "language": [
+            "spanish"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Cody Bell"
+        ],
+        "group": [
+            "Halley Gusti"
+        ],
+        "pages": 12,
+        "favourites_at_check": 9271,
+        "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1435/136143t.jpg",
+        "upload_date": "2023/10/13 21:03",
+        "check_date": "2023/10/28"
+    },
+    {
+        "id": "2284137",
+        "title": "Kurokami The Animation: Akane-sensei no Kankokugo Kouza",
+        "title_short": "Kurokami The Animation: Akane-sensei no Kankokugo Kouza",
+        "tag": [
+            "space travel",
+            "zombies",
+            "avant-garde",
+            "journalism",
+            "india",
+            "forest",
+            "lgbt themes",
+            "kemonomimi"
+        ],
+        "language": [
+            "spanish"
+        ],
+        "category": [
+            "Series"
+        ],
+        "parody": [
+            "original"
+        ],
+        "artist": [
+            "Tallulah Marylin"
+        ],
+        "group": [
+            "Natassia Jacquelynn"
+        ],
+        "pages": 145,
+        "favourites_at_check": 2000,
+        "upload_date": "2023/10/18 21:03",
+        "check_date": "2023/10/28"
     }
 ]

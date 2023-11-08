@@ -1,15 +1,15 @@
-QLineEdit {
+QTextEdit {
     border: 1px solid #aaa;
     border-radius: 5px;
-    padding: 2px 4px;
+    padding: 1px;
     font-size: 12px;
 }
 
-QLineEdit:focus {
+QTextEdit:focus {
     border-color: #888888;
 }
 
-QLineEdit:disabled {
+QTextEdit:disabled {
     background: #e5e5e5;
     color: #888;
 }

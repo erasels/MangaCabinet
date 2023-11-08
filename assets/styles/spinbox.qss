@@ -1,0 +1,16 @@
+QSpinBox {
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    padding: 2px 4px;
+    font-size: 12px;
+}
+
+QSpinBox:focus {
+    border-color: #888888;
+}
+
+/* Arrow buttons inside QSpinBox */
+QSpinBox::up-button, QSpinBox::down-button {
+    border-radius: 2px;
+    padding: 2px;
+}

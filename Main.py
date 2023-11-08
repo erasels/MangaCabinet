@@ -1,345 +1,199 @@
+import json
+import logging
 import os
 import sys
-import json
+from logging.handlers import RotatingFileHandler
 
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton, QTextEdit, QDialog, \
-    QSlider, QLabel, QHBoxLayout, QComboBox, QListWidgetItem, QColorDialog, QMessageBox
-from PyQt5.QtCore import Qt, QSize
-from fuzzywuzzy import fuzz
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QPalette, QColor
+from PyQt5.QtWidgets import *
 
-from gui.ComboBoxDerivatives import CustomComboBox
+from auxillary.BrowserHandling import BrowserHandler
+from auxillary.DataAccess import MangaEntry
+from auxillary.JSONMethods import load_json, load_styles, save_json
+from auxillary.Thumbnails import ThumbnailManager
+from gui import Options
+from gui.DetailEditor import DetailEditorHandler
+from gui.DetailView import DetailViewHandler
+from gui.GroupHandler import GroupHandler
+from gui.MangaList import ListViewHandler
+from gui.Options import OptionsHandler
+from gui.SearchBarHandler import SearchBarHandler
+from gui.WidgetDerivatives import ToastNotification
+
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+log_file_path = os.path.join(log_dir, 'log.txt')
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
+                    datefmt='%y/%m/%d %H:%M:%S',
+                    handlers=[RotatingFileHandler(log_file_path, maxBytes=15*1024*1024, backupCount=2),
+                              logging.StreamHandler(sys.stdout)])
 
 
-# noinspection PyUnresolvedReferences
-class MangaApp(QWidget):
-    image_path = os.path.join('assets', 'images')
-    data_path = os.path.join('assets', 'data')
-    style_path = os.path.join('assets', 'styles')
-
-    data_file = os.path.join(data_path, 'data.json')
-    settings_file = os.path.join(data_path, 'settings.json')
-    groups_file = os.path.join(data_path, 'groups.json')
+class MangaCabinet(QWidget):
+    config_path = os.path.join('assets', 'data')
 
     def __init__(self):
         super().__init__()
-        self.data = self.load_json(MangaApp.data_file)
-        self.groups = self.load_json(MangaApp.groups_file)
-        self.styles = self.load_styles()
-        self.showing_all_entries = False
-        self.search_cutoff_threshold = 0
-        self.sort_order_reversed = False
-        self.load_settings()
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.toast = None
+        self.setWindowTitle("Manga Cabinet")
+        self.resize(1280, 720)
+        self.fonts = ["Tahoma", "Arial", "Verdana"]
+        self.font_index = 0
+        self.is_data_modified = False
+        self.load_config_values()
+        self.data = load_json(self.data_file, data_type="mangas")
+        self.common_attributes = sorted(
+            set(MangaEntry.ATTRIBUTE_MAP) | set(MangaEntry.FIELD_ALIASES_AND_GROUPING),
+            key=str.lower
+        )
+        self.entry_to_index = {}
+        self.all_tags = set()
+        self.all_artists = set()
+        self.all_ids = []
+        for idx, entry in enumerate(self.data):
+            # Save entry to its index so that sorting works quickly and as expected
+            self.entry_to_index[entry.id] = idx
+            self.all_tags.update(entry.tags)
+            self.all_artists.update(entry.artist)
+            self.all_ids.append(entry.id)
+        self.all_tags = sorted(self.all_tags, key=str.lower)
+        self.details_view = None
+        self.styles = load_styles(self.style_path)
+        self.settings = Options.load_settings(self.settings_file)
+        self.thumbnail_manager = ThumbnailManager(self.data, self.download_thumbnails, self.tags_to_blur)
+        self.thumbnail_manager.startEnsuring.emit()
+        self.browser_handler = BrowserHandler(self)
         self.init_ui()
+        self.show()
+        self.logger.info(f"Successfully initialized with {len(self.data)} entires.")
 
-    def load_json(self, file_path: str, data_type='list'):
-        if os.path.exists(file_path):
-            with open(file_path, 'r') as file:
-                try:
-                    return json.load(file)
-                except json.JSONDecodeError:
-                    print(f"Warning: The file {file_path} contains invalid JSON. Using default {data_type} instead.")
-                    return [] if data_type == 'list' else {}
-        else:
-            print(f"Warning: The file {file_path} does not exist. Using default {data_type} instead.")
-            return [] if data_type == 'list' else {}
-
-    def save_json(self, file_path: str, input_data):
-        with open(file_path, 'w') as file:
-            json.dump(input_data, file, indent=4)
-
-    def load_settings(self):
-        settings = self.load_json(MangaApp.settings_file, "dict")
-        self.search_cutoff_threshold = settings.get("search_cutoff_threshold", 100)
-
-    def save_settings(self):
-        settings = {"search_cutoff_threshold": self.search_cutoff_threshold}
-        self.save_json(MangaApp.settings_file, settings)
-
-    def load_styles(self):
-        styles = {}
-        if os.path.exists(MangaApp.style_path):
-            for file_name in os.listdir(MangaApp.style_path):
-                if file_name.endswith(".qss"):
-                    with open(os.path.join(MangaApp.style_path, file_name), "r") as f:
-                        stylesheet = f.read()
-                        # Store the style in the dictionary using the filename without the .qss extension
-                        styles[file_name.rsplit('.', 1)[0]] = stylesheet
-        return styles
+    def load_config_values(self):
+        config_file = os.path.join(MangaCabinet.config_path, "config.json")
+        default_config_file = os.path.join(MangaCabinet.config_path, "config_default.json")
+        config_file = config_file if os.path.exists(config_file) else default_config_file
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+            self.logger.debug(f"Loaded config: {config_file}\n{config}")
+            self.data_file = config["data_file"]
+            self.settings_file = config["settings_file"]
+            self.groups_file = config["groups_file"]
+            self.style_path = config["style_path"]
+            self.image_path = config["image_path"]
+            self.browser_path = config["browser_executable_path"]
+            self.browser_flags = config["browser_flags"]
+            self.default_URL = config["default_url"]
+            self.download_thumbnails = config["download_thumbnails"]
+            self.tags_to_blur = config.get("tags_to_blur", [])
 
     def init_ui(self):
+        self.changeFont()
         self.layout = QVBoxLayout()
 
-        # Search bar
-        self.search_bar = QLineEdit(self)
-        self.search_bar.textChanged.connect(self.update_list)
-        self.search_bar.setStyleSheet(self.styles.get("lineedit"))
+        # Init options button and add logic for it
+        self.options_handler = OptionsHandler(self)
+        # Handles entire search bar and accesses settings_buton
+        self.search_bar_handler = SearchBarHandler(self)
+        # Handles entire groups bar
+        self.group_handler = GroupHandler(self)
+        # Handles looking at and modifying details of manga entries
+        self.details_handler = DetailEditorHandler(self)
+        self.options_handler.bindViewChanged.connect(lambda state: self.details_handler.image_view.set_dynamic_show(state))
+        # Handles the manga list view
+        self.manga_list_handler = ListViewHandler(self)
+        # Setup initial list once components are in place
+        self.search_bar_handler.update_list(False)
 
-        # Options Button
-        self.settings_button = QPushButton(self)
-        self.settings_button.setIcon(QIcon(os.path.join(MangaApp.image_path, 'options_icon.png')))
-        self.settings_button.setIconSize(QSize(24, 24))
-        self.settings_button.setFixedSize(24, 24)  # Set the button size to match the icon size
-        self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
-        self.settings_button.clicked.connect(self.show_options_dialog)
-
-        # Sort drop down
-        self.sort_combobox = CustomComboBox()
-        self.sorting_options = [
-            ("By id", lambda entry: entry['id']),
-            ("By date added", lambda entry: self.data.index(entry)),
-            ("By score", lambda entry: entry.get('score', float('-inf')))
-        ]
-        for name, _ in self.sorting_options:
-            self.sort_combobox.addItem(name)
-        self.sort_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
-        self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
-        self.sort_combobox.setStyleSheet(self.styles.get("sorter"))
-        self.sort_combobox.setObjectName("Normal")
-
-        search_box = QHBoxLayout()  # Create a horizontal box layout
-        search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
-        search_box.addWidget(self.settings_button)
-        search_box.addWidget(self.sort_combobox)
-        self.layout.addLayout(search_box)
-
-        # Groups bar
-        self.group_combobox = CustomComboBox(self)
-        self.group_combobox.addItem("None", None)
-        for group_name, group_details in self.groups.items():
-            self.group_combobox.addItem(group_name, group_name)
-
-        self.group_combobox.currentIndexChanged.connect(lambda: self.update_list(forceRefresh=True))
-        self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
-        self.group_combobox.setStyleSheet(self.styles.get("dropdown"))
-
-        # Add group button
-        self.add_group_btn = QPushButton("New Group", self)
-        self.add_group_btn.clicked.connect(self.add_group)
-        self.add_group_btn.setStyleSheet(self.styles.get("textbutton"))
-
-        groups_box = QHBoxLayout()
-        groups_box.addWidget(self.group_combobox, 1)
-        groups_box.addWidget(self.add_group_btn)
-        self.layout.addLayout(groups_box)
-
-        # List view
-        self.list_widget = QListWidget(self)
-        self.list_widget.itemClicked.connect(self.display_detail)
-        self.list_widget.setStyleSheet(self.styles.get("mangalist"))
-
-        self.layout.addWidget(self.list_widget)
-        self.update_list()
-
-        # Detail view (as a text edit for simplicity)
-        self.detail_view = QTextEdit(self)
-        self.layout.addWidget(self.detail_view)
-
-        # Save button
-        self.save_button = QPushButton("Save Changes", self)
-        self.save_button.clicked.connect(self.save_changes)
-        self.save_button.setStyleSheet(self.styles.get("textbutton"))
-        self.layout.addWidget(self.save_button)
+        # Setup layout (wdiget = single item, layout = group of items)
+        self.layout.addLayout(
+            self.search_bar_handler.get_layout(self.group_handler.get_widgets() + [self.options_handler.get_widget()])
+        )
+        self.layout.addWidget(self.manga_list_handler.get_widget())
+        for widget in self.details_handler.get_widgets():
+            self.layout.addWidget(widget)
+        self.layout.addLayout(self.details_handler.get_layout())
 
         self.setLayout(self.layout)
+        self.toast = ToastNotification(self)
 
-    def toggle_sort_order(self):
-        if self.sort_order_reversed:
-            self.sort_combobox.setObjectName("Normal")
-        else:
-            self.sort_combobox.setObjectName("Reversed")
-        self.sort_combobox.setStyleSheet(self.styles["combobox"])  # Refresh the stylesheet to force the update.
-        self.sort_order_reversed = not self.sort_order_reversed
-        self.update_list(forceRefresh=True)
+    # Override for updating list when resizing
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.manga_list_handler.handle_resize()
+        self.details_handler.handle_resize()
 
-    def secondary_sort_key(self, x):
-        sort_func = self.sorting_options[self.sort_combobox.currentIndex()][1]
-        return sort_func(x[0])
-
-    # Method to create settings window
-    def show_options_dialog(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Options")
-
-        self.slider_label = QLabel(f"Search Cutoff Threshold: {self.search_cutoff_threshold}")
-
-        # Add a QSlider for the threshold value
-        self.slider = QSlider(Qt.Horizontal, dialog)
-        self.slider.setRange(10, 250)
-        self.slider.setValue(self.search_cutoff_threshold)  # Convert to percentage
-        self.slider.valueChanged.connect(self.slider_value_changed)
-
-        # Layout management
-        layout = QVBoxLayout()
-        layout.addWidget(self.slider_label)
-        layout.addWidget(self.slider)
-        dialog.setLayout(layout)
-
-        dialog.exec_()
-
-    # Method to add new group creation window
-    def add_group(self):
-        dialog = QDialog(self)
-        layout = QVBoxLayout()
-
-        # Name input
-        name_label = QLabel("Group Name:", dialog)
-        name_input = QLineEdit(dialog)
-        name_input.setStyleSheet(self.styles.get("lineedit"))
-        layout.addWidget(name_label)
-        layout.addWidget(name_input)
-
-        # Color picker setup
-        picked_color = [Qt.white]  # Default color, using a mutable type like a list to store the selected color
-        pick_color_button = QPushButton("Pick Color", dialog)
-        pick_color_button.setStyleSheet(self.styles.get("textbutton"))
-        layout.addWidget(pick_color_button)
-
-        # Update the button's background color to show the picked color
-        def update_button_color(color):
-            pick_color_button.setStyleSheet(f"background-color: {color.name()};")
-            picked_color[0] = color
-
-        pick_color_button.clicked.connect(lambda: update_button_color(QColorDialog.getColor()))
-
-        # Save and Cancel buttons
-        save_btn = QPushButton("Save", dialog)
-        save_btn.clicked.connect(dialog.accept)
-        save_btn.setStyleSheet(self.styles.get("textbutton"))
-        cancel_btn = QPushButton("Cancel", dialog)
-        cancel_btn.clicked.connect(dialog.reject)
-        cancel_btn.setStyleSheet(self.styles.get("textbutton"))
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(save_btn)
-        btn_layout.addWidget(cancel_btn)
-        layout.addLayout(btn_layout)
-
-        dialog.setLayout(layout)
-
-        result = dialog.exec_()
-        if result == QDialog.Accepted:
-            group_name = name_input.text()
-            isNew = False
-            if group_name not in self.groups:
-                self.groups[group_name] = {}
-                isNew = True
-            self.groups[group_name].update({"color": picked_color[0].name()})
-            self.save_json(MangaApp.groups_file, self.groups)
-            if isNew:
-                # Add to the combobox
-                self.group_combobox.addItem(group_name, group_name)
-            else:
-                # Force refresh in case color changed
-                self.update_list(forceRefresh=True)
-
-    def slider_value_changed(self, value):
-        self.search_cutoff_threshold = value
-        self.slider_label.setText(f"Search Cutoff Threshold: {self.search_cutoff_threshold}")
-        self.save_settings()  # Save to the settings.json file
-
-    def match_score(self, data, terms):
-        """Compute a score based on the number of matching terms."""
-        score = 0
-
-        for term in terms:
-            if ":" in term:
-                field, value = term.split(":", 1)
-                data_value = data.get(field, "")
-                if isinstance(data_value, (int, float)):
-                    if str(data_value) == value:
-                        score += 1
-                elif value.lower() in str(data_value).lower():
-                    score += 1
-            else:
-                if any(term.lower() in str(data_value).lower() for data_value in data.values()):
-                    score += 1
-
-        return score
-
-    def update_list(self, forceRefresh=False):
-        search_terms = [term.strip() for term in self.search_bar.text().split(",")]
-
-        # Define sort in case we need it
-        _, sort_func = self.sorting_options[self.sort_combobox.currentIndex()]
-        selected_group = self.group_combobox.currentData()
-
-        if not selected_group:
-            mod_data = self.data
-        else:
-            # TODO: Inefficient, might need to be optimized
-            mod_data = [manga_entry for manga_entry in self.data if manga_entry.get("MC_Grouping") == selected_group]
-
-        # If less than 3 characters and already showing all entries, return early
-        if len(search_terms) < 3:
-            if self.showing_all_entries and not forceRefresh:
-                return
-            else:
-                sorted_data = sorted(mod_data, key=lambda x: sort_func(x), reverse=not self.sort_order_reversed)
-                self.list_widget.clear()
-                for entry in sorted_data:
-                    self.list_widget.addItem(self.create_list_item(entry))
-                self.showing_all_entries = True
-                return
-
-        # Compute scores for all manga entries and sort them based on the score
-        scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        sorted_data = sorted(scored_data, key=lambda x: (-x[1], self.secondary_sort_key(x)), reverse=not self.sort_order_reversed)
-
-        self.list_widget.clear()  # Clear the list before adding filtered results
-
-        for idx, (entry, score) in enumerate(sorted_data):
-            if score == len(search_terms) and idx < self.search_cutoff_threshold:
-                self.list_widget.addItem(self.create_list_item(entry))
-            else:
-                break
-
-        self.showing_all_entries = False
-
-    def create_list_item(self, entry: dict):
-        item = QListWidgetItem(entry['title'])
-        item.setTextAlignment(Qt.AlignJustify)
-        item.setToolTip(entry['title'])  # Show full title on hover
-        group_name = entry.get('MC_Grouping')
-        if group_name and group_name in self.groups:
-            color = self.groups[group_name].get("color")
-            if color:
-                item.setBackground(QColor(color))
-
-        return item
-
-    def display_detail(self, item):
-        title = item.text()
-        for entry in self.data:
-            if entry['title'] == title:
-                self.detail_view.setText(json.dumps(entry, indent=4))
+    def closeEvent(self, event):
+        if self.details_view:
+            self.details_view.close()
+        super(MangaCabinet, self).closeEvent(event)
 
     def save_changes(self):
-        contents = self.detail_view.toPlainText()
-        if len(contents) > 5:
-            current_data = json.loads(contents)
-            for i, entry in enumerate(self.data):
-                if entry['id'] == current_data['id']:
-                    self.data[i] = current_data
-                    # TODO: Might want to optimize this
-                    self.save_json(MangaApp.data_file, self.data)
-                    self.update_list(True)
-                    break
+        if self.is_data_modified:
+            save_json(self.data_file, self.data)
+            self.logger.info("Saved data.")
+        self.logger.info("Terminated.")
+
+    def open_detail_view(self, entry):
+        if self.details_view:
+            self.details_view.update_data(entry)
+        else:
+            self.details_view = DetailViewHandler(self, entry)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_F2:
+            self.font_index = (self.font_index + 1) % len(self.fonts)
+        elif event.key() == Qt.Key_F1:
+            self.font_index = (self.font_index - 1) % len(self.fonts)
+        else:
+            super().keyPressEvent(event)
+            return
+
+        self.changeFont()
+
+    def changeFont(self):
+        prev_name = self.font().family()
+        font = QFont(self.fonts[self.font_index], 9)
+        self.setFont(font)
+        self.logger.info(f"Changing font from {prev_name} to {self.fonts[self.font_index]}")
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
     """
-    Function to capture and display exceptions in a readable manner.
+    Function to capture and display exceptions in a readable manner and saves data to prevent loss.
     """
+    try:
+        window.save_changes()
+    except Exception as e:
+        # Log the error or print it out. This is to ensure that if the save fails,
+        # it doesn't prevent the original exception from being displayed.
+        logger = logging.getLogger(__name__)
+        logger.critical(f"Error during save: {e}")
+
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
     sys.exit(1)
 
 
 if __name__ == '__main__':
     sys.excepthook = exception_hook  # Set the exception hook to our function
+    logging.getLogger('PIL').setLevel(logging.WARNING)
 
     app = QApplication(sys.argv)
-    window = MangaApp()
-    window.setWindowTitle("Manga Cabinet")
-    window.resize(400, 400)
-    window.show()
+    # Custom dark palette from https://stackoverflow.com/questions/48256772/dark-theme-for-qt-widgets
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    palette.setColor(QPalette.WindowText, QColor(225, 225, 225))
+    palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    palette.setColor(QPalette.Text, QColor(225, 225, 225))
+    palette.setColor(QPalette.ButtonText, QColor(225, 225, 225))
+    palette.setColor(QPalette.BrightText, Qt.red)
+    palette.setColor(QPalette.Link, QColor(42, 130, 218))
+    palette.setColor(QPalette.Highlight, QColor(75, 35, 194))
+    palette.setColor(QPalette.HighlightedText, Qt.black)
+    app.setPalette(palette)
+    window = MangaCabinet()
+    app.aboutToQuit.connect(window.save_changes)
     sys.exit(app.exec_())
