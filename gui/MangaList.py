@@ -20,6 +20,8 @@ class ListViewHandler:
         self.list_model = None
         self.list_view = None
         self.mw = parent
+        self.selection_history = {'back': [], 'forward': []}
+        self.current_id = None
         self.init_ui()
 
     def init_ui(self):
@@ -37,7 +39,9 @@ class ListViewHandler:
         # Prevent editing on double-click
         self.list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.list_view.clicked.connect(self.mw.details_handler.display_detail)
-        self.list_view.clicked.connect(lambda index: self.list_view.dataChanged(index, index))
+        # To force manual update because I use custom highlighting logic
+        self.list_view.clicked.connect(lambda: self.list_view.viewport().update())
+        self.list_view.clicked.connect(self.update_selection_history)
         self.list_view.middleClicked.connect(self.open_tab)
         self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
 
@@ -55,6 +59,46 @@ class ListViewHandler:
         item = QStandardItem()
         item.setData(entry, Qt.UserRole)
         self.list_model.appendRow(item)
+
+    def update_selection_history(self, index):
+        if index.isValid():
+            unique_id = index.data(Qt.UserRole).id
+            # Push the current_id into the back stack only if it's different from the last entry
+            if self.current_id is not None and (
+                    not self.selection_history['back'] or self.current_id != self.selection_history['back'][-1]):
+                self.selection_history['back'].append(self.current_id)
+            self.current_id = unique_id
+            self.selection_history['forward'].clear()
+
+    def navigate_back(self):
+        if self.selection_history['back']:
+            last_id = self.selection_history['back'][-1]
+            if last_id != self.current_id and self.select_index_by_id(last_id):
+                self.selection_history['forward'].append(self.current_id)
+                self.current_id = self.selection_history['back'].pop()
+
+    def navigate_forward(self):
+        if self.selection_history['forward']:
+            last_id = self.selection_history['forward'][-1]
+            if self.select_index_by_id(last_id):
+                self.selection_history['back'].append(self.current_id)
+                self.current_id = self.selection_history['forward'].pop()
+
+    def select_index_by_id(self, unique_id):
+        for row in range(self.list_model.rowCount()):
+            if self.list_model.item(row).data(Qt.UserRole).id == unique_id:
+                self.select_index(self.list_model.index(row, 0))
+                return True
+        entry = self.mw.data[self.mw.entry_to_index[unique_id]]
+        if entry:
+            self.mw.toast.show_notification(f"{unique_id} is not in the list currently.\n{entry.display_title()}")
+        return False
+
+    def select_index(self, index, update_history=False):
+        self.list_view.setCurrentIndex(index)
+        self.mw.details_handler.display_detail(index)
+        if update_history:
+            self.update_selection_history(index)
 
     def open_tab(self, index):
         entry = index.data(Qt.UserRole)
@@ -385,7 +429,14 @@ class SpecialListView(CustomListView):
         super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
+        if event.button() == Qt.XButton1:  # Mouse button 4
+            self.mw.manga_list_handler.navigate_back()
+        elif event.button() == Qt.XButton2:  # Mouse button 5
+            self.mw.manga_list_handler.navigate_forward()
+        else:
+            super(SpecialListView, self).mousePressEvent(event)
+
+        # Hide the image preview if it's being shown
         self.image_preview.hide()
 
     def wheelEvent(self, event):

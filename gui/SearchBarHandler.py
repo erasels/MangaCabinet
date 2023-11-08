@@ -96,8 +96,7 @@ class SearchBarHandler:
             random_index = random.randint(0, total_items - 1)
         index = self.mw.manga_list_handler.list_model.index(random_index, 0)
 
-        self.mw.manga_list_handler.list_view.setCurrentIndex(index)
-        self.mw.details_handler.display_detail(index)
+        self.mw.manga_list_handler.select_index(index, True)
 
     def toggle_sort_order(self):
         if self.sort_order_reversed:
