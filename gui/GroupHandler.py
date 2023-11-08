@@ -45,6 +45,7 @@ class GroupHandler(QWidget):
         self.group_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
         self.group_combobox.currentIndexChanged.connect(lambda: self.mw.search_bar_handler.update_list())
         self.group_combobox.rightClicked.connect(lambda: self.group_combobox.setCurrentIndex(0))
+        self.group_modified.connect(lambda: fill_groups_box(self.groups, self.group_combobox))
 
         self.manage_groups_btn = QPushButton("Manage Groups", self.mw)
         self.manage_groups_btn.clicked.connect(self.show_group_management_dialog)
