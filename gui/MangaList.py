@@ -228,6 +228,8 @@ class MangaDelegate(QStyledItemDelegate):
             # Adjust title_rect to avoid overlapping with the stars
             title_rect = title_rect.adjusted(star_width, 0, 0, 0)
 
+        painter.save()
+
         # Reduce text opacity if removed
         if entry.removed:
             pen = painter.pen()
