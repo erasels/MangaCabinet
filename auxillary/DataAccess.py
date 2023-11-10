@@ -90,3 +90,22 @@ class MangaEntry(dict):
             return datetime.strptime(self.upload, "%Y/%m/%d %H:%M")
         else:
             return None
+
+
+class TagData(dict):
+    def sorted_keys(self):
+        return sorted(self.keys(), key=str.lower)
+
+    def update_with_entry(self, entry):
+        for tag in entry.tags:
+            if tag not in self:
+                self[tag] = {'count': 0, 'ids': []}
+            self[tag]['count'] += 1
+            self[tag]['ids'].append(entry.id)
+
+    def remove_entry(self, entry):
+        id = entry.id
+        for tag in entry.tags:
+            if tag in self and id in self[tag]['ids']:
+                self[tag]['ids'].remove(id)
+                self[tag]['count'] -= 1

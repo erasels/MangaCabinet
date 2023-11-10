@@ -319,6 +319,7 @@ class TagsWidget(QWidget):
 
         self.mw = mw
         self.current_row, self.current_col = 0, 0
+        self.loaded = False
 
         self.tags_widget = QWidget(self)
         self.tags_layout = QGridLayout(self.tags_widget)
@@ -372,6 +373,8 @@ class TagsWidget(QWidget):
         self.emit_save_signal()
 
     def add_new_tag(self):
+        if not self.loaded:
+            return
         # Create a QInputDialog
         dialog = QInputDialog(self.mw)
         dialog.setInputMode(QInputDialog.TextInput)
@@ -380,7 +383,7 @@ class TagsWidget(QWidget):
         dialog.setStyleSheet(self.mw.styles["lineedit"] + "\n" + self.mw.styles["textbutton"])
 
         line_edit = dialog.findChild(QLineEdit)
-        completer = QCompleter(list(self.mw.all_tags), dialog)
+        completer = QCompleter(self.mw.tag_data.sorted_keys(), dialog)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         line_edit.setCompleter(completer)
 
@@ -389,9 +392,6 @@ class TagsWidget(QWidget):
 
         if ok and text:
             text = text.strip()
-            # Update all tags in case it's a new one
-            self.mw.all_tags.append(text)
-
             # Check for duplicate tags
             existing_tags = self.extract_tags_from_layout()
             if text not in existing_tags:
@@ -411,6 +411,7 @@ class TagsWidget(QWidget):
         return tags
 
     def load_tags(self, tags_list):
+        self.loaded = True
         self.clear_tags_layout()
         self.current_row, self.current_col = 0, 0
         for tag in tags_list:

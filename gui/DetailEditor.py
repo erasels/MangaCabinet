@@ -72,7 +72,7 @@ class DetailEditorHandler:
 
         # Tags Area with QGridLayout
         self.tags_widget = TagsWidget(self.mw)
-        self.tags_widget.saveSignal.connect(self.save_changes)
+        self.tags_widget.saveSignal.connect(self.update_tag_data)
 
         # Similar entry selector
         self.similar_searcher = IdMatcher(self.mw)
@@ -221,7 +221,7 @@ class DetailEditorHandler:
                 modified_data = json.loads(contents, object_pairs_hook=MangaEntry)
                 self.cur_data.clear()  # Done to update inplace references
                 self.cur_data.update(modified_data)
-                self.logger.debug(f"{self.cur_data.id} was updated with manually")
+                self.logger.debug(f"{self.cur_data.id} was updated manually")
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
         else:
@@ -292,6 +292,12 @@ class DetailEditorHandler:
                     entry.similar.remove(self.cur_data.id)
                     self.logger.debug(f"{id}: similar was updated by removing: {self.cur_data.id}")
         return ids
+
+    def update_tag_data(self):
+        self.mw.tag_data.remove_entry(self.cur_data)
+        self.save_changes()
+        # Update tag_data with current tags
+        self.mw.tag_data.update_with_entry(self.cur_data)
 
     def on_artist_editing_finished(self):
         current_artists = set([artist.strip() for artist in self.artist_input.text().split(",") if artist.strip()])

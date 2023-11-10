@@ -9,7 +9,7 @@ from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
 from auxillary.BrowserHandling import BrowserHandler
-from auxillary.DataAccess import MangaEntry
+from auxillary.DataAccess import MangaEntry, TagData
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
@@ -28,7 +28,7 @@ log_file_path = os.path.join(log_dir, 'log.txt')
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
                     datefmt='%y/%m/%d %H:%M:%S',
-                    handlers=[RotatingFileHandler(log_file_path, maxBytes=15*1024*1024, backupCount=2),
+                    handlers=[RotatingFileHandler(log_file_path, maxBytes=15 * 1024 * 1024, backupCount=2),
                               logging.StreamHandler(sys.stdout)])
 
 
@@ -51,16 +51,10 @@ class MangaCabinet(QWidget):
             key=str.lower
         )
         self.entry_to_index = {}
-        self.all_tags = set()
+        self.tag_data = TagData()
         self.all_artists = set()
         self.all_ids = []
-        for idx, entry in enumerate(self.data):
-            # Save entry to its index so that sorting works quickly and as expected
-            self.entry_to_index[entry.id] = idx
-            self.all_tags.update(entry.tags)
-            self.all_artists.update(entry.artist)
-            self.all_ids.append(entry.id)
-        self.all_tags = sorted(self.all_tags, key=str.lower)
+        self.init_infos()
         self.details_view = None
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
@@ -158,6 +152,13 @@ class MangaCabinet(QWidget):
         font = QFont(self.fonts[self.font_index], 9)
         self.setFont(font)
         self.logger.info(f"Changing font from {prev_name} to {self.fonts[self.font_index]}")
+
+    def init_infos(self):
+        for idx, entry in enumerate(self.data):
+            self.entry_to_index[entry.id] = idx
+            self.all_artists.update(entry.artist)
+            self.all_ids.append(entry.id)
+            self.tag_data.update_with_entry(entry)
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
