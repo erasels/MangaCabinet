@@ -191,4 +191,4 @@ assets/data/groups_real.json
 assets/data/settings_real.json
 assets/thumbnails
 logs
-start.bat
+start_windows.bat
