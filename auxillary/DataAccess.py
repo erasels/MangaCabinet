@@ -72,12 +72,12 @@ class MangaEntry(dict):
             super().__delattr__(attr)
 
     def display_title(self) -> str:
-        return self.get("title_short") or self.get("title_alt") or self.get("title", "")
+        return self.title_short or self.title_alt or self.title
 
     def first_artist(self):
-        artists = self.get("artist", [])
+        artists = self.artist
         if not artists:
-            group = self.get("group", [])
+            group = self.group
             if group:
                 return group[0]
         else:
@@ -85,7 +85,7 @@ class MangaEntry(dict):
         return ""
 
     def is_translated(self):
-        return self.get("language") and "translated" in self["language"]
+        return self.language and "translated" in self.language
 
     def upload_date(self):
         if self.upload:
@@ -94,12 +94,12 @@ class MangaEntry(dict):
             return None
 
     def update_last_edited(self):
-        self["last_edited"] = datetime.now().strftime("%Y/%m/%d %H:%M")
-        self.logger.debug(f"{self['id']}: MC_last_edited was updated with: {self['last_edited']}")
+        self.last_edited = datetime.now().strftime("%Y/%m/%d %H:%M")
+        self.logger.debug(f"{self.id}: MC_last_edited was updated with: {self.last_edited}")
 
     def update_last_opened(self):
-        self["last_opened"] = datetime.now().strftime("%Y/%m/%d %H:%M")
-        self.logger.debug(f"{self['id']}: MC_last_opened was updated with: {self['last_opened']}")
+        self.last_opened = datetime.now().strftime("%Y/%m/%d %H:%M")
+        self.logger.debug(f"{self.id}: MC_last_opened was updated with: {self.last_opened}")
 
 
 class TagData(dict):
