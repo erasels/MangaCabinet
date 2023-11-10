@@ -2,6 +2,7 @@ import logging
 import math
 import os
 import typing
+from datetime import datetime
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint
@@ -103,9 +104,11 @@ class ListViewHandler:
     def open_tab(self, index):
         entry = index.data(Qt.UserRole)
         if not self.mw.browser_handler.unsupported:
+            entry.last_opened = datetime.now().strftime("%Y/%m/%d %H:%M")
             entry.opens += 1
             self.mw.is_data_modified = True
             self.logger.debug(f"{entry.id}: MC_num_opens was updated with: {entry.opens}")
+            self.logger.debug(f"{entry.id}: MC_last_opened was updated with: {entry.last_opened}")
             if self.mw.details_handler.json_edit_mode:
                 self.mw.details_handler.display_detail(index, True)
         self.mw.browser_handler.open_tab(entry)

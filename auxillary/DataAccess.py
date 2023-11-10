@@ -22,6 +22,8 @@ class MangaEntry(dict):
         "open_url": ("open_url", ""),
         "thumbnail_url": ("thumbnail_url", ""),
         "opens": ("MC_num_opens", 0),
+        "last_opened": ("MC_last_open", None),
+        "last_edited": ("MC_last_edited", None),
         "removed": ("removed", False)
     }
 
