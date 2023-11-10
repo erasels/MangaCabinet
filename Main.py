@@ -124,6 +124,8 @@ class MangaCabinet(QWidget):
     def closeEvent(self, event):
         if self.details_view:
             self.details_view.close()
+        if self.tag_view:
+            self.tag_view.close()
         super(MangaCabinet, self).closeEvent(event)
 
     def save_changes(self):
