@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import datetime
 
 from PyQt5.QtCore import Qt, QSize, QStringListModel
 from PyQt5.QtGui import QIcon
@@ -222,6 +223,7 @@ class DetailEditorHandler:
                 self.cur_data.clear()  # Done to update inplace references
                 self.cur_data.update(modified_data)
                 self.logger.debug(f"{self.cur_data.id} was updated manually")
+                self.cur_data.update_last_edited()
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
         else:
@@ -267,6 +269,7 @@ class DetailEditorHandler:
                 update_attribute('group', group_value)
 
             if data_changed:
+                self.cur_data.update_last_edited()
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
 

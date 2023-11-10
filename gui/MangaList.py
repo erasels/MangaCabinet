@@ -106,9 +106,10 @@ class ListViewHandler:
         if not self.mw.browser_handler.unsupported:
             entry.last_opened = datetime.now().strftime("%Y/%m/%d %H:%M")
             entry.opens += 1
-            self.mw.is_data_modified = True
             self.logger.debug(f"{entry.id}: MC_num_opens was updated with: {entry.opens}")
-            self.logger.debug(f"{entry.id}: MC_last_opened was updated with: {entry.last_opened}")
+            entry.update_last_opened()
+            # entry.update_last_edited()  # Doesn't feel like it should be updated here
+            self.mw.is_data_modified = True
             if self.mw.details_handler.json_edit_mode:
                 self.mw.details_handler.display_detail(index, True)
         self.mw.browser_handler.open_tab(entry)

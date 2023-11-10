@@ -93,6 +93,14 @@ class MangaEntry(dict):
         else:
             return None
 
+    def update_last_edited(self):
+        self["last_edited"] = datetime.now().strftime("%Y/%m/%d %H:%M")
+        self.logger.debug(f"{self['id']}: MC_last_edited was updated with: {self['last_edited']}")
+
+    def update_last_opened(self):
+        self["last_opened"] = datetime.now().strftime("%Y/%m/%d %H:%M")
+        self.logger.debug(f"{self['id']}: MC_last_opened was updated with: {self['last_opened']}")
+
 
 class TagData(dict):
     def sorted_keys(self):
