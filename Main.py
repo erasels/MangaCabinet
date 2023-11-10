@@ -19,6 +19,7 @@ from gui.GroupHandler import GroupHandler
 from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
+from gui.TagViewer import TagViewer
 from gui.WidgetDerivatives import ToastNotification
 
 log_dir = 'logs'
@@ -56,6 +57,7 @@ class MangaCabinet(QWidget):
         self.all_ids = []
         self.init_infos()
         self.details_view = None
+        self.tag_view = None
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
         self.thumbnail_manager = ThumbnailManager(self.data, self.download_thumbnails, self.tags_to_blur)
@@ -135,6 +137,12 @@ class MangaCabinet(QWidget):
             self.details_view.update_data(entry)
         else:
             self.details_view = DetailViewHandler(self, entry)
+
+    def open_tag_view(self):
+        if not self.tag_view:
+            self.tag_view = TagViewer(self)
+
+        self.tag_view.show()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_F2:

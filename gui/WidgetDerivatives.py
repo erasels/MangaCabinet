@@ -329,14 +329,21 @@ class TagsWidget(QWidget):
         self.scroll_area.setWidget(self.tags_widget)
         self.scroll_area.setWidgetResizable(True)
 
+        buttons_layout = QHBoxLayout()
         self.add_tag_btn = QPushButton("Add Tag", self)
         self.add_tag_btn.clicked.connect(self.add_new_tag)
         self.add_tag_btn.setStyleSheet(self.mw.styles.get("textbutton"))
+        buttons_layout.addWidget(self.add_tag_btn)
+
+        self.browse_tag_btn = QPushButton("Browse Tags", self)
+        self.browse_tag_btn.clicked.connect(self.mw.open_tag_view)
+        self.browse_tag_btn.setStyleSheet(self.mw.styles.get("textbutton"))
+        buttons_layout.addWidget(self.browse_tag_btn)
 
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Tags:"))
         layout.addWidget(self.scroll_area)
-        layout.addWidget(self.add_tag_btn)
+        layout.addLayout(buttons_layout)
 
     def emit_save_signal(self):
         self.saveSignal.emit()
