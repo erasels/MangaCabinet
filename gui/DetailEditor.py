@@ -5,7 +5,7 @@ import os
 from PyQt5.QtCore import Qt, QSize, QStringListModel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QComboBox, \
-    QHBoxLayout, QVBoxLayout
+    QHBoxLayout
 
 from auxillary.DataAccess import MangaEntry
 from gui.GroupHandler import fill_groups_box
@@ -16,6 +16,7 @@ from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageVi
 class DetailEditorHandler:
     def __init__(self, parent):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.opened = False
         self.cur_data = None
         self.save_button = None
         self.detail_view = None
@@ -35,13 +36,11 @@ class DetailEditorHandler:
         # Detail view
         self.detail_view = QTextEdit(self.mw)
         self.detail_view.setPlaceholderText("Select an item to edit it.")
-        self.detail_view.hide()
 
         # Save button
         self.save_button = QPushButton("Save Changes", self.mw)
         self.save_button.clicked.connect(self.save_changes)
         self.save_button.setStyleSheet(self.mw.styles.get("textbutton"))
-        self.save_button.hide()
 
         # Set up JSON view
         self.layout.addWidget(self.detail_view, 0, 0, 3, -1)
@@ -145,6 +144,9 @@ class DetailEditorHandler:
         misc_layout.insertSpacing(8, 50)
         self.layout.addLayout(misc_layout, 3, 0, 1, 4)
 
+        # Start with the layout hidden
+        self.recursively_toggle_visibility(self.layout, False)
+
         # Toggle edit mode button
         self.toggle_button = QPushButton(self.mw)
         self.toggle_button.setIcon(QIcon(os.path.join(self.mw.image_path, 'edit_icon.png')))
@@ -155,6 +157,7 @@ class DetailEditorHandler:
         self.positionToggleButton()
         self.toggle_button.clicked.connect(self.toggle_edit_mode)
         self.toggle_button.raise_()
+        self.toggle_button.hide()
 
     # For the details display
     def get_layout(self):
@@ -172,6 +175,11 @@ class DetailEditorHandler:
         self.toggle_button.setGeometry(x_position, y_position, button_width, button_height)
 
     def display_detail(self, index, reload=False):
+        if not self.opened:
+            self.opened = True
+            self.switch_views("detail")
+            self.toggle_button.show()
+
         if not reload:
             new_data = index.data(Qt.UserRole)
             if self.cur_data == new_data:
@@ -315,18 +323,18 @@ class DetailEditorHandler:
 
     def toggle_edit_mode(self):
         if not self.json_edit_mode:
-            for i in range(self.layout.count()):
-                self.recursively_toggle_visibility(self.layout.itemAt(i), False)
-            self.detail_view.show()
-            self.save_button.show()
+            self.switch_views("JSON")
         else:
-            for i in range(self.layout.count()):
-                self.recursively_toggle_visibility(self.layout.itemAt(i), True)
-            self.detail_view.hide()
-            self.save_button.hide()
+            self.switch_views("detail")
 
         self.json_edit_mode = not self.json_edit_mode
         self.display_detail(0, True)  # Index is skipped
+
+    def switch_views(self, view="detail"):
+        for i in range(self.layout.count()):
+            self.recursively_toggle_visibility(self.layout.itemAt(i), view == "detail")
+        self.detail_view.setVisible(view == "JSON")
+        self.save_button.setVisible(view == "JSON")
 
     def recursively_toggle_visibility(self, item, show: bool):
         """Toggle the visibility of the widget, or if it's a layout, toggle all its items."""
