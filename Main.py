@@ -107,8 +107,11 @@ class MangaCabinet(QWidget):
         self.layout.addLayout(self.search_bar_handler.get_layout(self.group_handler.get_widgets() + [self.options_handler.get_widget()]))
 
         self.vertical_layout = QVBoxLayout()
-        self.vertical_layout.addWidget(self.manga_list_handler.get_widget(), 1)
-        self.vertical_layout.addLayout(self.details_handler.get_layout(), 1)
+        list_widget = self.manga_list_handler.get_widget()
+        list_widget.setMinimumHeight(335)
+        self.vertical_layout.addWidget(list_widget, 1)
+        self.vertical_layout.addLayout(self.details_handler.get_layout(), 0)
+
         self.layout.addLayout(self.vertical_layout)
 
         self.setLayout(self.layout)
