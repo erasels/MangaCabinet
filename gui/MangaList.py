@@ -462,6 +462,17 @@ class SpecialListView(CustomListView):
         self.image_preview.hide()
         super().leaveEvent(event)
 
+    # Stops scrolling to items that are still somewhat within view
+    def scrollTo(self, index, hint=QAbstractItemView.EnsureVisible):
+        # Check if the item is visible
+        if not self.isIndexVisible(index):
+            super(SpecialListView, self).scrollTo(index, hint)
+
+    def isIndexVisible(self, index):
+        rect = self.visualRect(index)
+        viewport_rect = self.viewport().rect()
+        return viewport_rect.contains(QPoint(rect.left(), rect.top()))
+
     def show_image_preview(self, event):
         if self.mw.settings[thumbnail_preview]:
             # Fix bug that unshackles preview from leaveEvent when opening new window without leaving the app
