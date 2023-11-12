@@ -36,7 +36,9 @@ class ListViewHandler:
         self.list_view.setLayoutMode(QListView.Batched)
 
         self.list_delegate = MangaDelegate(self.mw, self.list_view)
+        #self.list_delegate = ThumbnailDelegate(self.mw, self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
+        #self.list_view.setSpacing(3)
         # Prevent editing on double-click
         self.list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.list_view.clicked.connect(self.mw.details_handler.display_detail)
@@ -506,3 +508,77 @@ class SpecialListView(CustomListView):
 
     def is_cursor_within_view(self, cursor_pos):
         return self.viewport().rect().contains(cursor_pos)
+
+
+class ThumbnailDelegate(QStyledItemDelegate):
+    WIDTH, HEIGHT = 200, 200
+
+    def __init__(self, mw, parent=None, *args, **kwargs):
+        super(ThumbnailDelegate, self).__init__(parent, *args, **kwargs)
+        self.mw = mw
+
+    def paint(self, painter, option, index):
+        painter.save()
+
+        # Retrieve item data
+        entry = index.data(Qt.UserRole)
+        thumbnail = QPixmap(self.mw.thumbnail_manager.get_thumbnail_path(entry.id))
+        title = entry.display_title()
+
+        # Scale the thumbnail, maintaining aspect ratio
+        max_thumb_height = option.rect.height()  # Use full height for the thumbnail
+        scaled_thumb = thumbnail.scaled(self.WIDTH, max_thumb_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        # Center the thumbnail horizontally and vertically in the item area
+        thumb_x = option.rect.left() + (option.rect.width() - scaled_thumb.width()) / 2
+        thumb_y = option.rect.top() + (option.rect.height() - scaled_thumb.height()) / 2  # Center vertically
+        thumb_rect = QRect(int(thumb_x), int(thumb_y), int(scaled_thumb.width()), int(scaled_thumb.height()))
+        painter.drawPixmap(thumb_rect, scaled_thumb)
+
+        # Determine if the title needs to be split into two lines
+        font_metrics = QFontMetrics(painter.font())
+        title_line_1 = font_metrics.elidedText(title, Qt.ElideRight, option.rect.width())
+        title_line_2 = None
+
+        if title_line_1 != title:
+            words = title.split()
+            for i in range(len(words), 0, -1):
+                possible_line_1 = " ".join(words[:i])
+                if font_metrics.width(possible_line_1) <= option.rect.width() - 2:
+                    title_line_1 = possible_line_1
+                    title_line_2 = " ".join(words[i:])
+                    break
+
+        # Adjust the height of the title background based on whether the title is split
+        line_height = 20
+        title_background_height = line_height if title_line_2 is None else int(line_height * 2)
+
+        # Draw semi-transparent background for the title on the bottom of the thumbnail
+        title_background_rect = QRect(option.rect.left(), option.rect.bottom() - title_background_height + 1,
+                                      option.rect.width(), title_background_height)
+        painter.setBrush(QColor(0, 0, 0, 180))
+        painter.setPen(Qt.NoPen)  # No border
+        corner_radius = 5
+        painter.drawRoundedRect(title_background_rect, corner_radius, corner_radius)
+
+        painter.restore()
+        painter.save()
+
+        # Draw the title, potentially split into two lines
+        if title_line_2:
+            line_height = title_background_height // 2
+            first_line_rect = QRect(title_background_rect.left(), title_background_rect.top(),
+                                    title_background_rect.width(), line_height)
+            second_line_rect = QRect(title_background_rect.left(), title_background_rect.top() + line_height,
+                                     title_background_rect.width(), line_height)
+
+            title_line_2 = font_metrics.elidedText(title_line_2, Qt.ElideRight, second_line_rect.width())
+            painter.drawText(first_line_rect, Qt.AlignCenter, title_line_1)
+            painter.drawText(second_line_rect, Qt.AlignCenter, title_line_2)
+        else:
+            painter.drawText(title_background_rect, Qt.AlignCenter, title_line_1)
+
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        return QSize(self.WIDTH, self.HEIGHT)  # width, height
