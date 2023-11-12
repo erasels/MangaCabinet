@@ -114,6 +114,11 @@ class ListViewHandler:
                 self.mw.details_handler.display_detail(index, True)
         self.mw.browser_handler.open_tab(entry)
 
+    def rescroll(self):
+        current_index = self.list_view.currentIndex()
+        if current_index:
+            self.list_view.scrollTo(current_index)
+
 
 def blend_colors(color1, color2, alpha):
     """

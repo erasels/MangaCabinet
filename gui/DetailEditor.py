@@ -1,12 +1,11 @@
 import json
 import logging
 import os
-from typing import cast
 
 from PyQt5.QtCore import Qt, QSize, QStringListModel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QComboBox, \
-    QHBoxLayout, QListView
+    QHBoxLayout
 
 from auxillary.DataAccess import MangaEntry
 from gui.GroupHandler import fill_groups_box
@@ -175,17 +174,16 @@ class DetailEditorHandler:
         y_position = self.mw.height() - button_height - 10
         self.toggle_button.setGeometry(x_position, y_position, button_width, button_height)
 
-    def open(self, index=None):
+    def open(self):
         if not self.opened:
             self.opened = True
             self.switch_views("detail")
             self.toggle_button.show()
             # Fix current item being offscreen when window pops up
-            if index:
-                cast(QListView, self.mw.manga_list_handler.list_view).scrollTo(index)
+            self.mw.manga_list_handler.rescroll()
 
     def display_detail(self, index, reload=False):
-        self.open(index)
+        self.open()
         if not reload:
             new_data = index.data(Qt.UserRole)
             if self.cur_data == new_data:
