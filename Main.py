@@ -104,13 +104,12 @@ class MangaCabinet(QWidget):
         self.search_bar_handler.update_list(False)
 
         # Setup layout (wdiget = single item, layout = group of items)
-        self.layout.addLayout(
-            self.search_bar_handler.get_layout(self.group_handler.get_widgets() + [self.options_handler.get_widget()])
-        )
-        self.layout.addWidget(self.manga_list_handler.get_widget())
-        for widget in self.details_handler.get_widgets():
-            self.layout.addWidget(widget)
-        self.layout.addLayout(self.details_handler.get_layout())
+        self.layout.addLayout(self.search_bar_handler.get_layout(self.group_handler.get_widgets() + [self.options_handler.get_widget()]))
+
+        self.vertical_layout = QVBoxLayout()
+        self.vertical_layout.addWidget(self.manga_list_handler.get_widget(), 1)
+        self.vertical_layout.addLayout(self.details_handler.get_layout(), 1)
+        self.layout.addLayout(self.vertical_layout)
 
         self.setLayout(self.layout)
         self.toast = ToastNotification(self)

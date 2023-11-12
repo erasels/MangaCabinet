@@ -1,12 +1,11 @@
 import json
 import logging
 import os
-from datetime import datetime
 
 from PyQt5.QtCore import Qt, QSize, QStringListModel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QComboBox, \
-    QHBoxLayout
+    QHBoxLayout, QVBoxLayout
 
 from auxillary.DataAccess import MangaEntry
 from gui.GroupHandler import fill_groups_box
@@ -31,6 +30,8 @@ class DetailEditorHandler:
         self.init_ui()
 
     def init_ui(self):
+        self.layout = QGridLayout()
+
         # Detail view
         self.detail_view = QTextEdit(self.mw)
         self.detail_view.setPlaceholderText("Select an item to edit it.")
@@ -42,7 +43,9 @@ class DetailEditorHandler:
         self.save_button.setStyleSheet(self.mw.styles.get("textbutton"))
         self.save_button.hide()
 
-        self.layout = QGridLayout()
+        # Set up JSON view
+        self.layout.addWidget(self.detail_view, 0, 0, 3, -1)
+        self.layout.addWidget(self.save_button, 4, 0, -1, -1)
 
         # Title and Short Title
         self.title_input = QLineEdit(self.mw)
@@ -152,10 +155,6 @@ class DetailEditorHandler:
         self.positionToggleButton()
         self.toggle_button.clicked.connect(self.toggle_edit_mode)
         self.toggle_button.raise_()
-
-    # Json edit
-    def get_widgets(self):
-        return self.detail_view, self.save_button
 
     # For the details display
     def get_layout(self):
@@ -321,10 +320,10 @@ class DetailEditorHandler:
             self.detail_view.show()
             self.save_button.show()
         else:
-            self.detail_view.hide()
-            self.save_button.hide()
             for i in range(self.layout.count()):
                 self.recursively_toggle_visibility(self.layout.itemAt(i), True)
+            self.detail_view.hide()
+            self.save_button.hide()
 
         self.json_edit_mode = not self.json_edit_mode
         self.display_detail(0, True)  # Index is skipped

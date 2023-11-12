@@ -304,12 +304,6 @@ class IdMatcher(QWidget):
                 else:
                     item.setBackground(IdMatcher.DEFAULT_COLOR)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-
-        new_height = self.height() * IdMatcher.DEFAULT_RATIO
-        self.list_widget.setFixedHeight(int(new_height))
-
 
 class TagsWidget(QWidget):
     saveSignal = pyqtSignal()
