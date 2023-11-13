@@ -432,7 +432,6 @@ class TagsWidget(QWidget):
 
 class ImageViewer(QGraphicsView):
     rightClicked = pyqtSignal()
-    DEFAULT_IMG = os.path.join("assets", "images", "no_thumbnail.png")
     MAX_ZOOM = 4.0
 
     def __init__(self, thumb_manager, parent=None, dynamic_show=False):
@@ -459,11 +458,7 @@ class ImageViewer(QGraphicsView):
         self.entry_id = entry_id
         self._zoom_factor = 1.0
         if not self.isHidden():
-            img_path = self.thumb_manager.get_thumbnail_path(self.entry_id)
-            if not img_path:
-                img_path = self.DEFAULT_IMG
-
-            self.original_pixmap = QPixmap(img_path)
+            self.original_pixmap = self.thumb_manager.get_thumbnail(entry_id)
             self._update_pixmap()
 
     def _update_pixmap(self):

@@ -91,6 +91,7 @@ class DetailViewHandler(QWidget):
         img_path = self.thumb.get_thumbnail_path(self.entry.id)
         if img_path:
             Thumbnails.blur_image(img_path, img_path, 5)
+            self.thumb.update_thumbnail(self.entry.id, img_path)
             self.image_viewer.load_image(self.entry.id)
         else:
             self.logger.warning("Tried to blur the default image.")

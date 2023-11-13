@@ -7,6 +7,7 @@ from io import BytesIO
 import requests
 from PIL import Image, ImageFilter
 from PyQt5.QtCore import QObject, pyqtSignal, QThread
+from PyQt5.QtGui import QPixmap
 
 from auxillary.DataAccess import MangaEntry
 
@@ -21,6 +22,7 @@ def blur_image(input_path: str, output_path: str, blur_strength: int = 10):
 class ThumbnailManager(QObject):
     BATCH_SIZE = 3
     DELAY = 0.75
+    DEFAULT_IMG = os.path.join("assets", "images", "no_thumbnail.png")
 
     thumbnailDownloaded = pyqtSignal(MangaEntry, str)  # Signal emitted when a thumbnail is downloaded
     startEnsuring = pyqtSignal()
@@ -32,6 +34,8 @@ class ThumbnailManager(QObject):
         self.download = download
         self.tags_to_blur = tags_to_blur
         self.id_to_path = {}
+        self.id_to_pixmap = {}
+        self.default_img = QPixmap(self.DEFAULT_IMG)
         self.base_path = os.path.join('assets', 'thumbnails')
         if not os.path.exists(self.base_path):
             os.makedirs(self.base_path)
@@ -109,7 +113,7 @@ class ThumbnailManager(QObject):
         if autoBlur and any(tag in manga.tags for tag in self.tags_to_blur):
             img = img.filter(ImageFilter.GaussianBlur(10))
         img.save(file_path)
-        self.id_to_path[manga.id] = file_path
+        self.update_thumbnail(manga.id, file_path)
         self.thumbnailDownloaded.emit(manga, file_path)
 
     def log_download(self, manga, file_path):
@@ -117,6 +121,23 @@ class ThumbnailManager(QObject):
 
     def get_thumbnail_path(self, id):
         return self.id_to_path.get(id)
+
+    def get_thumbnail(self, id):
+        img = self.id_to_pixmap.get(id)
+        if not img:
+            path = self.get_thumbnail_path(id)
+            if path:
+                img = QPixmap(path)
+                self.id_to_pixmap[id] = img
+            else:
+                img = self.default_img
+                self.id_to_pixmap[id] = self.default_img
+        return img
+
+    def update_thumbnail(self, id, path):
+        """Updates the references when an image is created on disk."""
+        self.id_to_path[id] = path
+        self.id_to_pixmap[id] = QPixmap(path)
 
     def make_file_path(self, manga):
         return os.path.join(self.base_path, manga.id + ".png")

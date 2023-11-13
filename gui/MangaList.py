@@ -1,3 +1,4 @@
+import functools
 import logging
 import math
 import os
@@ -5,7 +6,7 @@ import typing
 from datetime import datetime
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint
+from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect
@@ -35,10 +36,10 @@ class ListViewHandler:
         self.list_view.setFlow(QListView.LeftToRight)
         self.list_view.setLayoutMode(QListView.Batched)
 
-        self.list_delegate = MangaDelegate(self.mw, self.list_view)
-        #self.list_delegate = ThumbnailDelegate(self.mw, self.list_view)
+        #self.list_delegate = MangaDelegate(self.mw, self.list_view)
+        self.list_delegate = ThumbnailDelegate(self.mw, self.list_view)
         self.list_view.setItemDelegate(self.list_delegate)
-        #self.list_view.setSpacing(3)
+        self.list_view.setSpacing(3)
         # Prevent editing on double-click
         self.list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.list_view.clicked.connect(self.mw.details_handler.display_detail)
@@ -415,8 +416,9 @@ class MangaDelegate(QStyledItemDelegate):
 
 
 class ImagePreview(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, mw, parent=None):
         super().__init__(parent)
+        self.mw = mw
         self.setWindowFlags(Qt.ToolTip)  # Makes it float above other widgets
         self.setLayout(QVBoxLayout())
         self.label = QLabel(self)
@@ -429,14 +431,13 @@ class ImagePreview(QWidget):
         effect.setOffset(1, 1)
         self.setGraphicsEffect(effect)
 
-        self._last_image_path = None
-        self._cached_pixmap = None
+        self._last_image_id = None
 
-    def set_image(self, image_path, max_width=250, max_height=300):
-        if self._last_image_path != image_path:
-            self._cached_pixmap = QPixmap(image_path).scaled(max_width, max_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self._last_image_path = image_path
-            self.label.setPixmap(self._cached_pixmap)
+    def set_image(self, id, max_width=250, max_height=300):
+        if self._last_image_id != id:
+            self._last_image_id = id
+            thmb = self.mw.thumbnail_manager
+            self.label.setPixmap(thmb.get_thumbnail(id).scaled(max_width, max_height, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.adjustSize()
 
 
@@ -444,7 +445,7 @@ class SpecialListView(CustomListView):
     def __init__(self, parent=None):
         super(CustomListView, self).__init__(parent)
         self.mw = parent
-        self.image_preview = ImagePreview(self)
+        self.image_preview = ImagePreview(self.mw, self)
         self.setMouseTracking(True)
         # Amount of items to scroll
         self.scroll_speed = 1
@@ -509,14 +510,11 @@ class SpecialListView(CustomListView):
                     self.image_preview.hide()
                     return
 
-                image_path = self.mw.thumbnail_manager.get_thumbnail_path(entry.id)
-                if image_path:
-                    self.image_preview.set_image(image_path)
-                    self.image_preview.move(event.globalPos() + QPoint(5, 5))
-                    self.image_preview.show()
-                    return
-            self.image_preview.hide()
-            return
+                self.image_preview.set_image(entry.id)
+                self.image_preview.move(event.globalPos() + QPoint(5, 5))
+                self.image_preview.show()
+            else:
+                self.image_preview.hide()
 
     def is_cursor_within_view(self, cursor_pos):
         return self.viewport().rect().contains(cursor_pos)
@@ -528,13 +526,22 @@ class ThumbnailDelegate(QStyledItemDelegate):
     def __init__(self, mw, parent=None, *args, **kwargs):
         super(ThumbnailDelegate, self).__init__(parent, *args, **kwargs)
         self.mw = mw
+        self.cache = {}
+        self.threadPool = QThreadPool()
+        self.imageLoader = ImageLoader(mw.thumbnail_manager)
+        self.imageLoader.imageLoaded.connect(self.onImageLoaded)
+
+    @pyqtSlot(str, QPixmap)
+    def onImageLoaded(self, image_id, pixmap):
+        self.cache[image_id] = pixmap
+        self.parent().viewport().update()  # Update the view to redraw items with the loaded image
 
     def paint(self, painter, option, index):
         painter.save()
 
         # Retrieve item data
         entry = index.data(Qt.UserRole)
-        thumbnail = QPixmap(self.mw.thumbnail_manager.get_thumbnail_path(entry.id))
+        thumbnail = self.mw.thumbnail_manager.get_thumbnail(entry.id)
         title = entry.display_title()
 
         # Scale the thumbnail, maintaining aspect ratio
@@ -592,5 +599,22 @@ class ThumbnailDelegate(QStyledItemDelegate):
 
         painter.restore()
 
+    def loadImageAsync(self, image_id):
+        worker = functools.partial(self.imageLoader.load, image_id)
+        self.threadPool.start(worker)
+
     def sizeHint(self, option, index):
         return QSize(self.WIDTH, self.HEIGHT)  # width, height
+
+
+class ImageLoader(QObject):
+    imageLoaded = pyqtSignal(str, QPixmap)
+
+    def __init__(self, thumbnail_manager, parent=None):
+        super().__init__(parent)
+        self.thumbnail_manager = thumbnail_manager
+
+    def load(self, image_id):
+        image = self.thumbnail_manager.get_thumbnail(image_id)
+        if image:
+            self.imageLoaded.emit(image_id, image)
