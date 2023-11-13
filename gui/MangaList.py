@@ -11,14 +11,17 @@ from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemM
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect
 
-from gui.Options import thumbnail_preview
+from gui.Options import thumbnail_preview, thumbnail_delegate
 from gui.WidgetDerivatives import CustomListView
 
 
 class ListViewHandler:
+    THUMB_SPACING, MANGA_SPACING = 3, 0
+
     def __init__(self, parent):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.list_delegate = None
+        self.manga_delegate = None
+        self.thumb_delegate = None
         self.list_model = None
         self.list_view = None
         self.mw = parent
@@ -36,10 +39,9 @@ class ListViewHandler:
         self.list_view.setFlow(QListView.LeftToRight)
         self.list_view.setLayoutMode(QListView.Batched)
 
-        #self.list_delegate = MangaDelegate(self.mw, self.list_view)
-        self.list_delegate = ThumbnailDelegate(self.mw, self.list_view)
-        self.list_view.setItemDelegate(self.list_delegate)
-        self.list_view.setSpacing(3)
+        self.manga_delegate = MangaDelegate(self.mw, self.list_view)
+        self.thumb_delegate = ThumbnailDelegate(self.mw, self.list_view)
+        self.switch_delegate(self.mw.settings[thumbnail_delegate])
         # Prevent editing on double-click
         self.list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.list_view.clicked.connect(self.mw.details_handler.display_detail)
@@ -55,6 +57,15 @@ class ListViewHandler:
     def handle_resize(self):
         self.list_view.updateGeometries()
         self.list_view.doItemsLayout()  # Force the view to relayout items.
+
+    def switch_delegate(self, thumbnail):
+        if thumbnail:
+            self.list_view.setItemDelegate(self.thumb_delegate)
+            self.list_view.setSpacing(self.THUMB_SPACING)
+        else:
+            self.list_view.setItemDelegate(self.manga_delegate)
+            self.list_view.setSpacing(self.MANGA_SPACING)
+        self.list_view.viewport().update()
 
     def clear_view(self):
         self.list_model.clear()

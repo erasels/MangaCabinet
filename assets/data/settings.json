@@ -5,5 +5,6 @@
     "loose_search_matching": false,
     "count_multiple_matches": false,
     "bind_detail_view": false,
-    "show_hover_thumbnail": true
+    "show_hover_thumbnail": true,
+    "use_thumbnail_view": false
 }

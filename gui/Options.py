@@ -13,6 +13,7 @@ loose_match = "loose_search_matching"
 multi_match = "count_multiple_matches"
 bind_dview = "bind_detail_view"
 thumbnail_preview = "show_hover_thumbnail"
+thumbnail_delegate = "use_thumbnail_view"
 
 
 def init_settings():
@@ -23,7 +24,8 @@ def init_settings():
         loose_match: False,
         multi_match: False,
         bind_dview: False,
-        thumbnail_preview: True
+        thumbnail_preview: True,
+        thumbnail_delegate: False
     }
 
 
@@ -117,6 +119,11 @@ class OptionsHandler(QDialog):
         self.thumbnail_checkbox.setChecked(self.mw.settings[thumbnail_preview])
         self.thumbnail_checkbox.stateChanged.connect(lambda state: self.simple_change(thumbnail_preview, state))
 
+        self.switch_delegate_checkbox = QCheckBox("Use Thumbnail List View", self)
+        self.switch_delegate_checkbox.setChecked(self.mw.settings[thumbnail_delegate])
+        self.switch_delegate_checkbox.stateChanged.connect(self.thumbnail_view_changed)
+        self.switch_delegate_checkbox.setToolTip("WARNING: High RAM requirement if you have a lot of entries with images.")
+
         sort_layout = QHBoxLayout()
         sort_layout.addWidget(self.default_sort_label)
         sort_layout.addWidget(self.default_sort_combobox)
@@ -131,6 +138,7 @@ class OptionsHandler(QDialog):
         layout.addWidget(self.multi_match_checkbox)
         layout.addWidget(self.bind_view_checkbox)
         layout.addWidget(self.thumbnail_checkbox)
+        layout.addWidget(self.switch_delegate_checkbox)
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
@@ -146,6 +154,10 @@ class OptionsHandler(QDialog):
     def bind_view_changed(self, state):
         self.mw.settings[bind_dview] = bool(state)
         self.bindViewChanged.emit(bool(state))
+
+    def thumbnail_view_changed(self, state):
+        self.mw.settings[thumbnail_delegate] = bool(state)
+        self.mw.manga_list_handler.switch_delegate(bool(state))
 
     def set_default_sort_option(self, index):
         sort_option = self.mw.search_bar_handler.sorting_options[index][0]
