@@ -63,6 +63,16 @@ class ListViewHandler:
         item.setData(entry, Qt.UserRole)
         self.list_model.appendRow(item)
 
+    def add_items(self, entries, clear_list=True):
+        if clear_list:
+            self.clear_view()
+        self.list_model.layoutAboutToBeChanged.emit()
+        for entry in entries:
+            item = QStandardItem()
+            item.setData(entry, Qt.UserRole)
+            self.list_model.appendRow(item)
+        self.list_model.layoutChanged.emit()
+
     def update_selection_history(self, index):
         if index.isValid():
             unique_id = index.data(Qt.UserRole).id
@@ -87,14 +97,16 @@ class ListViewHandler:
                 self.selection_history['back'].append(self.current_id)
                 self.current_id = self.selection_history['forward'].pop()
 
-    def select_index_by_id(self, unique_id):
+    def select_index_by_id(self, unique_id, notify_on_failure=True):
+        """Select an item in the list_view by its Id, does not update selection history and by default notifies on failure"""
         for row in range(self.list_model.rowCount()):
             if self.list_model.item(row).data(Qt.UserRole).id == unique_id:
                 self.select_index(self.list_model.index(row, 0))
                 return True
-        entry = self.mw.data[self.mw.entry_to_index[unique_id]]
-        if entry:
-            self.mw.toast.show_notification(f"{unique_id} is not in the list currently.\n{entry.display_title()}")
+        if notify_on_failure:
+            entry = self.mw.data[self.mw.entry_to_index[unique_id]]
+            if entry:
+                self.mw.toast.show_notification(f"{unique_id} is not in the list currently.\n{entry.display_title()}")
         return False
 
     def select_index(self, index, update_history=False):

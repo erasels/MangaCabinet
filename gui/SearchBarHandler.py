@@ -13,6 +13,7 @@ from gui.Options import search_thrshold, loose_match, multi_match, show_removed,
 
 
 class SearchBarHandler:
+    RESELECT_DELAY = 25
 
     def __init__(self, main_window):
         self.random_button = None
@@ -138,9 +139,7 @@ class SearchBarHandler:
                 return
             else:
                 sorted_data = sorted(mod_data, key=lambda x: sorting_option[1](x), reverse=reverse_final)
-                self.mw.manga_list_handler.clear_view()
-                for entry in sorted_data:
-                    self.mw.manga_list_handler.add_item(entry)
+                self.readd_items(sorted_data)
                 self.showing_all_entries = True
                 self.hits_label.hide()
                 return
@@ -157,15 +156,14 @@ class SearchBarHandler:
             grouped_data[score] = sorted(group, key=lambda x: sorting_option[1](x[0]), reverse=reverse_final)
 
         sorted_data = [item for score in sorted(grouped_data.keys(), reverse=True) for item in grouped_data[score]]
-
-        self.mw.manga_list_handler.clear_view()  # Clear the list before adding filtered results
-
         hit_count = len(sorted_data)
         threshold = self.mw.settings[search_thrshold]
 
-        for idx, (entry, score) in enumerate(sorted_data):
-            if threshold == 0 or idx < threshold:  # Show all entries if Threshold is 0
-                self.mw.manga_list_handler.add_item(entry)
+        if threshold == 0:
+            entries_to_add = [entry for entry, _ in sorted_data]
+        else:
+            entries_to_add = [entry for entry, _ in sorted_data[:threshold]]
+        self.readd_items(entries_to_add)
 
         if hit_count > 0 and search_terms:
             self.hits_label.setText(f"Hits: {hit_count}")
@@ -174,6 +172,30 @@ class SearchBarHandler:
             self.hits_label.hide()
 
         self.showing_all_entries = False
+
+    def lists_match(self, new_data):
+        """ Check if the current list_view data matches the new data set."""
+        if self.mw.manga_list_handler.list_model.rowCount() != len(new_data):
+            return False
+
+        for row in range(self.mw.manga_list_handler.list_model.rowCount()):
+            item = self.mw.manga_list_handler.list_model.item(row)
+            if item.data(Qt.UserRole) != new_data[row]:
+                return False
+
+        return True
+
+    def readd_items(self, new_data):
+        """Add items to list_view and reselect last entry in case lists changed."""
+        if not self.lists_match(new_data):
+            entry = self.mw.details_handler.cur_data
+            self.mw.manga_list_handler.add_items(new_data)
+            if entry:
+                self.mw.manga_list_handler.select_index_by_id(entry.id, notify_on_failure=False)
+            QTimer.singleShot(self.RESELECT_DELAY, self.mw.manga_list_handler.rescroll)
+        else:
+            # Added to instantly refresh entry if it was modified without changing order
+            self.mw.manga_list_handler.list_view.viewport().update()
 
     def match_score(self, data, terms):
         """Compute a score based on the number of matching terms."""
