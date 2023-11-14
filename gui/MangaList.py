@@ -184,6 +184,8 @@ TAG_BACKGROUND_COLOR = QColor("#505050")
 TITLE_MINIMUM_FONT_SIZE = 7
 DEFAULT_ITEM_BG_COLOR = QColor("#2A2A2A")
 STAR_DIM_BG_COLOR = QColor("#000000")
+DEFAULT_ITEM_OUTLINE_COLOR = QColor("#666666")
+HIGHLIGHT_ITEM_OUTLINE_COLOR = QColor("#FFAA00")
 
 
 class MangaDelegate(QStyledItemDelegate):
@@ -213,12 +215,12 @@ class MangaDelegate(QStyledItemDelegate):
 
         background_color = DEFAULT_ITEM_BG_COLOR
         outline_thickness = 1
-        outline_color = QColor("#666666")
+        outline_color = DEFAULT_ITEM_OUTLINE_COLOR
 
         if self.mw.details_handler.cur_data and self.mw.details_handler.cur_data.id == entry.id:
             background_color = option.palette.highlight().color()
             outline_thickness = 2
-            outline_color = QColor("#FFAA00")
+            outline_color = HIGHLIGHT_ITEM_OUTLINE_COLOR
         else:
             # Set group-specific color
             group_name = entry.group
@@ -571,12 +573,12 @@ class ThumbnailDelegate(QStyledItemDelegate):
 
         background_color = DEFAULT_ITEM_BG_COLOR
         outline_thickness = 1
-        outline_color = QColor("#666666")
+        outline_color = DEFAULT_ITEM_OUTLINE_COLOR
 
         if self.mw.details_handler.cur_data and self.mw.details_handler.cur_data.id == entry.id:
             background_color = option.palette.highlight().color()
             outline_thickness = 4
-            outline_color = QColor("#FFAA00")
+            outline_color = HIGHLIGHT_ITEM_OUTLINE_COLOR
         else:
             # Set group-specific color
             group_name = entry.group
