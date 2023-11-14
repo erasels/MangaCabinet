@@ -54,7 +54,6 @@ class MangaCabinet(QWidget):
         self.entry_to_index = {}
         self.tag_data = TagData()
         self.all_artists = set()
-        self.all_ids = []
         self.init_infos()
         self.details_view = None
         self.tag_view = None
@@ -169,7 +168,6 @@ class MangaCabinet(QWidget):
         for idx, entry in enumerate(self.data):
             self.entry_to_index[entry.id] = idx
             self.all_artists.update(entry.artist)
-            self.all_ids.append(entry.id)
             self.tag_data.update_with_entry(entry)
 
 
