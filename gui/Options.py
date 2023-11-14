@@ -58,9 +58,9 @@ class OptionsHandler(QDialog):
         self.settings_button.setIcon(QIcon(os.path.join(self.mw.image_path, 'options_icon.png')))
         self.settings_button.setIconSize(QSize(24, 24))
         self.settings_button.setFixedSize(24, 24)  # Set the button size to match the icon size
-        self.settings_button.setStyleSheet("QPushButton { border: none; }")  # Remove button styling
+        self.settings_button.setStyleSheet("""QPushButton { border: none; }
+            QPushButton:hover { background-color: #cccccc; border-radius: 10px;}""")
         self.settings_button.clicked.connect(self.show_options_dialog)
-
         self.settings_button.setToolTip("Options")
 
     def get_widget(self):
