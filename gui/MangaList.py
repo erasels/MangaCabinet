@@ -584,7 +584,8 @@ class ThumbnailDelegate(QStyledItemDelegate):
         item_path = QPainterPath()
         item_path.addRoundedRect(QRectF(option.rect), 5, 5)
         painter.fillPath(item_path, background_color)
-        painter.strokePath(item_path, QPen(QColor("#666666"), 1))
+        outline_thickness = 1
+        painter.strokePath(item_path, QPen(QColor("#666666"), outline_thickness))
         painter.restore()
 
         painter.save()
@@ -592,12 +593,12 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.setOpacity(0.2)
 
         # Scale the thumbnail, maintaining aspect ratio
-        max_thumb_height = option.rect.height()  # Use full height for the thumbnail
+        max_thumb_height = option.rect.height() - outline_thickness  # Use full height for the thumbnail (- entry outline)
         scaled_thumb = thumbnail.scaled(self.WIDTH, max_thumb_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         # Center the thumbnail horizontally and vertically in the item area
         thumb_x = option.rect.left() + (option.rect.width() - scaled_thumb.width()) / 2
-        thumb_y = option.rect.top() + (option.rect.height() - scaled_thumb.height()) / 2  # Center vertically
+        thumb_y = option.rect.top() + (option.rect.height() - scaled_thumb.height()) / 2 + outline_thickness  # Center vertically, but don't overlap pen outline
         thumb_rect = QRect(int(thumb_x), int(thumb_y), int(scaled_thumb.width()), int(scaled_thumb.height()))
         painter.drawPixmap(thumb_rect, scaled_thumb)
 
