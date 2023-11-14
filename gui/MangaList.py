@@ -212,9 +212,13 @@ class MangaDelegate(QStyledItemDelegate):
             self.base_pen_color = painter.pen().color()
 
         background_color = DEFAULT_ITEM_BG_COLOR
+        outline_thickness = 1
+        outline_color = QColor("#666666")
 
         if self.mw.details_handler.cur_data and self.mw.details_handler.cur_data.id == entry.id:
             background_color = option.palette.highlight().color()
+            outline_thickness = 2
+            outline_color = QColor("#FFAA00")
         else:
             # Set group-specific color
             group_name = entry.group
@@ -230,7 +234,7 @@ class MangaDelegate(QStyledItemDelegate):
         item_path = QPainterPath()
         item_path.addRoundedRect(QRectF(option.rect), 5, 5)
         painter.fillPath(item_path, background_color)
-        painter.strokePath(item_path, QPen(QColor("#666666"), 1))
+        painter.strokePath(item_path, QPen(outline_color, outline_thickness))
         painter.restore()
 
         title_rect = option.rect.adjusted(10, 10, -10, -10)
@@ -566,9 +570,13 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.setOpacity(0.2)
 
         background_color = DEFAULT_ITEM_BG_COLOR
+        outline_thickness = 1
+        outline_color = QColor("#666666")
 
         if self.mw.details_handler.cur_data and self.mw.details_handler.cur_data.id == entry.id:
             background_color = option.palette.highlight().color()
+            outline_thickness = 4
+            outline_color = QColor("#FFAA00")
         else:
             # Set group-specific color
             group_name = entry.group
@@ -584,8 +592,6 @@ class ThumbnailDelegate(QStyledItemDelegate):
         item_path = QPainterPath()
         item_path.addRoundedRect(QRectF(option.rect), 5, 5)
         painter.fillPath(item_path, background_color)
-        outline_thickness = 1
-        painter.strokePath(item_path, QPen(QColor("#666666"), outline_thickness))
         painter.restore()
 
         painter.save()
@@ -593,14 +599,17 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.setOpacity(0.2)
 
         # Scale the thumbnail, maintaining aspect ratio
-        max_thumb_height = option.rect.height() - outline_thickness  # Use full height for the thumbnail (- entry outline)
+        max_thumb_height = option.rect.height()  # Use full height for the thumbnail
         scaled_thumb = thumbnail.scaled(self.WIDTH, max_thumb_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         # Center the thumbnail horizontally and vertically in the item area
         thumb_x = option.rect.left() + (option.rect.width() - scaled_thumb.width()) / 2
-        thumb_y = option.rect.top() + (option.rect.height() - scaled_thumb.height()) / 2 + outline_thickness  # Center vertically, but don't overlap pen outline
+        thumb_y = option.rect.top() + (option.rect.height() - scaled_thumb.height()) / 2  # Center vertically
         thumb_rect = QRect(int(thumb_x), int(thumb_y), int(scaled_thumb.width()), int(scaled_thumb.height()))
         painter.drawPixmap(thumb_rect, scaled_thumb)
+
+        # Draw item outline later so it draws over the thumbnail
+        painter.strokePath(item_path, QPen(outline_color, outline_thickness))
 
         painter.restore()
         painter.save()
