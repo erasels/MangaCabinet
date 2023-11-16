@@ -319,7 +319,7 @@ class MangaDelegate(QStyledItemDelegate):
         # Prepare additional details
         details_list = []
 
-        languages = entry.language
+        languages = [lang for lang in entry.language]
         # Remove translated from here since it's uninteresting
         if "translated" in languages:
             languages.remove("translated")
