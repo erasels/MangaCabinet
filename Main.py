@@ -29,7 +29,7 @@ log_file_path = os.path.join(log_dir, 'log.txt')
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
                     datefmt='%y/%m/%d %H:%M:%S',
-                    handlers=[RotatingFileHandler(log_file_path, maxBytes=5 * 1024 * 1024, backupCount=2),
+                    handlers=[RotatingFileHandler(log_file_path, maxBytes=5 * 1024 * 1024, backupCount=2, encoding='utf-8'),
                               logging.StreamHandler(sys.stdout)])
 
 
