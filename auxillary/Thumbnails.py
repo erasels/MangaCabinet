@@ -162,3 +162,11 @@ class ThumbnailManager(QObject):
 
     def make_file_path(self, manga):
         return os.path.join(self.base_path, manga.id + ".png")
+
+    def stop(self):
+        """Called when the application closes to prevent memory leaks"""
+        if self.worker_thread.isRunning():
+            loop = asyncio.get_event_loop()
+            loop.call_soon_threadsafe(loop.stop)
+            self.worker_thread.quit()
+            self.worker_thread.wait()

@@ -129,6 +129,7 @@ class MangaCabinet(QWidget):
             self.details_view.close()
         if self.tag_view:
             self.tag_view.close()
+        self.thumbnail_manager.stop()
         super(MangaCabinet, self).closeEvent(event)
 
     def save_changes(self):
