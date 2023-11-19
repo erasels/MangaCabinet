@@ -4,7 +4,7 @@ import os
 import sys
 from logging.handlers import RotatingFileHandler
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
@@ -13,6 +13,7 @@ from auxillary.DataAccess import MangaEntry, TagData
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
+from gui.ArbitraryDownloadButton import ArbitraryDownloadButton
 from gui.DetailEditor import DetailEditorHandler
 from gui.DetailView import DetailViewHandler
 from gui.GroupHandler import GroupHandler
@@ -34,6 +35,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class MangaCabinet(QWidget):
+    dataUpdated = pyqtSignal(list)
     config_path = os.path.join('assets', 'data')
 
     def __init__(self):
@@ -59,7 +61,7 @@ class MangaCabinet(QWidget):
         self.tag_view = None
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
-        self.thumbnail_manager = ThumbnailManager(self.data, self.download_thumbnails, self.tags_to_blur)
+        self.thumbnail_manager = ThumbnailManager(self, self.data, self.download_thumbnails, self.tags_to_blur)
         self.thumbnail_manager.startEnsuring.emit()
         self.browser_handler = BrowserHandler(self)
         self.init_ui()
@@ -103,7 +105,7 @@ class MangaCabinet(QWidget):
         self.search_bar_handler.update_list(False)
 
         # Setup layout (wdiget = single item, layout = group of items)
-        self.layout.addLayout(self.search_bar_handler.get_layout(self.group_handler.get_widgets() + [self.options_handler.get_widget()]))
+        self.layout.addLayout(self.search_bar_handler.get_layout(self.group_handler.get_widgets() + [ArbitraryDownloadButton(self), self.options_handler.get_widget()]))
 
         self.vertical_layout = QVBoxLayout()
         list_widget = self.manga_list_handler.get_widget()
@@ -169,6 +171,20 @@ class MangaCabinet(QWidget):
             self.entry_to_index[entry.id] = idx
             self.all_artists.update(entry.artist)
             self.tag_data.update_with_entry(entry)
+
+    def addNewData(self, newData: list[MangaEntry]):
+        self.data = newData + self.data
+        for idx, entry in enumerate(self.data):
+            self.entry_to_index[entry.id] = idx
+
+        for entry in newData:
+            self.all_artists.update(entry.artist)
+            self.tag_data.update_with_entry(entry)
+
+        self.is_data_modified = True
+        self.logger.info(f"Updated data with the following entries: {', '.join([entry.id for entry in newData])}")
+        self.dataUpdated.emit(newData)
+        self.search_bar_handler.update_list()
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):

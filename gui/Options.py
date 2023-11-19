@@ -14,6 +14,7 @@ multi_match = "count_multiple_matches"
 bind_dview = "bind_detail_view"
 thumbnail_preview = "show_hover_thumbnail"
 thumbnail_delegate = "use_thumbnail_view"
+download_script_loc = "download_script_location"
 
 
 def init_settings():

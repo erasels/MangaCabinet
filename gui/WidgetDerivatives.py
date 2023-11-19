@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidg
     QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene, \
     QHBoxLayout, QGraphicsDropShadowEffect
 
+from auxillary.DataAccess import MangaEntry
 from gui.Options import bind_dview
 
 
@@ -200,6 +201,7 @@ class IdMatcher(QWidget):
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.list_widget.itemClicked.connect(self.handle_item_click)
         self.list_widget.itemRightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
+        self.mw.dataUpdated.connect(self.add_new_data_to_list)
 
         self.layout.addWidget(QLabel("Similar:"))
         self.layout.addLayout(input_layout)
@@ -207,36 +209,43 @@ class IdMatcher(QWidget):
 
         self.populate_list()
 
-    def emit_save_signal(self):
-        self.saveSignal.emit()
-
     def populate_list(self):
         """Populate the list widget based on the mw data."""
         for entry in self.mw.data:
-            item = QListWidgetItem(f"{entry.id} - {entry.display_title()}")
-
-            # Set custom data on the item
-            item.setData(Qt.UserRole, entry)
-
-            tooltip_lines = []
-
-            # Conditional tooltip content
-            tooltip_lines.append(f"<b>ID:</b> {entry.id}")
-            tooltip_lines.append(f"<b>Title:</b> {entry.display_title()}")
-            if entry.description:
-                tooltip_lines.append(f"<b>Description:</b> {entry.description}")
-            tooltip_lines.append(f"<b>Tags:</b> {', '.join(entry.tags)}")
-            if entry.artist and entry.artist != ['']:
-                tooltip_lines.append(f"<b>Artist(s):</b> {', '.join(entry.artist)}")
-
-            # Join the tooltip lines with a line break
-            tooltip_text = "<br>".join(tooltip_lines)
-
-            # Set the tooltip
-            item.setToolTip(tooltip_text)
-
+            item = self.create_list_item(entry)
             self.list_widget.addItem(item)
             item.setHidden(True)
+
+    def add_new_data_to_list(self, newData: list[MangaEntry]):
+        for entry in reversed(newData):
+            item = self.create_list_item(entry)
+            self.list_widget.insertItem(0, item)
+            item.setHidden(True)
+
+        self.update_list()
+
+    def create_list_item(self, entry: MangaEntry):
+        item = QListWidgetItem(f"{entry.id} - {entry.display_title()}")
+
+        # Set custom data on the item
+        item.setData(Qt.UserRole, entry)
+
+        tooltip_lines = [f"<b>ID:</b> {entry.id}", f"<b>Title:</b> {entry.display_title()}"]
+
+        # Conditional tooltip content
+        if entry.description:
+            tooltip_lines.append(f"<b>Description:</b> {entry.description}")
+        tooltip_lines.append(f"<b>Tags:</b> {', '.join(entry.tags)}")
+        if entry.artist and entry.artist != ['']:
+            tooltip_lines.append(f"<b>Artist(s):</b> {', '.join(entry.artist)}")
+
+        # Join the tooltip lines with a line break
+        tooltip_text = "<br>".join(tooltip_lines)
+
+        # Set the tooltip
+        item.setToolTip(tooltip_text)
+
+        return item
 
     def update_list(self):
         """Filter the list based on the input ID."""
@@ -273,7 +282,7 @@ class IdMatcher(QWidget):
             self.selected_items.append(entry_id)
             item.setBackground(IdMatcher.SELECTED_COLOR)
 
-        self.emit_save_signal()
+        self.saveSignal.emit()
 
     # Handles resetting and loading the data
     def load(self, entry):

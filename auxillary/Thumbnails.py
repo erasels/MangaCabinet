@@ -1,12 +1,14 @@
 import logging
 import os
 import asyncio
+import threading
+
 import aiohttp
 from io import BytesIO
 
 import requests
 from PIL import Image, ImageFilter
-from PyQt5.QtCore import QObject, pyqtSignal, QThread
+from PyQt5.QtCore import QObject, pyqtSignal, QThread, pyqtSlot
 from PyQt5.QtGui import QPixmap
 
 from auxillary.DataAccess import MangaEntry
@@ -26,10 +28,12 @@ class ThumbnailManager(QObject):
 
     thumbnailDownloaded = pyqtSignal(MangaEntry, str)  # Signal emitted when a thumbnail is downloaded
     startEnsuring = pyqtSignal()
+    ensureThumbnailsSignal = pyqtSignal(list)
 
-    def __init__(self, data, download, tags_to_blur):
+    def __init__(self, mw, data, download, tags_to_blur):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.mw = mw
         self.data = data
         self.download = download
         self.tags_to_blur = tags_to_blur
@@ -40,11 +44,13 @@ class ThumbnailManager(QObject):
         if not os.path.exists(self.base_path):
             os.makedirs(self.base_path)
 
+        self.ensureThumbnailsSignal.connect(self.process_entries_for_download)
         self.worker_thread = QThread()
         self.moveToThread(self.worker_thread)
         self.worker_thread.start()
         self.thumbnailDownloaded.connect(self.log_download)
-        self.startEnsuring.connect(self.ensure_all_thumbnails)
+        self.startEnsuring.connect(self.ensure_thumbnails)
+        self.mw.dataUpdated.connect(self.ensure_thumbnails)
 
     async def ensure_thumbnail(self, manga: MangaEntry):
         # Ensure the thumbnail for the given manga exists, downloading it if necessary.
@@ -62,15 +68,32 @@ class ThumbnailManager(QObject):
                 else:
                     self.logger.error(f"Couldn't download thumbnail, resp:\n{response}")
 
-    async def batch_ensure_thumbnails(self):
+    @pyqtSlot(list)
+    def process_entries_for_download(self, entries: list[MangaEntry]):
+        """Process entries for downloading thumbnails."""
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            # Create and set a new event loop if one doesn't exist
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+            # Check if the loop is running and start it if not
+        if not loop.is_running():
+            threading.Thread(target=loop.run_forever).start()
+
+            # Schedule the coroutine to be run in the event loop
+        asyncio.run_coroutine_threadsafe(self.batch_ensure_thumbnails(entries), loop)
+
+    async def batch_ensure_thumbnails(self, entries):
         # Divide data into batches
-        total_batches = len(self.data) // self.BATCH_SIZE + (len(self.data) % self.BATCH_SIZE != 0)
+        total_batches = len(entries) // self.BATCH_SIZE + (len(entries) % self.BATCH_SIZE != 0)
         for batch_num in range(total_batches):
             start_idx = batch_num * self.BATCH_SIZE
             end_idx = start_idx + self.BATCH_SIZE
 
             # Create tasks for the current batch
-            tasks = [self.ensure_thumbnail(manga) for manga in self.data[start_idx:end_idx]]
+            tasks = [self.ensure_thumbnail(manga) for manga in entries[start_idx:end_idx]]
 
             # Run the tasks for the current batch
             await asyncio.gather(*tasks)
@@ -79,23 +102,21 @@ class ThumbnailManager(QObject):
             if batch_num != total_batches - 1:
                 await asyncio.sleep(self.DELAY)
 
-    def ensure_all_thumbnails(self):
+    def ensure_thumbnails(self, data=None):
         # Preprocess the manga list to filter out those with existing thumbnails
         existing_thumbnails = set(os.listdir(self.base_path))
         new_data = []
-        for manga in self.data:
+        if data is None:
+            data = self.data
+
+        for manga in data:
             if (manga.id + ".png") not in existing_thumbnails:
                 new_data.append(manga)
             else:
                 self.id_to_path[manga.id] = os.path.join(self.base_path, manga.id + ".png")
-        self.data = new_data
 
-        if len(self.data) > 0 and self.download:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(self.batch_ensure_thumbnails())
-            loop.close()
-        self.data = None
+        if len(new_data) > 0 and self.download:
+            self.ensureThumbnailsSignal.emit(new_data)
 
     def download_thumbnail(self, url, file_path, manga):
         # Download the thumbnail image from the given URL and save it to the specified file path.
