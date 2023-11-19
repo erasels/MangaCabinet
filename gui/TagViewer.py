@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QComboBox, QListWidget, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QComboBox, QListWidget, QHBoxLayout, QApplication
 
 
 class TagViewer(QWidget):
@@ -11,7 +11,8 @@ class TagViewer(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Tag Viewer')
-        self.setGeometry(300, 300, 600, 400)
+        self.setGeometry(0, 0, 600, 400)
+
         self.layout = QVBoxLayout(self)
 
         search_layout = QHBoxLayout()
@@ -60,7 +61,20 @@ class TagViewer(QWidget):
             tags = [(tag, data) for tag, data in self.tag_data.items()]
         return tags
 
+    def set_position(self):
+        desired_position = self.mw.frameGeometry().topLeft()
+        desired_position.setX(desired_position.x() - self.width())
+
+        # Check if this position would place the SecondWindow outside the screen
+        screen_geometry = QApplication.desktop().screenGeometry(self.mw)
+        if desired_position.x() < screen_geometry.left():
+            desired_position = self.mw.frameGeometry().topRight()
+            desired_position.setX(desired_position.x())
+
+        self.move(desired_position)
+
     def show(self):
         self.sort_and_display_tags()
         if not self.isVisible():
+            self.set_position()
             super().show()
