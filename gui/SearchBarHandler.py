@@ -28,6 +28,7 @@ class SearchBarHandler:
             ("By data order", lambda entry: self.mw.entry_to_index.get(entry.id, 0), False),
             ("By id", lambda entry: (0, int(entry.id)) if entry.id.isdigit() else (1, entry.id), True),  # number id or UUID
             ("By upload date", lambda entry: (0 if entry.upload is None else 1, entry.upload_date()), True),
+            ("By edit date", lambda entry: (0 if entry.last_edited is None else 1, entry.edit_date()), True),
             ("By name", lambda entry: entry.display_title().lower(), False),
             ("By artist", lambda entry: entry.first_artist().lower(), False),
             ("By score", lambda entry: entry.get('score', float('-inf')), True)  # Reversed will show unrated first

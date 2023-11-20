@@ -93,6 +93,12 @@ class MangaEntry(dict):
         else:
             return None
 
+    def edit_date(self):
+        if self.last_edited:
+            return datetime.strptime(self.last_edited, "%Y/%m/%d %H:%M")
+        else:
+            return None
+
     def update_last_edited(self):
         self.last_edited = datetime.now().strftime("%Y/%m/%d %H:%M")
         self.logger.debug(f"{self.id}: MC_last_edited was updated with: {self.last_edited}")
