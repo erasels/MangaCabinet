@@ -210,7 +210,7 @@ class SearchBarHandler:
 
                 for search_field in fields_to_search:
                     data_value = data.get(search_field, "")
-                    if value and value[0] in [">", "<"]:
+                    if value and value[0] in [">", "<", "="]:
                         term_score += self.compare_match(data_value, value)
                     else:
                         term_score += self.count_matches(data_value, value)
@@ -249,7 +249,7 @@ class SearchBarHandler:
         return count
 
     def compare_match(self, data_value, compare_term):
-        """Match > or < for field searches"""
+        """Match >, < or = for field searches"""
         operator = compare_term[0]
         target_value = compare_term[1:]
 
@@ -265,6 +265,8 @@ class SearchBarHandler:
                 return 1 if value > int(target_value) else 0
             elif operator == '<':
                 return 1 if value < int(target_value) else 0
+            elif operator == '=':
+                return 1 if value == int(target_value) else 0
 
         return 0
 

@@ -29,10 +29,10 @@ While using 3rd-party packages has been avoided where possible to keep setup sim
 
 3. **Quantity Searches**: 
     - Sometimes, you might be curious about quantities. Like, "How many tags does this manga have?" or "How long is the title?". We got you covered!
-    - Use `>` or `<` symbols to find manga entries that match certain conditions. For instance:
+    - Use `>`, `<` or `=` symbols to find manga entries that match certain conditions. For instance:
       - `tag:>30` - Finds manga with more than 30 tags.
       - `title:<10` - Fetches manga with titles less than 10 characters long.
-      - `pages:>100` - Returns manga with more than 100 pages.
+      - `pages:=100` - Returns manga with exactly 100 pages.
 
 4. **And More**: 
     - You can also narrow down your searches within specific groups.
