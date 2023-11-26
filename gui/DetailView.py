@@ -1,9 +1,11 @@
 import logging
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, \
-    QApplication
+    QApplication, QCheckBox
 
 from auxillary import Thumbnails
+from gui.Options import show_removed
 from gui.WidgetDerivatives import ImageViewer
 
 
@@ -23,17 +25,20 @@ class DetailViewHandler(QWidget):
 
         layout = QVBoxLayout()
 
-        # Image
         self.image_viewer = ImageViewer(self.mw.thumbnail_manager, parent=self)
         self.image_viewer.setFixedSize(500, 400)
 
-        # Two Labels next to each other
         self.id_label = QLabel()
         self.artist_label = QLabel()
+        self.pages_label = QLabel()
+        self.remove_checkbox = QCheckBox("Marked removed", self)
+        self.remove_checkbox.stateChanged.connect(self.update_removed_status)
 
-        label_layout = QHBoxLayout()
-        label_layout.addWidget(self.id_label)
-        label_layout.addWidget(self.artist_label)
+        details_layout = QHBoxLayout()
+        details_layout.addWidget(self.id_label)
+        details_layout.addWidget(self.artist_label)
+        details_layout.addWidget(self.pages_label)
+        details_layout.addWidget(self.remove_checkbox)
 
         self.title_label = QLabel()
 
@@ -51,7 +56,7 @@ class DetailViewHandler(QWidget):
 
         layout.addWidget(self.image_viewer)
         layout.addWidget(self.title_label)
-        layout.addLayout(label_layout)
+        layout.addLayout(details_layout)
         layout.addLayout(btn_layout)
 
         self.setLayout(layout)
@@ -71,6 +76,8 @@ class DetailViewHandler(QWidget):
         self.id_label.setText(f"Id: {self.entry.id}")
         self.artist_label.setText(f"Artist: {', '.join(self.entry.artist)}")
         self.title_label.setText(f"Title: {self.entry.display_title()}")
+        self.pages_label.setText(f"Pages: {self.entry.pages}")
+        self.remove_checkbox.setChecked(self.entry.removed)
 
         if not self.isVisible():
             self.set_position()
@@ -106,3 +113,12 @@ class DetailViewHandler(QWidget):
             self.image_viewer.load_image(self.entry.id)
         else:
             self.logger.warning("Tried downloading thumbnail without thumbnail_url set.")
+
+    def update_removed_status(self, state):
+        self.entry.removed = state == Qt.Checked
+        self.mw.is_data_modified = True
+        self.entry.update_last_edited()
+        self.logger.debug(f"{self.entry.id}: removed was updated with: deleted {self.entry.removed}")
+
+        if not self.mw.settings[show_removed]:
+            self.mw.search_bar_handler.update_list()
