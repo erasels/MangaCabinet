@@ -7,6 +7,7 @@ class MangaEntry(dict):
         "id": ("id", None),
         "description": ("description", ""),
         "title": ("title", ""),
+        "title_alt": ("title_alt", ""),
         "title_short": ("title_short", ""),
         "tags": ("tag", []),
         "artist": ("artist", []),
