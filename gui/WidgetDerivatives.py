@@ -395,6 +395,7 @@ class TagsWidget(QWidget):
         line_edit = dialog.findChild(QLineEdit)
         completer = QCompleter(self.mw.tag_data.sorted_keys(), dialog)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setFilterMode(Qt.MatchContains)
         line_edit.setCompleter(completer)
 
         ok = dialog.exec_()
