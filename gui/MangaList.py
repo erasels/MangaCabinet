@@ -544,10 +544,12 @@ class ThumbnailDelegate(QStyledItemDelegate):
         super(ThumbnailDelegate, self).__init__(parent, *args, **kwargs)
         self.mw = mw
         self.cache = {}
-        self.img_star = QPixmap(os.path.join(self.mw.image_path, 'star.png'))
-        self.img_star = self.img_star.scaled(int(self.img_star.width() * 0.5),
-                                             int(self.img_star.height() * 0.5),
-                                             Qt.KeepAspectRatio)
+        self.img_star = (QPixmap(os.path.join(self.mw.image_path, 'star.png'))
+                         .scaled(8, 8, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.img_good_story = (QPixmap(os.path.join(self.mw.image_path, 'good_story.png'))
+                               .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.img_good_art = (QPixmap(os.path.join(self.mw.image_path, 'good_art.png'))
+                             .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         self.threadPool = QThreadPool()
         self.imageLoader = ImageLoader(mw.thumbnail_manager)
@@ -659,21 +661,24 @@ class ThumbnailDelegate(QStyledItemDelegate):
         else:
             painter.drawText(title_background_rect, Qt.AlignCenter, title_line_1)
 
+        # Define values for the below icons rendering
+        icon_spacing = 5  # vertical height between icons
+        rect_color = blend_colors(background_color, STAR_DIM_BG_COLOR, 0.7)
+        rect_color.setAlpha(180)
+
+        # Draw the score
         score = entry.score
         if score:
-            star_spacing = 4  # adjust this based on your preferences
             star_width = self.img_star.width()
             star_height = self.img_star.height()
-            total_height_for_stars = score * star_height + (score - 1) * star_spacing
+            total_height_for_stars = score * star_height + (score - 1) * icon_spacing
 
             # Calculating the top-left point to start drawing stars
             start_x = option.rect.x() + 5  # adding 8 pixels padding from left. Adjust as needed.
             start_y = option.rect.y() + 5  # center align vertically
 
             rect_width = star_width + 8
-            rect_height = score * star_height + (score - 1) * star_spacing + 10
-            rect_color = blend_colors(background_color, STAR_DIM_BG_COLOR, 0.7)
-            rect_color.setAlpha(180)
+            rect_height = score * star_height + (score - 1) * icon_spacing + 10
             painter.save()
             painter.setBrush(rect_color)
             painter.setPen(Qt.NoPen)
@@ -682,8 +687,38 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.restore()
 
             for i in range(score):
-                painter.drawPixmap(start_x, int(start_y + i * (star_height + star_spacing)), self.img_star)
+                painter.drawPixmap(start_x, int(start_y + i * (star_height + icon_spacing)), self.img_star)
+        painter.save()
 
+        # Calculate the required height for the backdrop rectangle
+        backdrop_height = 0
+        if entry.good_story():
+            backdrop_height += self.img_good_story.height()
+        if entry.good_art():
+            backdrop_height += self.img_good_art.height()
+        if entry.good_story() and entry.good_art():
+            backdrop_height += icon_spacing  # Add space between icons
+
+        if backdrop_height > 0:
+            backdrop_rect = QRect(option.rect.right() - self.img_good_story.width() - 1,
+                                  option.rect.top() + 3,
+                                  self.img_good_story.width(),
+                                  backdrop_height + 4)
+            painter.setBrush(rect_color)
+            painter.setPen(Qt.NoPen)
+            painter.drawRoundedRect(backdrop_rect, 5, 5)
+
+            # Draw the good story icon if applicable
+            if entry.good_story():
+                story_icon_pos = QPoint(backdrop_rect.left(), backdrop_rect.top() + 2)
+                painter.drawPixmap(story_icon_pos, self.img_good_story)
+
+            # Draw the good art icon if applicable
+            if entry.good_art():
+                art_icon_pos = QPoint(backdrop_rect.left(), backdrop_rect.top() + 2)
+                if entry.good_story():
+                    art_icon_pos.setY(art_icon_pos.y() + self.img_good_story.height() + icon_spacing)
+                painter.drawPixmap(art_icon_pos, self.img_good_art)
         painter.restore()
 
     def loadImageAsync(self, image_id):
