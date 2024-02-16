@@ -35,6 +35,7 @@ While using 3rd-party packages has been avoided where possible to keep setup sim
       - `pages:=100` - Returns manga with exactly 100 pages.
 
 4. **And More**: 
+    - It's possible to negate a search term by prefixing it with a `-` (e.g. `-cute` or `-tag:horror`)
     - You can also narrow down your searches within specific groups.
     - Sort the results by upload date, score, id or data order
     - Enable loose matching so only one of your search terms needs to be a hit for the result to show

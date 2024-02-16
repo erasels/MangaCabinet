@@ -40,7 +40,7 @@ class SearchBarHandler:
         self.search_bar = QLineEdit(self.mw)
         self.search_bar.setStyleSheet(self.mw.styles.get("lineedit"))
         self.search_bar.setPlaceholderText("Search...")
-        completer = FieldSearchCompleter([field+":" for field in self.mw.common_attributes], self.search_bar)
+        completer = FieldSearchCompleter([field + ":" for field in self.mw.common_attributes], self.search_bar)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.search_bar.setCompleter(completer)
 
@@ -204,6 +204,10 @@ class SearchBarHandler:
 
         for term in terms:
             term_score = 0
+            invert_match = term.startswith('-')
+            if invert_match:
+                term = term[1:]
+
             if ":" in term:
                 field, value = term.split(":", 1)
                 fields_to_search = MangaEntry.FIELD_ALIASES_AND_GROUPING.get(field, [field])
@@ -217,6 +221,9 @@ class SearchBarHandler:
             else:
                 for data_value in data.values():
                     term_score += self.count_matches(data_value, term)
+
+            if invert_match:
+                term_score = term_score == 0
 
             if not self.mw.settings[loose_match] and term_score == 0:
                 return 0  # If a term did not match any field, we return a score of 0 for the entire entry
@@ -279,7 +286,7 @@ class FieldSearchCompleter(QCompleter):
         text = self.widget().text()
         index = text.rfind(",")
         if index != -1:
-            text = text[:index+1]
+            text = text[:index + 1]
         else:
             text = ""
         # Add completion to old text
