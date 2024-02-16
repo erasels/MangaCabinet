@@ -88,6 +88,12 @@ class MangaEntry(dict):
     def is_translated(self):
         return self.language and "translated" in self.language
 
+    def good_story(self):
+        return "good story" in self.tags
+
+    def good_art(self):
+        return "good art" in self.tags
+
     def upload_date(self):
         if self.upload:
             return datetime.strptime(self.upload, "%Y/%m/%d %H:%M")
