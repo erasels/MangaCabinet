@@ -186,8 +186,12 @@ fabric.properties
 
 # For this project
 assets/data/data_real.json
+assets/data/collections_real.json
 assets/data/config.json
 assets/data/groups_real.json
 assets/data/settings_real.json
 assets/thumbnails
+auxillary/GetManga.py
 logs
+start_windows.bat
+
