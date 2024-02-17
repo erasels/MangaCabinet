@@ -32,7 +32,7 @@
             "205555"
         ],
         "description": "In a world torn apart by war, two unlikely allies find solace in each other's company. As they navigate the treacherous battlefields of Europe, their bond deepens amidst the deafening roar of tank engines and the ear-splitting boom of explosives. But as they uncover a dangerous secret involving ancient alchemical practices, they must choose between their love for each other and their duty to their respective armies. Will their passion survive the brutality of war, or will it be consumed by the flames of conflict? Only time will tell in this gripping tale of love, war, and the power of alchemy.",
-        "MC_Grouping": "Watched",
+        "MC_Collection": "Watched",
         "score": 4
     },
     {
@@ -69,7 +69,7 @@
             "34707e91-3d6f-498b-b763-1e3a1ab99265"
         ],
         "description": "In this gripping tale of alternate history, discover how the world's most famous landmarks have been transformed into a sprawling network of animal enclosures. As our heroes navigate the twists and turns of this bizarre new reality, they uncover a sinister conspiracy that threatens to upend centuries-old assumptions about human evolution and cast doubt on the very foundations of modern society. Buckle in for an exhilarating ride through a world you never knew existed!",
-        "MC_Grouping": "Dropped",
+        "MC_Collection": "Dropped",
         "score": 1
     },
     {
@@ -115,7 +115,7 @@
             "1435844"
         ],
         "score": 3,
-        "MC_Grouping": "Watched"
+        "MC_Collection": "Watched"
     },
     {
         "id": "871337",
@@ -182,7 +182,7 @@
         "similar": [
             "342253"
         ],
-        "MC_Grouping": "Dropped",
+        "MC_Collection": "Dropped",
         "description": "In this gripping thriller, a successful astronaut battles a deranged stalker fixated on her size-13 feet while navigating the cutthroat world of space exploration and striving to win a prestigious industry award.\nIt's the feet focus that turned me off of this one.",
         "score": 2
     },
@@ -218,7 +218,7 @@
         "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1686/128971t.jpg",
         "upload_date": "2023/09/29 21:03",
         "check_date": "2023/10/28",
-        "MC_Grouping": "Planned"
+        "MC_Collection": "Planned"
     },
     {
         "id": "4408039",
@@ -283,7 +283,7 @@
         "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1987/130470t.jpg",
         "upload_date": "2023/09/17 21:03",
         "check_date": "2023/10/28",
-        "MC_Grouping": "Watched",
+        "MC_Collection": "Watched",
         "score": 2,
         "description": "Very meta."
     },
@@ -322,7 +322,7 @@
         "similar": [
             "225174"
         ],
-        "MC_Grouping": "Planned"
+        "MC_Collection": "Planned"
     },
     {
         "id": "6888987",
@@ -380,7 +380,7 @@
         "thumbnail_url": "https://cdn.myanimelist.net/images/anime/1003/134010t.jpg",
         "upload_date": "2023/07/23 21:03",
         "check_date": "2023/10/28",
-        "MC_Grouping": "Planned"
+        "MC_Collection": "Planned"
     },
     {
         "id": "6996381",

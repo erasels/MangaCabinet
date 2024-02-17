@@ -11,14 +11,14 @@ class MangaEntry(dict):
         "title_short": ("title_short", ""),
         "tags": ("tag", []),
         "artist": ("artist", []),
-        "artist_group": ("group", []),
+        "group": ("group", []),
         "language": ("language", []),
         "pages": ("pages", 0),
         "parody": ("parody", []),
         "character": ("character", []),
         "upload": ("upload_date", None),
         "score": ("score", 0),
-        "group": ("MC_Grouping", None),
+        "collection": ("MC_Collection", None),
         "similar": ("similar", []),
         "open_url": ("open_url", ""),
         "thumbnail_url": ("thumbnail_url", ""),
@@ -29,6 +29,7 @@ class MangaEntry(dict):
     }
 
     # Could be moved into a json file, but fits for now
+    # Takes precedence over attribute map for searching
     FIELD_ALIASES_AND_GROUPING = {
         "tags": ["tag"],
         "artist": ["artist", "group"],
@@ -36,7 +37,9 @@ class MangaEntry(dict):
         "upload": ["upload_date"],
         "title": ["title", "title_alt", "title_short"],
         "rating": ["score"],
-        "deprecated": ["removed"]
+        "stars": ["score"],
+        "deprecated": ["removed"],
+        "col": ["MC_Collection"]
     }
 
     def __init__(self, *args, **kwargs):

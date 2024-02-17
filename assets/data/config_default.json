@@ -1,7 +1,7 @@
 {
     "data_file": "assets/data/data.json",
     "settings_file": "assets/data/settings.json",
-    "groups_file": "assets/data/groups.json",
+    "collections_file": "assets/data/collections.json",
     "style_path": "assets/styles",
     "image_path": "assets/images",
     "browser_executable_path": "",

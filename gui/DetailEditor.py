@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
     QHBoxLayout
 
 from auxillary.DataAccess import MangaEntry
-from gui.GroupHandler import fill_groups_box
+from gui.CollectionHandler import fill_collections_box
 from gui.Options import bind_dview
 from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget, CommaCompleter
 
@@ -112,14 +112,14 @@ class DetailEditorHandler:
         misc_layout.addWidget(QLabel("Score:"), 0)
         misc_layout.addWidget(self.score_widget, 1)
 
-        # Group
-        self.group_combobox = QComboBox(self.mw)
-        fill_groups_box(self.mw.group_handler.groups, self.group_combobox)
-        self.group_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
-        self.group_combobox.currentIndexChanged.connect(self.save_changes)
-        self.mw.group_handler.group_modified.connect(lambda: fill_groups_box(self.mw.group_handler.groups, self.group_combobox))
-        misc_layout.addWidget(QLabel("Group:"), 0)
-        misc_layout.addWidget(self.group_combobox, 1)
+        # Collection
+        self.collection_combobox = QComboBox(self.mw)
+        fill_collections_box(self.mw.collection_handler.collections, self.collection_combobox)
+        self.collection_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
+        self.collection_combobox.currentIndexChanged.connect(self.save_changes)
+        self.mw.collection_handler.collection_modified.connect(lambda: fill_collections_box(self.mw.collection_handler.collections, self.collection_combobox))
+        misc_layout.addWidget(QLabel("Collection:"), 0)
+        misc_layout.addWidget(self.collection_combobox, 1)
 
         # Language and Artist
         self.language_input = QLineEdit(self.mw)
@@ -214,12 +214,12 @@ class DetailEditorHandler:
 
             self.similar_searcher.load(self.cur_data)
 
-            self.group_combobox.blockSignals(True)
-            self.group_combobox.setCurrentIndex(0)
-            current_group = self.cur_data.group
-            if current_group in self.mw.group_handler.groups:
-                self.group_combobox.setCurrentText(current_group)
-            self.group_combobox.blockSignals(False)
+            self.collection_combobox.blockSignals(True)
+            self.collection_combobox.setCurrentIndex(0)
+            current_collection = self.cur_data.collection
+            if current_collection in self.mw.collection_handler.collections:
+                self.collection_combobox.setCurrentText(current_collection)
+            self.collection_combobox.blockSignals(False)
 
             self.image_view.load_image(self.cur_data.id)
 
@@ -269,15 +269,15 @@ class DetailEditorHandler:
             for attr, func in attributes_mapping.items():
                 update_attribute(attr, func())
 
-            # Special case for the group combobox
-            group_value = self.group_combobox.currentData()
-            if not group_value:
-                if self.cur_data.group:
-                    self.logger.debug(f"{self.cur_data.id}: group was updated with: deleted value")
-                    delattr(self.cur_data, 'group')
+            # Special case for the collection combobox
+            collection_value = self.collection_combobox.currentData()
+            if not collection_value:
+                if self.cur_data.collection:
+                    self.logger.debug(f"{self.cur_data.id}: collection was updated with: deleted value")
+                    delattr(self.cur_data, 'collection')
                     data_changed = True
             else:
-                update_attribute('group', group_value)
+                update_attribute('collection', collection_value)
 
             if data_changed:
                 self.cur_data.update_last_edited()

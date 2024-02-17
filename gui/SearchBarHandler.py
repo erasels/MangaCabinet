@@ -119,12 +119,12 @@ class SearchBarHandler:
         # Define sort in case we need it
         sorting_option: tuple[str, Callable, bool] = self.sorting_options[self.sort_combobox.currentIndex()]
         reverse_final = sorting_option[2] ^ self.sort_order_reversed  # XOR
-        selected_group = self.mw.group_handler.group_combobox.currentData()
+        selected_collection = self.mw.collection_handler.collection_combobox.currentData()
 
         # Aggregate applicable filters
         filters = []
-        if selected_group:
-            filters.append(lambda e: e.group == selected_group)
+        if selected_collection:
+            filters.append(lambda e: e.collection == selected_collection)
         if not self.mw.settings[show_removed]:
             filters.append(lambda e: not e.removed)
 

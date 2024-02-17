@@ -16,7 +16,7 @@ from gui import Options
 from gui.ArbitraryDownloadButton import ArbitraryDownloadButton
 from gui.DetailEditor import DetailEditorHandler
 from gui.DetailView import DetailViewHandler
-from gui.GroupHandler import GroupHandler
+from gui.CollectionHandler import CollectionHandler
 from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
@@ -77,7 +77,7 @@ class MangaCabinet(QWidget):
             self.logger.debug(f"Loaded config: {config_file}\n{config}")
             self.data_file = config["data_file"]
             self.settings_file = config["settings_file"]
-            self.groups_file = config["groups_file"]
+            self.collections_file = config["collections_file"]
             self.style_path = config["style_path"]
             self.image_path = config["image_path"]
             self.browser_path = config["browser_executable_path"]
@@ -94,8 +94,8 @@ class MangaCabinet(QWidget):
         self.options_handler = OptionsHandler(self)
         # Handles entire search bar and accesses settings_buton
         self.search_bar_handler = SearchBarHandler(self)
-        # Handles entire groups bar
-        self.group_handler = GroupHandler(self)
+        # Handles entire collections bar
+        self.collection_handler = CollectionHandler(self)
         # Handles looking at and modifying details of manga entries
         self.details_handler = DetailEditorHandler(self)
         self.options_handler.bindViewChanged.connect(lambda state: self.details_handler.image_view.set_dynamic_show(state))
@@ -105,7 +105,7 @@ class MangaCabinet(QWidget):
         self.search_bar_handler.update_list(False)
 
         # Setup layout (wdiget = single item, layout = group of items)
-        self.layout.addLayout(self.search_bar_handler.get_layout(self.group_handler.get_widgets() + [ArbitraryDownloadButton(self), self.options_handler.get_widget()]))
+        self.layout.addLayout(self.search_bar_handler.get_layout(self.collection_handler.get_widgets() + [ArbitraryDownloadButton(self), self.options_handler.get_widget()]))
 
         self.vertical_layout = QVBoxLayout()
         list_widget = self.manga_list_handler.get_widget()

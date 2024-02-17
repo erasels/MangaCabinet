@@ -222,10 +222,10 @@ class MangaDelegate(QStyledItemDelegate):
             outline_thickness = 2
             outline_color = HIGHLIGHT_ITEM_OUTLINE_COLOR
         else:
-            # Set group-specific color
-            group_name = entry.group
-            if group_name and group_name in self.mw.group_handler.groups:
-                color = self.mw.group_handler.groups[group_name].get("color")
+            # Set collection-specific color
+            collection_name = entry.collection
+            if collection_name and collection_name in self.mw.collection_handler.collections:
+                color = self.mw.collection_handler.collections[collection_name].get("color")
                 if color:
                     background_color = blend_colors(DEFAULT_ITEM_BG_COLOR, QColor(color), 0.2)
 
@@ -309,7 +309,7 @@ class MangaDelegate(QStyledItemDelegate):
 
         # Display the artists
         artists = entry.artist
-        groups = entry.artist_group
+        groups = entry.group
         artist_text = "Artist(s): " + ", ".join(artists)
         # Append groups in brackets in case there are few artists, and they're not the same as the groups
         if groups and len(artists) <= 2 and groups != artists:
@@ -582,10 +582,10 @@ class ThumbnailDelegate(QStyledItemDelegate):
             outline_thickness = 4
             outline_color = HIGHLIGHT_ITEM_OUTLINE_COLOR
         else:
-            # Set group-specific color
-            group_name = entry.group
-            if group_name and group_name in self.mw.group_handler.groups:
-                color = self.mw.group_handler.groups[group_name].get("color")
+            # Set collection-specific color
+            collection_name = entry.collection
+            if collection_name and collection_name in self.mw.collection_handler.collections:
+                color = self.mw.collection_handler.collections[collection_name].get("color")
                 if color:
                     background_color = blend_colors(DEFAULT_ITEM_BG_COLOR, QColor(color), 0.2)
 
