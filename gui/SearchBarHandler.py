@@ -210,7 +210,10 @@ class SearchBarHandler:
 
             if ":" in term:
                 field, value = term.split(":", 1)
+                # Apply the transformation from the alias list
                 fields_to_search = MangaEntry.FIELD_ALIASES_AND_GROUPING.get(field, [field])
+                # Map values from input to attribute map unerlying value or input if it doesn't exist in attmap
+                fields_to_search = [MangaEntry.ATTRIBUTE_MAP.get(f, (f, None))[0] for f in fields_to_search]
 
                 for search_field in fields_to_search:
                     data_value = data.get(search_field, "")

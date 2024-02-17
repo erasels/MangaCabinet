@@ -39,7 +39,7 @@ class MangaEntry(dict):
         "rating": ["score"],
         "stars": ["score"],
         "deprecated": ["removed"],
-        "col": ["MC_Collection"]
+        "col": ["collection"]
     }
 
     def __init__(self, *args, **kwargs):
