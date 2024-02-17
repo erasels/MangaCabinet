@@ -407,7 +407,7 @@ class TagsWidget(QWidget):
             existing_tags = self.extract_tags_from_layout()
             modified = False
             for tag in tags:
-                if tag not in existing_tags:
+                if tag and tag not in existing_tags:
                     self.add_tag_to_layout(tag, self.current_row, self.current_col)
                     modified = True
             if modified:
