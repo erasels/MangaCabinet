@@ -57,15 +57,15 @@ class ScriptDialog(QDialog):
         # Horizontal layout for buttons
         buttonLayout = QHBoxLayout()
 
-        loadButton = QPushButton('Select script', self)
-        loadButton.setStyleSheet(self.mw.styles.get("textbutton"))
-        loadButton.clicked.connect(self.loadScript)
-        buttonLayout.addWidget(loadButton)
-
         executeButton = QPushButton('Execute', self)
         executeButton.setStyleSheet(self.mw.styles.get("textbutton"))
         executeButton.clicked.connect(self.executeScript)
         buttonLayout.addWidget(executeButton)
+
+        loadButton = QPushButton('Select script', self)
+        loadButton.setStyleSheet(self.mw.styles.get("textbutton"))
+        loadButton.clicked.connect(self.loadScript)
+        buttonLayout.addWidget(loadButton)
 
         layout.addLayout(buttonLayout)
 
@@ -74,8 +74,9 @@ class ScriptDialog(QDialog):
 
     def loadScript(self):
         location = self.mw.settings.get(Options.download_script_loc, "")
-        self.scriptPath, _ = QFileDialog.getOpenFileName(self, "Open Python script", location, "Python Files (*.py)")
-        if self.scriptPath:
+        newScriptPath, _ = QFileDialog.getOpenFileName(self, "Open Python script", location, "Python Files (*.py)")
+        if newScriptPath:
+            self.scriptPath = newScriptPath
             # Save new path
             if self.scriptPath != location:
                 self.mw.settings[Options.download_script_loc] = self.scriptPath
