@@ -1,15 +1,13 @@
-import os
 import random
-import re
 from collections import defaultdict
-from typing import Tuple, Callable, Any, List
+from typing import Callable
 
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton, QCompleter
 
 from auxillary.DataAccess import MangaEntry
-from gui.WidgetDerivatives import RightClickableComboBox
 from gui.Options import search_thrshold, loose_match, multi_match, show_removed, default_sort
+from gui.WidgetDerivatives import RightClickableComboBox
 
 
 class SearchBarHandler:
@@ -31,7 +29,8 @@ class SearchBarHandler:
             ("By edit date", lambda entry: (0 if entry.last_edited is None else 1, entry.edit_date()), True),
             ("By name", lambda entry: entry.display_title().lower(), False),
             ("By artist", lambda entry: entry.first_artist().lower(), False),
-            ("By score", lambda entry: entry.get('score', float('-inf')), True)  # Reversed will show unrated first
+            ("By score", lambda entry: entry.get('score', float('-inf')), True),  # Reversed will show unrated first
+            ("By collection", lambda entry: self.mw.collection_handler.collection_to_index.get(entry.collection, float('inf')), False)
         ]
         self.init_ui()
 

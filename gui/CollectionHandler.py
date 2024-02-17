@@ -33,8 +33,10 @@ class CollectionHandler(QWidget):
 
     def __init__(self, mw):
         super().__init__()
+        self.collection_to_index = None
         self.collection_list = None
         self.collections = load_json(mw.collections_file)
+        self.update_index_mapping()
         self.mw = mw
         self.init_ui()
 
@@ -46,6 +48,7 @@ class CollectionHandler(QWidget):
         self.collection_combobox.currentIndexChanged.connect(lambda: self.mw.search_bar_handler.update_list())
         self.collection_combobox.rightClicked.connect(lambda: self.collection_combobox.setCurrentIndex(0))
         self.collection_modified.connect(lambda: fill_collections_box(self.collections, self.collection_combobox))
+        self.collection_modified.connect(lambda: self.update_index_mapping())
 
         self.manage_collections_btn = QPushButton("Manage Collections", self.mw)
         self.manage_collections_btn.clicked.connect(self.show_collection_management_dialog)
@@ -63,6 +66,9 @@ class CollectionHandler(QWidget):
     def show_collection_management_dialog(self):
         dialog = CollectionManagementDialog(self, self.mw, self.collections)
         dialog.exec_()
+
+    def update_index_mapping(self):
+        self.collection_to_index = {key: index for index, key in enumerate(self.collections.keys())}
 
 
 class CollectionManagementDialog(QDialog):
