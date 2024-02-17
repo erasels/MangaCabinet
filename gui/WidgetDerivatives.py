@@ -393,7 +393,7 @@ class TagsWidget(QWidget):
         dialog.setStyleSheet(self.mw.styles["lineedit"] + "\n" + self.mw.styles["textbutton"])
 
         line_edit = dialog.findChild(QLineEdit)
-        completer = QCompleter(self.mw.tag_data.sorted_keys(), dialog)
+        completer = CommaCompleter(self.mw.tag_data.sorted_keys(), dialog)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         completer.setFilterMode(Qt.MatchContains)
         line_edit.setCompleter(completer)
@@ -402,11 +402,15 @@ class TagsWidget(QWidget):
         text = dialog.textValue()
 
         if ok and text:
-            text = text.strip()
+            tags = [tag.strip() for tag in text.split(",")]
             # Check for duplicate tags
             existing_tags = self.extract_tags_from_layout()
-            if text not in existing_tags:
-                self.add_tag_to_layout(text, self.current_row, self.current_col)
+            modified = False
+            for tag in tags:
+                if tag not in existing_tags:
+                    self.add_tag_to_layout(tag, self.current_row, self.current_col)
+                    modified = True
+            if modified:
                 self.emit_save_signal()
 
     def extract_tags_from_layout(self):
