@@ -7,11 +7,11 @@ from datetime import datetime
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot, QTimer
-from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap
+from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap, QCursor
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
-    QLabel, QGraphicsDropShadowEffect
+    QLabel, QGraphicsDropShadowEffect, QMenu, QAction
 
-from gui.Options import thumbnail_preview, thumbnail_delegate
+from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed
 from gui.WidgetDerivatives import CustomListView
 
 
@@ -49,7 +49,8 @@ class ListViewHandler:
         self.list_view.clicked.connect(lambda: self.list_view.viewport().update())
         self.list_view.clicked.connect(self.update_selection_history)
         self.list_view.middleClicked.connect(self.open_tab)
-        self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
+        #self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
+        self.list_view.rightClicked.connect(self.on_right_click)
 
     def get_widget(self):
         return self.list_view
@@ -127,6 +128,55 @@ class ListViewHandler:
         if update_history:
             self.update_selection_history(index)
 
+    def rescroll(self):
+        current_index = self.list_view.currentIndex()
+        if current_index:
+            self.list_view.scrollTo(current_index)
+
+    def on_right_click(self, index):
+        # Check if the index is valid
+        if not index.isValid():
+            return
+
+        context_menu = QMenu(self.list_view)
+
+        entry = index.data(Qt.UserRole)
+
+        # Actions
+        open_detail_action = QAction('Details', self.list_view)
+        open_browser_action = QAction('Open in Browser', self.list_view)
+        edit_action = QAction('Edit', self.list_view)
+        if entry.removed:
+            remove_name = 'Revert Removal'
+        else:
+            remove_name = 'Mark Removed'
+        remove_action = QAction(remove_name, self.list_view)
+
+        # Connect actions to slots or functions
+        open_detail_action.triggered.connect(lambda: self.mw.open_detail_view(entry))
+        open_browser_action.triggered.connect(lambda: self.open_tab(index))
+        edit_action.triggered.connect(lambda: self.select_index(index, True))
+        remove_action.triggered.connect(lambda: self.update_removed_status(entry))
+
+        # Add actions to the menu
+        context_menu.addAction(open_detail_action)
+        context_menu.addAction(open_browser_action)
+        context_menu.addAction(edit_action)
+        context_menu.addAction(remove_action)
+
+        # Execute the context menu at the cursor's position
+        context_menu.exec_(QCursor.pos())
+
+    def update_removed_status(self, entry):
+        # TODO: This is a copy of detail view remove, streamline save system
+        entry.removed = not entry.removed
+        self.mw.is_data_modified = True
+        entry.update_last_edited()
+        self.logger.debug(f"{entry.id}: removed was updated with: deleted {entry.removed}")
+
+        if not self.mw.settings[show_removed]:
+            self.mw.search_bar_handler.update_list()
+
     def open_tab(self, index):
         entry = index.data(Qt.UserRole)
         if not self.mw.browser_handler.unsupported:
@@ -139,11 +189,6 @@ class ListViewHandler:
             if self.mw.details_handler.json_edit_mode:
                 self.mw.details_handler.display_detail(index, True)
         self.mw.browser_handler.open_tab(entry)
-
-    def rescroll(self):
-        current_index = self.list_view.currentIndex()
-        if current_index:
-            self.list_view.scrollTo(current_index)
 
 
 def blend_colors(color1, color2, alpha):
