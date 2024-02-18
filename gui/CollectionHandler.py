@@ -130,13 +130,13 @@ class CollectionManagementDialog(QDialog):
 
         menu = QMenu()
 
-        add_action = menu.addAction("Add Collection")
+        add_action = menu.addAction("Add")
         add_action.triggered.connect(self.add_collection)
 
-        edit_action = menu.addAction("Edit Collection")
+        edit_action = menu.addAction("Edit")
         edit_action.triggered.connect(self.edit_collection)
 
-        remove_action = menu.addAction("Remove Collection")
+        remove_action = menu.addAction("Remove")
         remove_action.triggered.connect(self.remove_collection)
 
         # Disable edit and remove actions if no item is selected
