@@ -726,7 +726,7 @@ class ThumbnailDelegate(QStyledItemDelegate):
         self.threadPool.start(worker)
 
     def sizeHint(self, option, index):
-        return QSize(self.WIDTH, self.HEIGHT)  # width, height
+        return QSize(self.WIDTH, self.HEIGHT)  # Determins the size of the list entries
 
 
 class ImageLoader(QObject):
