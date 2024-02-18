@@ -6,7 +6,7 @@ import typing
 from datetime import datetime
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot
+from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot, QTimer
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect
@@ -539,6 +539,8 @@ class SpecialListView(CustomListView):
 
 class ThumbnailDelegate(QStyledItemDelegate):
     WIDTH, HEIGHT = 200, 200
+    BATCH_SIZE = 6
+    UPDATE_TIME_TREHSOLD = 250
 
     def __init__(self, mw, parent=None, *args, **kwargs):
         super(ThumbnailDelegate, self).__init__(parent, *args, **kwargs)
@@ -555,15 +557,35 @@ class ThumbnailDelegate(QStyledItemDelegate):
         self.imageLoader = ImageLoader(mw.thumbnail_manager)
         self.imageLoader.imageLoaded.connect(self.onImageLoaded)
 
+        self.imagesSinceLastRefresh = set()
+        self.batchSize = self.BATCH_SIZE  # Update viewport after these many images have loaded
+        self.updateTimer = QTimer(self)
+        self.updateTimer.setSingleShot(True)
+        self.updateTimer.timeout.connect(self.processBatchUpdate)
+        self.updateThreshold = self.UPDATE_TIME_TREHSOLD  # Time when to force an update if batch isn't met
+
     @pyqtSlot(str, QPixmap)
     def onImageLoaded(self, image_id, pixmap):
         self.cache[image_id] = pixmap
-        self.parent().viewport().update()  # Update the view to redraw items with the loaded image
+        self.imagesSinceLastRefresh.add(image_id)
+
+        if len(self.imagesSinceLastRefresh) >= self.batchSize:
+            self.processBatchUpdate()
+        elif not self.updateTimer.isActive():
+            self.updateTimer.start(self.updateThreshold)
 
     def paint(self, painter, option, index):
         # Retrieve item data from the model
         entry = index.data(Qt.UserRole)
-        thumbnail = self.mw.thumbnail_manager.get_thumbnail(entry.id)
+
+        # Async Thumbnail loading
+        thumbnail = None
+        if self.mw.thumbnail_manager.id_to_pixmap.get(entry.id):
+            thumbnail = self.mw.thumbnail_manager.get_thumbnail(entry.id)
+        else:
+            #thumbnail = self.mw.thumbnail_manager.default_img
+            self.loadImageAsync(entry.id)
+
         title = entry.display_title()
 
         # Draw the background and border
@@ -602,15 +624,16 @@ class ThumbnailDelegate(QStyledItemDelegate):
         if entry.removed:
             painter.setOpacity(0.2)
 
-        # Scale the thumbnail, maintaining aspect ratio
-        max_thumb_height = option.rect.height()  # Use full height for the thumbnail
-        scaled_thumb = thumbnail.scaled(self.WIDTH, max_thumb_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if thumbnail:
+            # Scale the thumbnail, maintaining aspect ratio
+            max_thumb_height = option.rect.height()  # Use full height for the thumbnail
+            scaled_thumb = thumbnail.scaled(self.WIDTH, max_thumb_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-        # Center the thumbnail horizontally and vertically in the item area
-        thumb_x = option.rect.left() + (option.rect.width() - scaled_thumb.width()) / 2
-        thumb_y = option.rect.top() + (option.rect.height() - scaled_thumb.height()) / 2  # Center vertically
-        thumb_rect = QRect(int(thumb_x), int(thumb_y), int(scaled_thumb.width()), int(scaled_thumb.height()))
-        painter.drawPixmap(thumb_rect, scaled_thumb)
+            # Center the thumbnail horizontally and vertically in the item area
+            thumb_x = option.rect.left() + (option.rect.width() - scaled_thumb.width()) / 2
+            thumb_y = option.rect.top() + (option.rect.height() - scaled_thumb.height()) / 2  # Center vertically
+            thumb_rect = QRect(int(thumb_x), int(thumb_y), int(scaled_thumb.width()), int(scaled_thumb.height()))
+            painter.drawPixmap(thumb_rect, scaled_thumb)
 
         # Draw item outline later so it draws over the thumbnail
         painter.strokePath(item_path, QPen(outline_color, outline_thickness))
@@ -724,6 +747,11 @@ class ThumbnailDelegate(QStyledItemDelegate):
     def loadImageAsync(self, image_id):
         worker = functools.partial(self.imageLoader.load, image_id)
         self.threadPool.start(worker)
+
+    def processBatchUpdate(self):
+        self.updateTimer.stop()
+        self.parent().viewport().update()
+        self.imagesSinceLastRefresh.clear()
 
     def sizeHint(self, option, index):
         return QSize(self.WIDTH, self.HEIGHT)  # Determins the size of the list entries
