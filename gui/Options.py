@@ -96,8 +96,8 @@ class OptionsHandler(QDialog):
 
         self.slider_label = QLabel(self.get_search_cutoff_text())
         self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setRange(0, 100)
-        self.slider.setValue(self.mw.settings[search_thrshold])
+        self.slider.setRange(0, 30)
+        self.slider.setValue(int(self.mw.settings[search_thrshold] * 0.1))
         self.slider.valueChanged.connect(self.slider_value_changed)
         self.slider.setToolTip("The amount of results to return when using the search bar.")
 
@@ -143,7 +143,7 @@ class OptionsHandler(QDialog):
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
-        self.mw.settings[search_thrshold] = value
+        self.mw.settings[search_thrshold] = value * 10
         self.slider_label.setText(self.get_search_cutoff_text())
 
     def get_search_cutoff_text(self):
