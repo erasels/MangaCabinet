@@ -129,10 +129,13 @@ class ThumbnailManager(QObject):
         except requests.RequestException as e:
             self.logger.error(f"Error occurred while downloading the thumbnail: {e}")
 
-    def save_img(self, img_data, file_path, manga, autoBlur=True):
+    def save_img(self, img_data, file_path, manga, max_size=400, autoBlur=True):
         img = Image.open(BytesIO(img_data))
         if autoBlur and any(tag in manga.tags for tag in self.tags_to_blur):
             img = img.filter(ImageFilter.GaussianBlur(10))
+        # Resize the image if it exceeds the max_size while maintaining aspect ratio
+        if img.width > max_size or img.height > max_size:
+            img.thumbnail((max_size, max_size))
         img.save(file_path)
         self.update_thumbnail(manga.id, file_path)
         self.thumbnailDownloaded.emit(manga, file_path)
