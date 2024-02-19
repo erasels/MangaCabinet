@@ -747,16 +747,15 @@ class ThumbnailDelegate(QStyledItemDelegate):
 
             rect_width = star_width + 8
             rect_height = score * star_height + (score - 1) * icon_spacing + 10
-            painter.save()
             painter.setBrush(rect_color)
             painter.setPen(Qt.NoPen)
             # the 5,5 are the x,y radii of the rounded corners
             painter.drawRoundedRect(QRect(start_x - 4, start_y - 3, rect_width, rect_height), 5, 5)
             painter.restore()
+            painter.save()
 
             for i in range(score):
                 painter.drawPixmap(start_x, int(start_y + i * (star_height + icon_spacing)), self.img_star)
-        painter.save()
 
         # Calculate the required height for the backdrop rectangle
         backdrop_height = 0
