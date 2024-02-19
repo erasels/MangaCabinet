@@ -46,6 +46,7 @@ class CustomListView(QListView):
 
 class CustomListWidget(QListWidget):
     itemRightClicked = pyqtSignal(object)
+    itemMiddleClicked = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super(CustomListWidget, self).__init__(parent)
@@ -55,6 +56,13 @@ class CustomListWidget(QListWidget):
         item = self.itemAt(event.pos())
         if item:
             self.itemRightClicked.emit(item)
+
+    def mousePressEvent(self, event):
+        super(CustomListWidget, self).mousePressEvent(event)
+        if event.button() == Qt.MiddleButton:
+            item = self.itemAt(event.pos())
+            if item:
+                self.itemMiddleClicked.emit(item)
 
 
 class DraggableListWidget(QListWidget):
@@ -201,6 +209,7 @@ class IdMatcher(QWidget):
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.list_widget.itemClicked.connect(self.handle_item_click)
         self.list_widget.itemRightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
+        self.list_widget.itemMiddleClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
         self.mw.dataUpdated.connect(self.add_new_data_to_list)
 
         self.layout.addWidget(QLabel("Similar:"))
