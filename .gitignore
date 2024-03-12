@@ -192,4 +192,4 @@ assets/data/settings_real.json
 assets/thumbnails
 logs
 start_windows.bat
-auxillary/GetManga.py
+auxillary/GetManga*
