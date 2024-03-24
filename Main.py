@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -198,9 +199,26 @@ class MangaCabinet(QWidget):
         self.dataUpdated.emit(newData)
         self.search_bar_handler.update_list()
 
+    def open_tab_from_entry(self, entry: MangaEntry):
+        if not self.browser_handler.unsupported:
+            entry.last_opened = datetime.now().strftime("%Y/%m/%d %H:%M")
+            entry.opens += 1
+            self.logger.debug(f"{entry.id}: MC_num_opens was updated with: {entry.opens}")
+            entry.update_last_opened()
+            # entry.update_last_edited()  # Doesn't feel like it should be updated here
+            self.is_data_modified = True
+        self.browser_handler.open_tab(entry)
+
+    def open_tab_from_index(self, index):
+        entry = index.data(Qt.UserRole)
+        self.open_tab_from_entry(entry)
+        if not self.browser_handler.unsupported:
+            if self.details_handler.json_edit_mode:
+                self.details_handler.display_detail(index, True)
 
     def get_entry_from_id(self, id):
         return self.data[self.entry_to_index[id]]
+
 
 def exception_hook(exc_type, exc_value, exc_traceback):
     """

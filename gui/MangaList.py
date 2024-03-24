@@ -48,7 +48,7 @@ class ListViewHandler:
         # To force manual update because I use custom highlighting logic
         self.list_view.clicked.connect(lambda: self.list_view.viewport().update())
         self.list_view.clicked.connect(self.update_selection_history)
-        self.list_view.middleClicked.connect(self.open_tab)
+        self.list_view.middleClicked.connect(self.mw.open_tab_from_index)
         #self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
         self.list_view.rightClicked.connect(self.on_right_click)
 
@@ -154,7 +154,7 @@ class ListViewHandler:
 
         # Connect actions to slots or functions
         open_detail_action.triggered.connect(lambda: self.mw.open_detail_view(entry))
-        open_browser_action.triggered.connect(lambda: self.open_tab(index))
+        open_browser_action.triggered.connect(lambda: self.mw.open_tab_from_index(index))
         edit_action.triggered.connect(lambda: self.select_index(index, True))
         remove_action.triggered.connect(lambda: self.update_removed_status(entry))
 
@@ -176,19 +176,6 @@ class ListViewHandler:
 
         if not self.mw.settings[show_removed]:
             self.mw.search_bar_handler.update_list()
-
-    def open_tab(self, index):
-        entry = index.data(Qt.UserRole)
-        if not self.mw.browser_handler.unsupported:
-            entry.last_opened = datetime.now().strftime("%Y/%m/%d %H:%M")
-            entry.opens += 1
-            self.logger.debug(f"{entry.id}: MC_num_opens was updated with: {entry.opens}")
-            entry.update_last_opened()
-            # entry.update_last_edited()  # Doesn't feel like it should be updated here
-            self.mw.is_data_modified = True
-            if self.mw.details_handler.json_edit_mode:
-                self.mw.details_handler.display_detail(index, True)
-        self.mw.browser_handler.open_tab(entry)
 
 
 def blend_colors(color1, color2, alpha):
