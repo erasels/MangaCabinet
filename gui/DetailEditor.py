@@ -71,7 +71,6 @@ class DetailEditorHandler:
 
         # Image view
         self.image_view = ImageViewer(self.mw.thumbnail_manager, parent=self.mw, dynamic_show=True)
-        self.image_view.rightClicked.connect(lambda: self.mw.open_detail_view(self.cur_data))
 
         # Tags Area with QGridLayout
         self.tags_widget = TagsWidget(self.mw)

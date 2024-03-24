@@ -3,11 +3,12 @@ import re
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QRectF, QPointF, QPoint, pyqtSlot, QTimer, QPropertyAnimation
-from PyQt5.QtGui import QColor, QPainter, QPixmap, QWheelEvent, QMouseEvent, QShowEvent, QHideEvent
+from PyQt5.QtGui import QColor, QPainter, QPixmap, QWheelEvent, QMouseEvent, QShowEvent, QHideEvent, QCursor
 from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidget, QLineEdit, QListWidget, QLabel, \
     QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene, \
-    QHBoxLayout, QGraphicsDropShadowEffect
+    QHBoxLayout, QGraphicsDropShadowEffect, QMenu, QAction
 
+import gui
 from auxillary.DataAccess import MangaEntry
 from gui.Options import bind_dview
 
@@ -502,6 +503,7 @@ class ImageViewer(QGraphicsView):
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.RightButton:
             self.rightClicked.emit()
+            self.on_right_click()
         elif event.button() == Qt.LeftButton:
             self._drag = True
             self._start_drag_pos = event.pos()
@@ -555,6 +557,36 @@ class ImageViewer(QGraphicsView):
         self.setHidden(state)
         if self.isVisible():
             self.load_image(self.entry_id)
+
+    def on_right_click(self):
+        # Check if an entry is loaded
+        if not self.entry_id:
+            return
+        mw = self.thumb_manager.mw  # This is hacky, mw should be easier to access
+
+        context_menu = QMenu(self)
+        entry = mw.get_entry_from_id(self.entry_id)
+
+        # Actions
+        if not isinstance(self.parent(), gui.DetailView.DetailViewHandler):
+            open_detail_action = QAction('Details', self)
+            open_detail_action.triggered.connect(lambda: mw.open_detail_view(entry))
+            context_menu.addAction(open_detail_action)
+
+        open_browser_action = QAction('Open in Browser', self)
+        open_browser_action.triggered.connect(lambda: mw.open_tab_from_entry(entry))
+        context_menu.addAction(open_browser_action)
+
+        if entry.removed:
+            remove_name = 'Revert Removal'
+        else:
+            remove_name = 'Mark Removed'
+        remove_action = QAction(remove_name, self)
+        remove_action.triggered.connect(lambda: self.update_removed_status(entry))
+        context_menu.addAction(remove_action)
+
+        # Execute the context menu at the cursor's position
+        context_menu.exec_(QCursor.pos())
 
 
 class RatingWidget(QWidget):
