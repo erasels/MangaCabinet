@@ -56,7 +56,7 @@ class MangaCabinet(QWidget):
         self.entry_to_index = {}
         self.tag_data = TagData()
         self.all_artists = set()
-        self.init_infos()
+        self.init_and_validate_data()
         self.details_view = None
         self.tag_view = None
         self.styles = load_styles(self.style_path)
@@ -167,8 +167,19 @@ class MangaCabinet(QWidget):
         self.setFont(font)
         self.logger.info(f"Changing font from {prev_name} to {self.fonts[self.font_index]}")
 
-    def init_infos(self):
+    def init_and_validate_data(self):
+        # Fill in auxillary lists for other services and validate data
         for idx, entry in enumerate(self.data):
+            # Validate ID specific data
+            if not entry.id:
+                error_message = f"Entry without ID found: {entry.display_title()}"
+                self.logger.error(error_message)
+                raise ValueError(error_message)
+            elif entry.id in self.entry_to_index:
+                error_message = f"Duplicate Entry ID found: {entry.id} | {entry.display_title()}"
+                self.logger.error(error_message)
+                raise ValueError(error_message)
+
             self.entry_to_index[entry.id] = idx
             self.all_artists.update(entry.artist)
             self.tag_data.update_with_entry(entry)
