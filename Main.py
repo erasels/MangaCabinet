@@ -199,6 +199,9 @@ class MangaCabinet(QWidget):
         self.search_bar_handler.update_list()
 
 
+    def get_entry_from_id(self, id):
+        return self.data[self.entry_to_index[id]]
+
 def exception_hook(exc_type, exc_value, exc_traceback):
     """
     Function to capture and display exceptions in a readable manner and saves data to prevent loss.

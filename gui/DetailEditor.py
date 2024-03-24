@@ -291,7 +291,7 @@ class DetailEditorHandler:
         # Update other entries if they're new
         for id in ids:
             if id not in old_ids:
-                entry: MangaEntry = self.mw.data[self.mw.entry_to_index[id]]
+                entry: MangaEntry = self.mw.get_entry_from_id(id)
                 if self.cur_data.id not in entry.similar:
                     if entry.similar:
                         entry.similar.append(self.cur_data.id)
@@ -301,7 +301,7 @@ class DetailEditorHandler:
         # Update old entries that were removed
         for id in old_ids:
             if id not in ids:
-                entry: MangaEntry = self.mw.data[self.mw.entry_to_index[id]]
+                entry: MangaEntry = self.mw.get_entry_from_id(id)
                 if self.cur_data.id in entry.similar:
                     entry.similar.remove(self.cur_data.id)
                     self.logger.debug(f"{id}: similar was updated by removing: {self.cur_data.id}")

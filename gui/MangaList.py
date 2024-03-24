@@ -117,7 +117,7 @@ class ListViewHandler:
                 self.select_index(self.list_model.index(row, 0))
                 return True
         if notify_on_failure:
-            entry = self.mw.data[self.mw.entry_to_index[unique_id]]
+            entry = self.mw.get_entry_from_id(unique_id)
             if entry:
                 self.mw.toast.show_notification(f"{unique_id} is not in the list currently.\n{entry.display_title()}")
         return False
