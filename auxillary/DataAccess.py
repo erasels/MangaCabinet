@@ -3,6 +3,8 @@ from datetime import datetime
 
 
 class MangaEntry(dict):
+    logger = logging.getLogger(__name__)
+
     ATTRIBUTE_MAP = {
         "id": ("id", None),
         "description": ("description", ""),
@@ -44,7 +46,6 @@ class MangaEntry(dict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(self.__class__.__name__)
 
     def __getattr__(self, attr):
         # Using a mapping to get the key and default value
