@@ -582,7 +582,8 @@ class ImageViewer(QGraphicsView):
         else:
             remove_name = 'Mark Removed'
         remove_action = QAction(remove_name, self)
-        remove_action.triggered.connect(lambda: self.update_removed_status(entry))
+        remove_action.triggered.connect(lambda: self.mw.manga_list_handler.update_removed_status(entry))
+        # TODO: Streamline save system
         context_menu.addAction(remove_action)
 
         # Execute the context menu at the cursor's position
