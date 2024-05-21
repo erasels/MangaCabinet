@@ -144,13 +144,27 @@ class SearchBarHandler:
                 self.hits_label.hide()
                 return
 
-        # Compute scores for all manga entries, prune non-hits and sort them based on sorting option
+        # Compute scores for all manga entries and filter out entries with a score of 0
         scored_data = []
         for entry in mod_data:
             score = self.match_score(entry, search_terms)
             if score > 0:
                 scored_data.append((entry, score))
-        sorted_data = sorted(scored_data, key=lambda x: (sorting_option[1](x[0]), x[1]), reverse=reverse_final)
+
+        # Group data by selected sorting option
+        grouped_data = defaultdict(list)
+        for entry, score in scored_data:
+            key = sorting_option[1](entry)
+            grouped_data[key].append((entry, score))
+
+        # Sort each group individually by collection and then data order
+        for key in grouped_data:
+            grouped_data[key].sort(key=lambda x: (self.mw.collection_handler.collection_to_index.get(x[0].collection, float('inf'))))
+
+        # Flatten sorted groups into a single list, sorted by the primary key with reverse_final
+        sorted_data = []
+        for key in sorted(grouped_data.keys(), reverse=reverse_final):
+            sorted_data.extend(grouped_data[key])
 
         hit_count = len(sorted_data)
         threshold = self.mw.settings[search_thrshold]
