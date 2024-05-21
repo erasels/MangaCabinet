@@ -9,8 +9,6 @@ from auxillary.JSONMethods import save_json, load_json
 show_removed = "show_removed_entries"
 default_sort = "default_sort_option"
 search_thrshold = "search_cutoff_threshold"
-loose_match = "loose_search_matching"
-multi_match = "count_multiple_matches"
 bind_dview = "bind_detail_view"
 thumbnail_preview = "show_hover_thumbnail"
 thumbnail_delegate = "use_thumbnail_view"
@@ -22,8 +20,6 @@ def init_settings():
         show_removed: False,
         default_sort: "By data order",
         search_thrshold: 100,
-        loose_match: False,
-        multi_match: False,
         bind_dview: False,
         thumbnail_preview: True,
         thumbnail_delegate: False
@@ -101,16 +97,6 @@ class OptionsHandler(QDialog):
         self.slider.valueChanged.connect(self.slider_value_changed)
         self.slider.setToolTip("The amount of results to return when using the search bar.")
 
-        self.loose_match_checkbox = QCheckBox("Enable Loose Search Matching", self)
-        self.loose_match_checkbox.setChecked(self.mw.settings[loose_match])
-        self.loose_match_checkbox.stateChanged.connect(lambda state: self.simple_change(loose_match, state))
-        self.loose_match_checkbox.setToolTip("When enabled only one term of your search needs to match something to be returned.")
-
-        self.multi_match_checkbox = QCheckBox("Enable Counting Matches", self)
-        self.multi_match_checkbox.setChecked(self.mw.settings[multi_match])
-        self.multi_match_checkbox.stateChanged.connect(lambda state: self.simple_change(multi_match, state))
-        self.multi_match_checkbox.setToolTip("When enabled results which contain a search term in multiple fields will have higher precedence, this becomes unintuitive with sorting.")
-
         self.bind_view_checkbox = QCheckBox("Bind Detail View to Editor", self)
         self.bind_view_checkbox.setChecked(self.mw.settings[bind_dview])
         self.bind_view_checkbox.stateChanged.connect(self.bind_view_changed)
@@ -135,8 +121,6 @@ class OptionsHandler(QDialog):
         layout.addLayout(sort_layout)
         layout.addWidget(self.slider_label)
         layout.addWidget(self.slider)
-        layout.addWidget(self.loose_match_checkbox)
-        layout.addWidget(self.multi_match_checkbox)
         layout.addWidget(self.bind_view_checkbox)
         layout.addWidget(self.thumbnail_checkbox)
         layout.addWidget(self.switch_delegate_checkbox)

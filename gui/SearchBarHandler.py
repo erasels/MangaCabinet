@@ -6,7 +6,7 @@ from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton, QCompleter
 
 from auxillary.DataAccess import MangaEntry
-from gui.Options import search_thrshold, loose_match, multi_match, show_removed, default_sort
+from gui.Options import search_thrshold, show_removed, default_sort
 from gui.WidgetDerivatives import RightClickableComboBox
 
 
@@ -144,18 +144,14 @@ class SearchBarHandler:
                 self.hits_label.hide()
                 return
 
-        # Compute scores for all manga entries and sort them based on the score
-        scored_data = [(entry, self.match_score(entry, search_terms)) for entry in mod_data]
-        grouped_data = defaultdict(list)
-        for entry, score in scored_data:
-            if score != 0:  # prune non-hits early
-                grouped_data[score].append((entry, score))
+        # Compute scores for all manga entries, prune non-hits and sort them based on sorting option
+        scored_data = []
+        for entry in mod_data:
+            score = self.match_score(entry, search_terms)
+            if score > 0:
+                scored_data.append((entry, score))
+        sorted_data = sorted(scored_data, key=lambda x: (sorting_option[1](x[0]), x[1]), reverse=reverse_final)
 
-        # 2. Sort Each Group by Secondary Key
-        for score, group in grouped_data.items():
-            grouped_data[score] = sorted(group, key=lambda x: sorting_option[1](x[0]), reverse=reverse_final)
-
-        sorted_data = [item for score in sorted(grouped_data.keys(), reverse=True) for item in grouped_data[score]]
         hit_count = len(sorted_data)
         threshold = self.mw.settings[search_thrshold]
 
@@ -227,13 +223,10 @@ class SearchBarHandler:
             if invert_match:
                 term_score = term_score == 0
 
-            if not self.mw.settings[loose_match] and term_score == 0:
+            if term_score == 0:
                 return 0  # If a term did not match any field, we return a score of 0 for the entire entry
 
             score += term_score
-
-        if not self.mw.settings[multi_match] and score > 1:
-            score = 1  # Disable multiple match weighting to preserve proper sort order
 
         return score
 
