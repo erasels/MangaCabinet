@@ -113,7 +113,9 @@ class SearchBarHandler:
         return all(filter_func(entry) for filter_func in filters)
 
     def update_list(self, forceRefresh=True):
-        search_terms = [term.strip() for term in self.search_bar.text().split(",")]
+        # Split the search bar text by semicolon first, then split each part by comma and ignore empty queries
+        queries = [query.strip() for query in self.search_bar.text().split(";") if query.strip()]
+        search_terms_groups = [[term.strip() for term in query.split(",") if term.strip()] for query in queries]
 
         # Define sort in case we need it
         sorting_option: tuple[str, Callable, bool] = self.sorting_options[self.sort_combobox.currentIndex()]
@@ -134,7 +136,7 @@ class SearchBarHandler:
             mod_data = self.mw.data
 
         # If less than 3 characters and already showing all entries, return early
-        if len(self.search_bar.text()) < 3:
+        if len(self.search_bar.text()) < 3 or not search_terms_groups:
             if self.showing_all_entries and not forceRefresh:
                 return
             else:
@@ -147,9 +149,13 @@ class SearchBarHandler:
         # Compute scores for all manga entries, prune non-hits and sort them based on sorting option (and then data order)
         scored_data = []
         for entry in mod_data:
-            score = self.match_score(entry, search_terms)
-            if score > 0:
-                scored_data.append((entry, score))
+            for search_terms in search_terms_groups:
+                score = self.match_score(entry, search_terms)
+                if score > 0:
+                    scored_data.append((entry, score))
+                    break  # If an entry matches one of the search terms groups, no need to check further
+        # I don't use the match score (amount of hits) anywhere, but I want to, I'll have to sum the matches.
+
         sorted_data = sorted(scored_data, key=lambda x: sorting_option[1](x[0]), reverse=reverse_final)
 
         hit_count = len(sorted_data)
@@ -161,7 +167,7 @@ class SearchBarHandler:
             entries_to_add = [entry for entry, _ in sorted_data[:threshold]]
         self.readd_items(entries_to_add)
 
-        if hit_count > 0 and search_terms:
+        if hit_count > 0 and any(search_terms_groups):
             self.hits_label.setText(f"Hits: {hit_count}")
             self.hits_label.show()
         else:
