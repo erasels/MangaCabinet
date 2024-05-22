@@ -201,7 +201,6 @@ class MangaCabinet(QWidget):
 
     def open_tab_from_entry(self, entry: MangaEntry):
         if not self.browser_handler.unsupported:
-            entry.last_opened = datetime.now().strftime("%Y/%m/%d %H:%M")
             entry.opens += 1
             self.logger.debug(f"{entry.id}: MC_num_opens was updated with: {entry.opens}")
             entry.update_last_opened()
