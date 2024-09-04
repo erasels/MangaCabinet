@@ -254,5 +254,6 @@ if __name__ == '__main__':
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
     window = MangaCabinet()
+    window.app = app
     app.aboutToQuit.connect(window.save_changes)
     sys.exit(app.exec_())

@@ -7,7 +7,7 @@ from datetime import datetime
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot, QTimer
-from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap, QCursor
+from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap, QCursor, QClipboard
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect, QMenu, QAction
 
@@ -145,7 +145,9 @@ class ListViewHandler:
         # Actions
         open_detail_action = QAction('Details', self.list_view)
         open_browser_action = QAction('Open in Browser', self.list_view)
+        copy_id_action = QAction('Copy ID', self.list_view)
         edit_action = QAction('Edit', self.list_view)
+
         if entry.removed:
             remove_name = 'Revert Removal'
         else:
@@ -155,17 +157,23 @@ class ListViewHandler:
         # Connect actions to slots or functions
         open_detail_action.triggered.connect(lambda: self.mw.open_detail_view(entry))
         open_browser_action.triggered.connect(lambda: self.mw.open_tab_from_index(index))
+        copy_id_action.triggered.connect(lambda: self.copy_id_to_clipboard(entry.id))
         edit_action.triggered.connect(lambda: self.select_index(index, True))
         remove_action.triggered.connect(lambda: self.update_removed_status(entry))
 
         # Add actions to the menu
         context_menu.addAction(open_detail_action)
         context_menu.addAction(open_browser_action)
+        context_menu.addAction(copy_id_action)
         context_menu.addAction(edit_action)
         context_menu.addAction(remove_action)
 
         # Execute the context menu at the cursor's position
         context_menu.exec_(QCursor.pos())
+
+    def copy_id_to_clipboard(self, entry_id):
+        clipboard = self.mw.app.clipboard()
+        clipboard.setText(str(entry_id))
 
     def update_removed_status(self, entry):
         # TODO: This is a copy of detail view remove, streamline save system
