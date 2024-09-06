@@ -18,7 +18,9 @@ def load_json(file_path: str, data_type='list'):
                     return json.load(file, object_pairs_hook=MangaEntry)
                 else:
                     return json.load(file)
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as ex:
+                if data_type == "mangas":
+                    raise Exception("The data file had invalid json, fix this!", f"location: {file_path}\nError: {ex}")
                 logger.error(f"The file {file_path} contains invalid JSON. Using default {data_type} instead.")
                 return [] if data_type == 'list' else {}
     else:
