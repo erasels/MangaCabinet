@@ -233,9 +233,7 @@ class MangaCabinet(QWidget):
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
-    """
-    Function to capture and display exceptions in a readable manner and saves data to prevent loss.
-    """
+    # Function to capture and display exceptions in a readable manner and saves data to prevent loss.
     try:
         window.save_changes()
     except Exception as e:
