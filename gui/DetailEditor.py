@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from json import JSONDecodeError
 
 from PyQt5.QtCore import Qt, QSize, QStringListModel
 from PyQt5.QtGui import QIcon
@@ -197,7 +198,12 @@ class DetailEditorHandler:
             self.mw.open_detail_view(self.cur_data)
 
         if self.json_edit_mode:
-            self.detail_view.setText(json.dumps(self.cur_data, indent=4))
+            data_json = "Invalid JSON, do not save!"
+            try:
+                data_json = json.dumps(self.cur_data, indent=4)
+            except TypeError as ex:
+                self.logger.error(f"{self.cur_data.id}: has invalid JSON due to non-serializable types. Error: {ex}")
+            self.detail_view.setText(data_json)
         else:
             # Populate fields with manga data
             self.title_input.setText(self.cur_data.title)
