@@ -2,7 +2,7 @@ import os
 
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton, QComboBox, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton, QComboBox, QHBoxLayout, QFileDialog
 
 from auxillary.JSONMethods import save_json, load_json
 
@@ -13,6 +13,7 @@ bind_dview = "bind_detail_view"
 thumbnail_preview = "show_hover_thumbnail"
 thumbnail_delegate = "use_thumbnail_view"
 download_script_loc = "download_script_location"
+default_manga_loc = "default_manga_system_location"
 
 
 def init_settings():
@@ -22,7 +23,8 @@ def init_settings():
         search_thrshold: 100,
         bind_dview: False,
         thumbnail_preview: True,
-        thumbnail_delegate: False
+        thumbnail_delegate: False,
+        default_manga_loc: ""
     }
 
 
@@ -111,6 +113,13 @@ class OptionsHandler(QDialog):
         self.switch_delegate_checkbox.stateChanged.connect(self.thumbnail_view_changed)
         self.switch_delegate_checkbox.setToolTip("WARNING: High RAM requirement if you have a lot of entries with images.")
 
+        self.default_manga_label = QLabel("Default Manga Location:", self)
+        self.default_manga_loc_label = QLabel(self.truncate_path(self.mw.settings.get(default_manga_loc, 'Not set')), self)
+        self.default_manga_loc_label.setToolTip(self.mw.settings[default_manga_loc])
+        self.default_manga_loc_button = QPushButton("Change Location", self)
+        self.default_manga_loc_button.setStyleSheet(self.mw.styles.get("textbutton"))
+        self.default_manga_loc_button.clicked.connect(self.change_default_manga_loc)
+
         sort_layout = QHBoxLayout()
         sort_layout.addWidget(self.default_sort_label)
         sort_layout.addWidget(self.default_sort_combobox)
@@ -124,6 +133,9 @@ class OptionsHandler(QDialog):
         layout.addWidget(self.bind_view_checkbox)
         layout.addWidget(self.thumbnail_checkbox)
         layout.addWidget(self.switch_delegate_checkbox)
+        layout.addWidget(self.default_manga_label)
+        layout.addWidget(self.default_manga_loc_label)
+        layout.addWidget(self.default_manga_loc_button)
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
@@ -147,3 +159,14 @@ class OptionsHandler(QDialog):
     def set_default_sort_option(self, index):
         sort_option = self.mw.search_bar_handler.sorting_options[index][0]
         self.mw.settings[default_sort] = sort_option
+
+    def change_default_manga_loc(self):
+        options = QFileDialog.Options()
+        folder = QFileDialog.getExistingDirectory(self, "Select Folder", self.mw.settings[default_manga_loc], options=options)
+        if folder:
+            self.mw.settings[default_manga_loc] = folder
+            self.default_manga_loc_label.setText(self.truncate_path(folder))
+            self.default_manga_loc_label.setToolTip(folder)
+
+    def truncate_path(self, path, max_length=50):
+        return path if len(path) <= max_length else '...' + path[-max_length + 3:]
