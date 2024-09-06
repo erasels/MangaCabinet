@@ -1,5 +1,5 @@
-import sys
 import json
+import sys
 
 
 def validate_json(json_input):

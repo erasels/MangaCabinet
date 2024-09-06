@@ -1,5 +1,4 @@
 import random
-from collections import defaultdict
 from typing import Callable
 
 from PyQt5.QtCore import QTimer, Qt

@@ -1,11 +1,10 @@
+import asyncio
 import logging
 import os
-import asyncio
 import threading
-
-import aiohttp
 from io import BytesIO
 
+import aiohttp
 import requests
 from PIL import Image, ImageFilter
 from PyQt5.QtCore import QObject, pyqtSignal, QThread, pyqtSlot

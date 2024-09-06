@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -15,9 +14,9 @@ from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
 from gui.ArbitraryDownloadButton import ArbitraryDownloadButton
+from gui.CollectionHandler import CollectionHandler
 from gui.DetailEditor import DetailEditorHandler
 from gui.DetailView import DetailViewHandler
-from gui.CollectionHandler import CollectionHandler
 from gui.MangaList import ListViewHandler
 from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
