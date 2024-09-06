@@ -3,11 +3,10 @@ import logging
 import math
 import os
 import typing
-from datetime import datetime
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot, QTimer
-from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap, QCursor, QClipboard
+from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap, QCursor
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect, QMenu, QAction
 
@@ -267,7 +266,7 @@ class MangaDelegate(QStyledItemDelegate):
             if collection_name and collection_name in self.mw.collection_handler.collections:
                 color = self.mw.collection_handler.collections[collection_name].get("color")
                 if color:
-                    background_color = blend_colors(DEFAULT_ITEM_BG_COLOR, QColor(color), 0.2)
+                    background_color = QColor(color)
 
             if option.state & QStyle.State_MouseOver:
                 mod_color = QColor(255, 255, 255, 50)  # semi-transparent white to brighten the color
