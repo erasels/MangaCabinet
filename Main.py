@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QPalette, QColor
@@ -18,7 +19,7 @@ from gui.CollectionHandler import CollectionHandler
 from gui.DetailEditor import DetailEditorHandler
 from gui.DetailView import DetailViewHandler
 from gui.MangaList import ListViewHandler
-from gui.Options import OptionsHandler
+from gui.Options import OptionsHandler, default_manga_loc
 from gui.SearchBarHandler import SearchBarHandler
 from gui.TagViewer import TagViewer
 from gui.WidgetDerivatives import ToastNotification
@@ -53,14 +54,14 @@ class MangaCabinet(QWidget):
             set(MangaEntry.ATTRIBUTE_MAP) | set(MangaEntry.FIELD_ALIASES_AND_GROUPING),
             key=str.lower
         )
-        self.entry_to_index = {}
-        self.tag_data = TagData()
-        self.all_artists = set()
-        self.init_and_validate_data()
         self.details_view = None
         self.tag_view = None
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
+        self.entry_to_index = {}
+        self.tag_data = TagData()
+        self.all_artists = set()
+        self.init_and_validate_data()
         self.thumbnail_manager = ThumbnailManager(self, self.data, self.download_thumbnails, self.tags_to_blur)
         self.thumbnail_manager.startEnsuring.emit()
         self.browser_handler = BrowserHandler(self)
@@ -183,6 +184,7 @@ class MangaCabinet(QWidget):
             self.entry_to_index[entry.id] = idx
             self.all_artists.update(entry.artist)
             self.tag_data.update_with_entry(entry)
+            self.check_entry_disk_location(entry, loose_check=True)
 
     def addNewData(self, newData: list[MangaEntry]):
         self.data = newData + self.data
@@ -192,11 +194,23 @@ class MangaCabinet(QWidget):
         for entry in newData:
             self.all_artists.update(entry.artist)
             self.tag_data.update_with_entry(entry)
+            self.check_entry_disk_location(entry)
 
         self.is_data_modified = True
         self.logger.info(f"Updated data with the following entries: {', '.join([entry.id for entry in newData])}")
         self.dataUpdated.emit(newData)
         self.search_bar_handler.update_list()
+
+    def check_entry_disk_location(self, entry, loose_check=False):
+        # If entry doesn't have a defined filesystem location and default is defined, try to find it
+        if self.settings[default_manga_loc] and not entry.disk_location(loose_check=loose_check):
+            # Special handling for path here because I want to prevent backslash usage in data json
+            entry_path = Path(self.settings[default_manga_loc]) / entry.id
+            if entry_path.exists():
+                # TODO: Streamline save system
+                entry.filesystem_location = str(entry_path).replace('\\', '/')
+                self.is_data_modified = True
+                self.logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
 
     def open_tab_from_entry(self, entry: MangaEntry):
         if not self.browser_handler.unsupported:
@@ -228,7 +242,7 @@ def exception_hook(exc_type, exc_value, exc_traceback):
         # Log the error or print it out. This is to ensure that if the save fails,
         # it doesn't prevent the original exception from being displayed.
         logger = logging.getLogger(__name__)
-        logger.critical(f"Error during save: {e}")
+        logger.fatal(f"Error during save: {e}")
 
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
     sys.exit(1)

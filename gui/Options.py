@@ -167,6 +167,8 @@ class OptionsHandler(QDialog):
             self.mw.settings[default_manga_loc] = folder
             self.default_manga_loc_label.setText(self.truncate_path(folder))
             self.default_manga_loc_label.setToolTip(folder)
+            for entry in self.mw.data:
+                self.mw.check_entry_disk_location(entry)
 
     def truncate_path(self, path, max_length=50):
         return path if len(path) <= max_length else '...' + path[-max_length + 3:]
