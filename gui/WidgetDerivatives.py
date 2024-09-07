@@ -115,6 +115,7 @@ class ToastNotification(QWidget):
 
         self.label = QLabel(self)
         self.label.setAlignment(Qt.AlignCenter)
+        self.label.setWordWrap(True)
 
         # Apply drop shadow effect
         shadow = QGraphicsDropShadowEffect(self)
@@ -136,14 +137,18 @@ class ToastNotification(QWidget):
         self.timer.timeout.connect(self.hide_notification)
 
     @pyqtSlot()
-    def show_notification(self, message, background_color='#6a4a4a', text_color='#FFF'):
+    def show_notification(self, message, background_color='#6a4a4a', text_color='#FFF', display_time=3000):
         # Stop any existing animation and timer
         self.animation.stop()
         self.timer.stop()
+        self.timer.setInterval(display_time)
 
         self.label.setText(message)
         self.label.setStyleSheet(
             f"QLabel {{ background-color: {background_color}; color: {text_color}; border-radius: 10px; padding: 10px; }}")
+
+        self.adjustSize()  # Adjust the size based on content
+        self.setFixedSize(250, max(100, self.height()))  # Ensure minimum height of 100
 
         parent_geometry = self.parent().geometry()
         right = parent_geometry.right() - self.width() - 20
