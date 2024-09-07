@@ -5,5 +5,5 @@
     "bind_detail_view": false,
     "show_hover_thumbnail": true,
     "use_thumbnail_view": false,
-    "default_manga_system_location": "assets/manga"
+    "default_manga_system_location": ""
 }
