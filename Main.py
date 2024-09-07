@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -58,15 +59,18 @@ class MangaCabinet(QWidget):
         self.tag_view = None
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
+
         self.entry_to_index = {}
         self.tag_data = TagData()
         self.all_artists = set()
         self.init_and_validate_data()
+
         self.thumbnail_manager = ThumbnailManager(self, self.data, self.download_thumbnails, self.tags_to_blur)
         self.thumbnail_manager.startEnsuring.emit()
         self.browser_handler = BrowserHandler(self)
         self.init_ui()
         self.show()
+        self.check_for_backups_and_recovery_files()
         self.logger.info(f"Successfully initialized with {len(self.data)} entires.")
 
     def load_config_values(self):
@@ -267,6 +271,29 @@ class MangaCabinet(QWidget):
 
     def get_entry_from_id(self, id):
         return self.data[self.entry_to_index[id]]
+
+    def check_for_backups_and_recovery_files(self):
+        checked_directories = set()
+        recovery_pattern = re.compile(r"\.recovery$")
+        backup_pattern = re.compile(r"\.backup_\d{14}$")
+
+        for path in (self.data_file, self.settings_file, self.collections_file):
+            directory = os.path.dirname(path)
+            if directory in checked_directories:
+                continue  # Skip this directory as it's already been checked
+            checked_directories.add(directory)
+
+            files_in_directory = os.listdir(directory)
+            found_issues = False
+
+            for file in files_in_directory:
+                if recovery_pattern.search(file) or backup_pattern.search(file):
+                    msg = f"Backup or recovery file found: {file} in {directory}.\nPlease check manually."
+                    if not found_issues:
+                        found_issues = True
+                        # Displaying a toast notification only once per directory
+                        self.toast.show_notification(msg + " There may be more.", display_time=5000)
+                    self.logger.warning(msg)
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
