@@ -577,6 +577,14 @@ class ImageViewer(QGraphicsView):
         open_browser_action.triggered.connect(lambda: mw.open_tab_from_entry(entry))
         context_menu.addAction(open_browser_action)
 
+        copy_id_action = QAction('Copy ID', self)
+        copy_id_action.triggered.connect(lambda: mw.manga_list_handler.copy_id_to_clipboard(entry.id))
+        context_menu.addAction(copy_id_action)
+
+        locate_action = QAction('Locate on Disk', self)
+        locate_action.triggered.connect(lambda: mw.manga_list_handler.locate_on_disk(entry))
+        context_menu.addAction(locate_action)
+
         if entry.removed:
             remove_name = 'Revert Removal'
         else:
