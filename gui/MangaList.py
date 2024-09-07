@@ -5,10 +5,10 @@ import os
 import typing
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot, QTimer
+from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot, QTimer, QEvent
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap, QCursor
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
-    QLabel, QGraphicsDropShadowEffect, QMenu, QAction, QFileDialog
+    QLabel, QGraphicsDropShadowEffect, QMenu, QAction, QFileDialog, QToolTip
 
 from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, show_on_disk, default_manga_loc, show_on_disk
 from gui.WidgetDerivatives import CustomListView
@@ -241,6 +241,8 @@ TAG_SPACING = 3
 TAG_COLUMNS = 3
 TAG_MINIMUM_FONT_SIZE = 7
 TAG_BACKGROUND_COLOR = QColor("#505050")
+
+ICON_SPACING = 5  # vertical height between icons
 
 TITLE_MINIMUM_FONT_SIZE = 7
 DEFAULT_ITEM_BG_COLOR = QColor("#2A2A2A")
@@ -637,6 +639,32 @@ class ThumbnailDelegate(QStyledItemDelegate):
         elif not self.updateTimer.isActive():
             self.updateTimer.start(self.updateThreshold)
 
+    def calculate_icon_rect(self, option, entry):
+        icons = []
+        if bool(entry.disk_location(True)) and self.mw.settings[show_on_disk]:
+            icons.append(self.img_on_disk.height())
+        if entry.good_story():
+            icons.append(self.img_good_story.height())
+        if entry.good_art():
+            icons.append(self.img_good_art.height())
+
+        if not icons:
+            return None
+
+        backdrop_height = sum(icons) + ICON_SPACING * (len(icons) - 1)
+        return QRect(option.rect.right() - self.img_good_story.width() - 1, option.rect.top() + 3,
+                     self.img_good_story.width(), backdrop_height + 4)
+
+    def generate_icon_tooltip(self, entry):
+        tooltip_text = []
+        if entry.disk_location(True) and self.mw.settings[show_on_disk]:
+            tooltip_text.append(f"On filesystem: {entry.disk_location(True)}")
+        if entry.good_art():
+            tooltip_text.append("Good Art")
+        if entry.good_story():
+            tooltip_text.append("Good Story")
+        return '\n'.join(tooltip_text)
+
     def paint(self, painter, option, index):
         # Retrieve item data from the model
         entry = index.data(Qt.UserRole)
@@ -748,7 +776,6 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.drawText(title_background_rect, Qt.AlignCenter, title_line_1)
 
         # Define values for the below icons rendering
-        icon_spacing = 5  # vertical height between icons
         rect_color = blend_colors(background_color, STAR_DIM_BG_COLOR, 0.7)
         rect_color.setAlpha(180)
 
@@ -757,14 +784,14 @@ class ThumbnailDelegate(QStyledItemDelegate):
         if score:
             star_width = self.img_star.width()
             star_height = self.img_star.height()
-            total_height_for_stars = score * star_height + (score - 1) * icon_spacing
+            total_height_for_stars = score * star_height + (score - 1) * ICON_SPACING
 
             # Calculating the top-left point to start drawing stars
             start_x = option.rect.x() + 5  # adding 8 pixels padding from left. Adjust as needed.
             start_y = option.rect.y() + 5  # center align vertically
 
             rect_width = star_width + 8
-            rect_height = score * star_height + (score - 1) * icon_spacing + 10
+            rect_height = score * star_height + (score - 1) * ICON_SPACING + 10
             painter.setBrush(rect_color)
             painter.setPen(Qt.NoPen)
             # the 5,5 are the x,y radii of the rounded corners
@@ -773,29 +800,12 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.save()
 
             for i in range(score):
-                painter.drawPixmap(start_x, int(start_y + i * (star_height + icon_spacing)), self.img_star)
+                painter.drawPixmap(start_x, int(start_y + i * (star_height + ICON_SPACING)), self.img_star)
 
         # Calculate the required height for the backdrop rectangle
-        backdrop_height = 0
-        icon_amt = 0
-        on_disk = entry.disk_location(True) and self.mw.settings[show_on_disk]
-        if on_disk:
-            backdrop_height += self.img_on_disk.height()
-            icon_amt += 1
-        if entry.good_story():
-            backdrop_height += self.img_good_story.height()
-            icon_amt += 1
-        if entry.good_art():
-            backdrop_height += self.img_good_art.height()
-            icon_amt += 1
-        if icon_amt > 1:
-            backdrop_height += icon_spacing * (icon_amt-1)  # Account for space between icons
+        backdrop_rect = self.calculate_icon_rect(option, entry)
 
-        if backdrop_height > 0:
-            backdrop_rect = QRect(option.rect.right() - self.img_good_story.width() - 1,
-                                  option.rect.top() + 3,
-                                  self.img_good_story.width(),
-                                  backdrop_height + 4)
+        if backdrop_rect:
             painter.setBrush(rect_color)
             painter.setPen(Qt.NoPen)
             painter.drawRoundedRect(backdrop_rect, 5, 5)
@@ -803,16 +813,16 @@ class ThumbnailDelegate(QStyledItemDelegate):
             current_y = backdrop_rect.top() + 2
 
             # Draw the on disk icon if applicable
-            if on_disk:
+            if entry.disk_location(True) and self.mw.settings[show_on_disk]:
                 disk_icon_pos = QPoint(backdrop_rect.left(), current_y)
                 painter.drawPixmap(disk_icon_pos, self.img_on_disk)
-                current_y += self.img_on_disk.height() + icon_spacing
+                current_y += self.img_on_disk.height() + ICON_SPACING
 
             # Draw the good art icon if applicable
             if entry.good_art():
                 art_icon_pos = QPoint(backdrop_rect.left(), current_y)
                 painter.drawPixmap(art_icon_pos, self.img_good_art)
-                current_y += self.img_good_art.height() + icon_spacing
+                current_y += self.img_good_art.height() + ICON_SPACING
 
             # Draw the good story icon if applicable
             if entry.good_story():
@@ -829,8 +839,20 @@ class ThumbnailDelegate(QStyledItemDelegate):
         self.parent().viewport().update()
         self.imagesSinceLastRefresh.clear()
 
+    def helpEvent(self, event, view, option, index):
+        # Additional logic for hovering thumbnails, add tooltip when hovering icons area
+        if event.type() == QEvent.ToolTip:
+            entry = index.data(Qt.UserRole)
+            # When hovering but being too fast entry can be None
+            if entry:
+                backdrop_rect = self.calculate_icon_rect(option, entry)
+                if backdrop_rect and backdrop_rect.contains(event.pos()):
+                    QToolTip.showText(event.globalPos(), self.generate_icon_tooltip(entry), view)
+                    return True
+        return super(ThumbnailDelegate, self).helpEvent(event, view, option, index)
+
     def sizeHint(self, option, index):
-        return QSize(self.WIDTH, self.HEIGHT)  # Determins the size of the list entries
+        return QSize(self.WIDTH, self.HEIGHT)  # Determines the size of the list entries
 
 
 class ImageLoader(QObject):
