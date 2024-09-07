@@ -8,9 +8,9 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF, QPoint, QObject, pyqtSignal, QThreadPool, pyqtSlot, QTimer
 from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemModel, QStandardItem, QPixmap, QCursor
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
-    QLabel, QGraphicsDropShadowEffect, QMenu, QAction
+    QLabel, QGraphicsDropShadowEffect, QMenu, QAction, QFileDialog
 
-from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed
+from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, default_manga_loc
 from gui.WidgetDerivatives import CustomListView
 
 
@@ -146,6 +146,7 @@ class ListViewHandler:
         open_browser_action = QAction('Open in Browser', self.list_view)
         copy_id_action = QAction('Copy ID', self.list_view)
         edit_action = QAction('Edit', self.list_view)
+        locate_on_disk_action = QAction('Locate on Disk', self.list_view)
 
         if entry.removed:
             remove_name = 'Revert Removal'
@@ -158,6 +159,7 @@ class ListViewHandler:
         open_browser_action.triggered.connect(lambda: self.mw.open_tab_from_index(index))
         copy_id_action.triggered.connect(lambda: self.copy_id_to_clipboard(entry.id))
         edit_action.triggered.connect(lambda: self.select_index(index, True))
+        locate_on_disk_action.triggered.connect(lambda: self.locate_on_disk_via_index(index))
         remove_action.triggered.connect(lambda: self.update_removed_status(entry))
 
         # Add actions to the menu
@@ -165,6 +167,7 @@ class ListViewHandler:
         context_menu.addAction(open_browser_action)
         context_menu.addAction(copy_id_action)
         context_menu.addAction(edit_action)
+        context_menu.addAction(locate_on_disk_action)
         context_menu.addAction(remove_action)
 
         # Execute the context menu at the cursor's position
@@ -173,6 +176,25 @@ class ListViewHandler:
     def copy_id_to_clipboard(self, entry_id):
         clipboard = self.mw.app.clipboard()
         clipboard.setText(str(entry_id))
+
+    def locate_on_disk(self, entry):
+        # Open a QFileDialog to select a directory
+        directory = QFileDialog.getExistingDirectory(self.list_view, "Select Directory", self.mw.settings.get(default_manga_loc, ""))
+
+        if directory:
+            # Special logic to prevent backslashes in json
+            entry.filesystem_location = directory.replace('\\', '/')
+            # TODO: Streamline save system
+            self.mw.is_data_modified = True
+            self.logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
+            return True
+        return False
+
+    def locate_on_disk_via_index(self, index):
+        entry = index.data(Qt.UserRole)
+        if self.locate_on_disk(entry):
+            if entry is self.mw.details_handler.cur_data and self.mw.details_handler.json_edit_mode:
+                self.mw.details_handler.display_detail(index, True)
 
     def update_removed_status(self, entry):
         # TODO: This is a copy of detail view remove, streamline save system
