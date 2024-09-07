@@ -10,7 +10,7 @@ from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemM
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect, QMenu, QAction, QFileDialog
 
-from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, default_manga_loc
+from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, show_on_disk, default_manga_loc, show_on_disk
 from gui.WidgetDerivatives import CustomListView
 
 
@@ -778,17 +778,18 @@ class ThumbnailDelegate(QStyledItemDelegate):
         # Calculate the required height for the backdrop rectangle
         backdrop_height = 0
         icon_amt = 0
+        on_disk = entry.disk_location(True) and self.mw.settings[show_on_disk]
+        if on_disk:
+            backdrop_height += self.img_on_disk.height()
+            icon_amt += 1
         if entry.good_story():
             backdrop_height += self.img_good_story.height()
             icon_amt += 1
         if entry.good_art():
             backdrop_height += self.img_good_art.height()
             icon_amt += 1
-        if entry.disk_location(True):
-            backdrop_height += self.img_on_disk.height()
-            icon_amt += 1
         if icon_amt > 1:
-            backdrop_height += icon_spacing * (icon_amt-1)  # Add space between icons
+            backdrop_height += icon_spacing * (icon_amt-1)  # Account for space between icons
 
         if backdrop_height > 0:
             backdrop_rect = QRect(option.rect.right() - self.img_good_story.width() - 1,
@@ -802,7 +803,7 @@ class ThumbnailDelegate(QStyledItemDelegate):
             current_y = backdrop_rect.top() + 2
 
             # Draw the on disk icon if applicable
-            if entry.disk_location(True):
+            if on_disk:
                 disk_icon_pos = QPoint(backdrop_rect.left(), current_y)
                 painter.drawPixmap(disk_icon_pos, self.img_on_disk)
                 current_y += self.img_on_disk.height() + icon_spacing

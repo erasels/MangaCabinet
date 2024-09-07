@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QP
 from auxillary.JSONMethods import save_json, load_json
 
 show_removed = "show_removed_entries"
+show_on_disk = "show_system_location_indicator"
 default_sort = "default_sort_option"
 search_thrshold = "search_cutoff_threshold"
 bind_dview = "bind_detail_view"
@@ -19,6 +20,7 @@ default_manga_loc = "default_manga_system_location"
 def init_settings():
     return {
         show_removed: False,
+        show_on_disk: False,
         default_sort: "By data order",
         search_thrshold: 100,
         bind_dview: False,
@@ -81,6 +83,11 @@ class OptionsHandler(QDialog):
         self.show_removed_checkbox.stateChanged.connect(lambda state: self.simple_change(show_removed, state))
         self.show_removed_checkbox.setToolTip("Show removed entries in the main manga list.")
 
+        self.show_on_disk_checkbox = QCheckBox("Show Local Copy Indicator", self)
+        self.show_on_disk_checkbox.setChecked(self.mw.settings[show_on_disk])
+        self.show_on_disk_checkbox.stateChanged.connect(lambda state: self.simple_change(show_on_disk, state))
+        self.show_on_disk_checkbox.setToolTip("Show a folder icon in thumbnail view when the manga has been located on your system.")
+
         self.default_sort_label = QLabel("Default Sort:", self)
 
         self.default_sort_combobox = QComboBox(self)
@@ -127,6 +134,7 @@ class OptionsHandler(QDialog):
         # Layout management
         layout = QVBoxLayout()
         layout.addWidget(self.show_removed_checkbox)
+        layout.addWidget(self.show_on_disk_checkbox)
         layout.addLayout(sort_layout)
         layout.addWidget(self.slider_label)
         layout.addWidget(self.slider)
