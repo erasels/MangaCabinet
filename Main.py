@@ -184,7 +184,8 @@ class MangaCabinet(QWidget):
             self.entry_to_index[entry.id] = idx
             self.all_artists.update(entry.artist)
             self.tag_data.update_with_entry(entry)
-            self.check_entry_disk_location(entry, loose_check=True)
+
+        self.check_entries_disk_locations(self.data)
 
     def addNewData(self, newData: list[MangaEntry]):
         self.data = newData + self.data
@@ -211,6 +212,33 @@ class MangaCabinet(QWidget):
                 entry.filesystem_location = str(entry_path).replace('\\', '/')
                 self.is_data_modified = True
                 self.logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
+
+    def check_entries_disk_locations(self, entries):
+        """
+        Efficiently checks and updates filesystem locations for multiple entries
+        by minimizing disk I/O with a single directory read.
+        """
+        if not self.settings[default_manga_loc]:
+            return
+        manga_loc_path = Path(self.settings[default_manga_loc])
+
+        existing_paths = os.listdir(manga_loc_path)
+
+        # Iterate through each entry in the provided list
+        for entry in entries:
+            cur_loc = entry.filesystem_location
+            cur_loc_path = Path(cur_loc) if cur_loc else None
+
+            # Check if current location doesn't exist or is a subdir of default path and if it's not in existing_paths
+            if not cur_loc_path or (cur_loc_path.is_relative_to(manga_loc_path) and cur_loc_path.name not in existing_paths):
+                # Construct the path for the entry
+                entry_path = manga_loc_path / entry.id
+
+                if entry_path.name in existing_paths:
+                    # TODO: Streamline save system
+                    entry.filesystem_location = str(entry_path).replace('\\', '/')
+                    self.is_data_modified = True
+                    self.logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
 
     def open_tab_from_entry(self, entry: MangaEntry):
         if not self.browser_handler.unsupported:
