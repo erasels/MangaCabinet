@@ -113,7 +113,7 @@ class MangaEntry(dict):
             return None
 
     def disk_location(self, loose_check=False):
-        if self.filesystem_location and (not loose_check or os.path.exists(self.filesystem_location)):
+        if self.filesystem_location and (loose_check or os.path.exists(self.filesystem_location)):
             return self.filesystem_location
         else:
             return None
