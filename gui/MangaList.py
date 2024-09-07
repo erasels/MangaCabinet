@@ -613,6 +613,8 @@ class ThumbnailDelegate(QStyledItemDelegate):
                                .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         self.img_good_art = (QPixmap(os.path.join(self.mw.image_path, 'good_art.png'))
                              .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.img_on_disk = (QPixmap(os.path.join(self.mw.image_path, 'on_disk.png'))
+                            .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         self.threadPool = QThreadPool()
         self.imageLoader = ImageLoader(mw.thumbnail_manager)
@@ -775,12 +777,18 @@ class ThumbnailDelegate(QStyledItemDelegate):
 
         # Calculate the required height for the backdrop rectangle
         backdrop_height = 0
+        icon_amt = 0
         if entry.good_story():
             backdrop_height += self.img_good_story.height()
+            icon_amt += 1
         if entry.good_art():
             backdrop_height += self.img_good_art.height()
-        if entry.good_story() and entry.good_art():
-            backdrop_height += icon_spacing  # Add space between icons
+            icon_amt += 1
+        if entry.disk_location(True):
+            backdrop_height += self.img_on_disk.height()
+            icon_amt += 1
+        if icon_amt > 1:
+            backdrop_height += icon_spacing * (icon_amt-1)  # Add space between icons
 
         if backdrop_height > 0:
             backdrop_rect = QRect(option.rect.right() - self.img_good_story.width() - 1,
@@ -791,17 +799,24 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.setPen(Qt.NoPen)
             painter.drawRoundedRect(backdrop_rect, 5, 5)
 
-            # Draw the good story icon if applicable
-            if entry.good_story():
-                story_icon_pos = QPoint(backdrop_rect.left(), backdrop_rect.top() + 2)
-                painter.drawPixmap(story_icon_pos, self.img_good_story)
+            current_y = backdrop_rect.top() + 2
+
+            # Draw the on disk icon if applicable
+            if entry.disk_location(True):
+                disk_icon_pos = QPoint(backdrop_rect.left(), current_y)
+                painter.drawPixmap(disk_icon_pos, self.img_on_disk)
+                current_y += self.img_on_disk.height() + icon_spacing
 
             # Draw the good art icon if applicable
             if entry.good_art():
-                art_icon_pos = QPoint(backdrop_rect.left(), backdrop_rect.top() + 2)
-                if entry.good_story():
-                    art_icon_pos.setY(art_icon_pos.y() + self.img_good_story.height() + icon_spacing)
+                art_icon_pos = QPoint(backdrop_rect.left(), current_y)
                 painter.drawPixmap(art_icon_pos, self.img_good_art)
+                current_y += self.img_good_art.height() + icon_spacing
+
+            # Draw the good story icon if applicable
+            if entry.good_story():
+                story_icon_pos = QPoint(backdrop_rect.left(), current_y)
+                painter.drawPixmap(story_icon_pos, self.img_good_story)
         painter.restore()
 
     def loadImageAsync(self, image_id):
