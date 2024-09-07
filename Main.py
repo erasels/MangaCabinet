@@ -213,7 +213,7 @@ class MangaCabinet(QWidget):
                 self.is_data_modified = True
                 self.logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
 
-    def check_entries_disk_locations(self, entries):
+    def check_entries_disk_locations(self, entries, loose_check=True):
         """
         Efficiently checks and updates filesystem locations for multiple entries
         by minimizing disk I/O with a single directory read.
@@ -229,8 +229,17 @@ class MangaCabinet(QWidget):
             cur_loc = entry.filesystem_location
             cur_loc_path = Path(cur_loc) if cur_loc else None
 
-            # Check if current location doesn't exist or is a subdir of default path and if it's not in existing_paths
-            if not cur_loc_path or (cur_loc_path.is_relative_to(manga_loc_path) and cur_loc_path.name not in existing_paths):
+            if loose_check:
+                # Catches location not written or written but id changed mostly
+                check_condition = (not cur_loc_path or
+                                   (cur_loc_path.is_relative_to(manga_loc_path) and
+                                    cur_loc_path.name not in existing_paths))
+            else:
+                # Catches not written or not existing (does an IO operation, costly, only done rarely)
+                check_condition = (not cur_loc_path or
+                                   not cur_loc_path.exists())
+
+            if check_condition:
                 # Construct the path for the entry
                 entry_path = manga_loc_path / entry.id
 
