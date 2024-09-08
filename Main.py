@@ -4,7 +4,6 @@ import os
 import re
 import sys
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QPalette, QColor
@@ -21,7 +20,7 @@ from gui.CollectionHandler import CollectionHandler
 from gui.DetailEditor import DetailEditorHandler
 from gui.DetailView import DetailViewHandler
 from gui.MangaList import ListViewHandler
-from gui.Options import OptionsHandler, default_manga_loc
+from gui.Options import OptionsHandler
 from gui.SearchBarHandler import SearchBarHandler
 from gui.TagViewer import TagViewer
 from gui.WidgetDerivatives import ToastNotification
