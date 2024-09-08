@@ -11,10 +11,12 @@ While using 3rd-party packages has been avoided where possible to keep setup sim
 ### Features
 
 1. **List & Detailed View**: Easily browse through a list of all manga entries. Click on any entry to open a detailed view.
-2. **Search Functionality**: 
-    - Search through metadata like titles, tags, authors, and more.
-3. **Edit & Save**: Modify the metadata in the detailed view and save your changes back to the original JSON file.
+2. **Search Functionality**: Search through metadata like titles, tags, authors, and more.
+3. **Edit & Save**: Modify the metadata in the detailed view and have your changes saved back to the original JSON file automatically.
 4. **Completely Local**: No internet? No problem. Everything runs locally, ensuring your data remains private.
+5. **Download Metadata**: With the arbitrary download button in the top right you can run custom scripts to import new data easily.
+6. **Connect Local Mangas**: You can locate the manga if you downloaded it to easily open it through this app.
+
 
 ### Enhanced Search Functionality:
 1. **Simple Search**: 
@@ -36,3 +38,17 @@ While using 3rd-party packages has been avoided where possible to keep setup sim
     - You can also narrow down your searches within specific collections.
     - Sort the results by upload date, score, id, data order and more
     - Use a semicolon (`;`) to perform multiple separate searches in one query (e.g. `yandere, gore; horror, tags:romance`).
+
+### Configuration
+You can configure many thing with the options menu by clicking on the cogwheel in the top right. If you are unsure what an option means, just hover it to have it explained.
+Of special note:
+- `Use Thumbnail List View` in case you want to see images instead of just the title, author and some tags. (requires thumnails to be supplied or automatically managed as described below)
+
+For less front-facing features you can take a look at the `config_default.json`, found in `assets/data`. 
+Here you can modify the locations of the data, settings and collections files in case you want them outside the project.
+If you want to easily open entries via middle-click, you have two options. 
+If you want to open them in your browser, you want to set your `browser_executable_path` and default_url.
+If you store your mangas locally on your file system, you can set `open_manga_on_disk_script_location` in case you have a manga viewer like yomikiru and have a python script that runs it. 
+Of more interest would be the settings in the options menu here, as you can configure your default location for all your mangas. If you name their folders by the id, they will automatically be recognized on start-up, otherwise you can right-click an entry in the list and select `locate on disk` to set the directory.
+
+Finally, if you want to use the thumbnail view you'll want to enable the downloading of thumbnails which will read the `thumbnail_url` on the entry and download it into `assets/thumbnails`.

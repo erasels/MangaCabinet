@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import sys
 from logging.handlers import RotatingFileHandler
 
@@ -8,8 +9,9 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
-from auxillary.BrowserHandling import BrowserHandler
+from auxillary.BrowserHandler import BrowserHandler
 from auxillary.DataAccess import MangaEntry, TagData
+from auxillary.DiskHandler import DiskHandler
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
@@ -53,19 +55,23 @@ class MangaCabinet(QWidget):
             set(MangaEntry.ATTRIBUTE_MAP) | set(MangaEntry.FIELD_ALIASES_AND_GROUPING),
             key=str.lower
         )
-        self.entry_to_index = {}
-        self.tag_data = TagData()
-        self.all_artists = set()
-        self.init_and_validate_data()
         self.details_view = None
         self.tag_view = None
         self.styles = load_styles(self.style_path)
         self.settings = Options.load_settings(self.settings_file)
+        self.disk_handler = DiskHandler(self)
+        self.browser_handler = BrowserHandler(self)
+
+        self.entry_to_index = {}
+        self.tag_data = TagData()
+        self.all_artists = set()
+        self.init_and_validate_data()
+
         self.thumbnail_manager = ThumbnailManager(self, self.data, self.download_thumbnails, self.tags_to_blur)
         self.thumbnail_manager.startEnsuring.emit()
-        self.browser_handler = BrowserHandler(self)
         self.init_ui()
         self.show()
+        self.check_for_backups_and_recovery_files()
         self.logger.info(f"Successfully initialized with {len(self.data)} entires.")
 
     def load_config_values(self):
@@ -83,6 +89,7 @@ class MangaCabinet(QWidget):
             self.browser_path = config["browser_executable_path"]
             self.browser_flags = config["browser_flags"]
             self.default_URL = config["default_url"]
+            self.open_on_disk_script = config["open_manga_on_disk_script_location"]
             self.download_thumbnails = config["download_thumbnails"]
             self.tags_to_blur = config.get("tags_to_blur", [])
 
@@ -184,6 +191,8 @@ class MangaCabinet(QWidget):
             self.all_artists.update(entry.artist)
             self.tag_data.update_with_entry(entry)
 
+        self.disk_handler.check_entries_disk_locations(self.data)
+
     def addNewData(self, newData: list[MangaEntry]):
         self.data = newData + self.data
         for idx, entry in enumerate(self.data):
@@ -192,6 +201,7 @@ class MangaCabinet(QWidget):
         for entry in newData:
             self.all_artists.update(entry.artist)
             self.tag_data.update_with_entry(entry)
+            self.disk_handler.check_entry_disk_location(entry)
 
         self.is_data_modified = True
         self.logger.info(f"Updated data with the following entries: {', '.join([entry.id for entry in newData])}")
@@ -210,6 +220,7 @@ class MangaCabinet(QWidget):
     def open_tab_from_index(self, index):
         entry = index.data(Qt.UserRole)
         self.open_tab_from_entry(entry)
+        # Update json edit detail as num opens has changed
         if not self.browser_handler.unsupported:
             if self.details_handler.json_edit_mode:
                 self.details_handler.display_detail(index, True)
@@ -217,18 +228,39 @@ class MangaCabinet(QWidget):
     def get_entry_from_id(self, id):
         return self.data[self.entry_to_index[id]]
 
+    def check_for_backups_and_recovery_files(self):
+        checked_directories = set()
+        recovery_pattern = re.compile(r"\.recovery$")
+        backup_pattern = re.compile(r"\.backup_\d{14}$")
+
+        for path in (self.data_file, self.settings_file, self.collections_file):
+            directory = os.path.dirname(path)
+            if directory in checked_directories:
+                continue  # Skip this directory as it's already been checked
+            checked_directories.add(directory)
+
+            files_in_directory = os.listdir(directory)
+            found_issues = False
+
+            for file in files_in_directory:
+                if recovery_pattern.search(file) or backup_pattern.search(file):
+                    msg = f"Backup or recovery file found: {file} in {directory}.\nPlease check manually."
+                    if not found_issues:
+                        found_issues = True
+                        # Displaying a toast notification only once per directory
+                        self.toast.show_notification(msg + " There may be more.", display_time=5000)
+                    self.logger.warning(msg)
+
 
 def exception_hook(exc_type, exc_value, exc_traceback):
-    """
-    Function to capture and display exceptions in a readable manner and saves data to prevent loss.
-    """
+    # Function to capture and display exceptions in a readable manner and saves data to prevent loss.
     try:
         window.save_changes()
     except Exception as e:
         # Log the error or print it out. This is to ensure that if the save fails,
         # it doesn't prevent the original exception from being displayed.
         logger = logging.getLogger(__name__)
-        logger.critical(f"Error during save: {e}")
+        logger.fatal(f"Error during save: {e}")
 
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
     sys.exit(1)

@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 
 
@@ -27,6 +28,7 @@ class MangaEntry(dict):
         "opens": ("MC_num_opens", 0),
         "last_opened": ("MC_last_open", None),
         "last_edited": ("MC_last_edited", None),
+        "filesystem_location": ("MC_filesystem_location", None),
         "removed": ("removed", False)
     }
 
@@ -41,7 +43,8 @@ class MangaEntry(dict):
         "rating": ["score"],
         "stars": ["score"],
         "deprecated": ["removed"],
-        "col": ["collection"]
+        "col": ["collection"],
+        "disk_location": ["filesystem_location"]
     }
 
     def __init__(self, *args, **kwargs):
@@ -107,6 +110,12 @@ class MangaEntry(dict):
     def edit_date(self):
         if self.last_edited:
             return datetime.strptime(self.last_edited, "%Y/%m/%d %H:%M")
+        else:
+            return None
+
+    def disk_location(self, loose_check=False):
+        if self.filesystem_location and (loose_check or os.path.exists(self.filesystem_location)):
+            return self.filesystem_location
         else:
             return None
 

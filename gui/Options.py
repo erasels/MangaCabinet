@@ -2,27 +2,33 @@ import os
 
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton, QComboBox, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton, QComboBox, QHBoxLayout, QFileDialog
 
 from auxillary.JSONMethods import save_json, load_json
 
 show_removed = "show_removed_entries"
+show_on_disk = "show_system_location_indicator"
 default_sort = "default_sort_option"
 search_thrshold = "search_cutoff_threshold"
 bind_dview = "bind_detail_view"
 thumbnail_preview = "show_hover_thumbnail"
 thumbnail_delegate = "use_thumbnail_view"
 download_script_loc = "download_script_location"
+default_manga_loc = "default_manga_system_location"
+prefer_open_on_disk = "open_manga_on_filesystem_first"
 
 
 def init_settings():
     return {
         show_removed: False,
+        show_on_disk: False,
         default_sort: "By data order",
         search_thrshold: 100,
         bind_dview: False,
         thumbnail_preview: True,
-        thumbnail_delegate: False
+        thumbnail_delegate: False,
+        default_manga_loc: "",
+        prefer_open_on_disk: True
     }
 
 
@@ -79,6 +85,11 @@ class OptionsHandler(QDialog):
         self.show_removed_checkbox.stateChanged.connect(lambda state: self.simple_change(show_removed, state))
         self.show_removed_checkbox.setToolTip("Show removed entries in the main manga list.")
 
+        self.show_on_disk_checkbox = QCheckBox("Show Local Copy Indicator", self)
+        self.show_on_disk_checkbox.setChecked(self.mw.settings[show_on_disk])
+        self.show_on_disk_checkbox.stateChanged.connect(lambda state: self.simple_change(show_on_disk, state))
+        self.show_on_disk_checkbox.setToolTip("Show a folder icon in thumbnail view when the manga has been located on your system.")
+
         self.default_sort_label = QLabel("Default Sort:", self)
 
         self.default_sort_combobox = QComboBox(self)
@@ -111,6 +122,18 @@ class OptionsHandler(QDialog):
         self.switch_delegate_checkbox.stateChanged.connect(self.thumbnail_view_changed)
         self.switch_delegate_checkbox.setToolTip("WARNING: High RAM requirement if you have a lot of entries with images.")
 
+        self.default_manga_label = QLabel("Default Manga Location:", self)
+        self.default_manga_loc_label = QLabel(self.truncate_path(self.mw.settings.get(default_manga_loc, 'Not set')), self)
+        self.default_manga_loc_label.setToolTip(self.mw.settings[default_manga_loc])
+        self.default_manga_loc_button = QPushButton("Change Location", self)
+        self.default_manga_loc_button.setStyleSheet(self.mw.styles.get("textbutton"))
+        self.default_manga_loc_button.clicked.connect(self.change_default_manga_loc)
+
+        self.prefer_disk_checkbox = QCheckBox("Prefer Opening Manga Folder over Browser", self)
+        self.prefer_disk_checkbox.setChecked(self.mw.settings[prefer_open_on_disk])
+        self.prefer_disk_checkbox.stateChanged.connect(lambda state: self.simple_change(prefer_open_on_disk, state))
+        self.prefer_disk_checkbox.setToolTip("When middle-clicking a manga in the list, try to open it in the explorer/reader app if possible, otherwise in browser.")
+
         sort_layout = QHBoxLayout()
         sort_layout.addWidget(self.default_sort_label)
         sort_layout.addWidget(self.default_sort_combobox)
@@ -118,12 +141,17 @@ class OptionsHandler(QDialog):
         # Layout management
         layout = QVBoxLayout()
         layout.addWidget(self.show_removed_checkbox)
+        layout.addWidget(self.show_on_disk_checkbox)
         layout.addLayout(sort_layout)
         layout.addWidget(self.slider_label)
         layout.addWidget(self.slider)
         layout.addWidget(self.bind_view_checkbox)
         layout.addWidget(self.thumbnail_checkbox)
         layout.addWidget(self.switch_delegate_checkbox)
+        layout.addWidget(self.default_manga_label)
+        layout.addWidget(self.default_manga_loc_label)
+        layout.addWidget(self.default_manga_loc_button)
+        layout.addWidget(self.prefer_disk_checkbox)
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
@@ -147,3 +175,15 @@ class OptionsHandler(QDialog):
     def set_default_sort_option(self, index):
         sort_option = self.mw.search_bar_handler.sorting_options[index][0]
         self.mw.settings[default_sort] = sort_option
+
+    def change_default_manga_loc(self):
+        options = QFileDialog.Options()
+        folder = QFileDialog.getExistingDirectory(self, "Select Folder", self.mw.settings[default_manga_loc], options=options)
+        if folder:
+            self.mw.settings[default_manga_loc] = folder
+            self.default_manga_loc_label.setText(self.truncate_path(folder))
+            self.default_manga_loc_label.setToolTip(folder)
+            self.mw.disk_handler.check_entries_disk_locations(self.mw.data, loose_check=False)
+
+    def truncate_path(self, path, max_length=50):
+        return path if len(path) <= max_length else '...' + path[-max_length + 3:]

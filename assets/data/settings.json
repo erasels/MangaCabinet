@@ -1,8 +1,11 @@
 {
     "show_removed_entries": false,
+    "show_system_location_indicator":  false,
     "default_sort_option": "By data order",
     "search_cutoff_threshold": 0,
     "bind_detail_view": false,
     "show_hover_thumbnail": true,
-    "use_thumbnail_view": false
+    "use_thumbnail_view": false,
+    "default_manga_system_location": "",
+    "open_manga_on_filesystem_first": true
 }
