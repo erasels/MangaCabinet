@@ -7,5 +7,7 @@
     "browser_executable_path": "",
     "browser_flags": [],
     "default_url": "",
-    "download_thumbnails": false
+    "open_manga_on_disk_script_location": "",
+    "download_thumbnails": false,
+    "tags_to_blur": ["blurry"]
 }

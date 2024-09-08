@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import *
 
 from auxillary.BrowserHandler import BrowserHandler
 from auxillary.DataAccess import MangaEntry, TagData
+from auxillary.DiskHandler import DiskHandler
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
 from gui import Options
@@ -68,6 +69,7 @@ class MangaCabinet(QWidget):
         self.thumbnail_manager = ThumbnailManager(self, self.data, self.download_thumbnails, self.tags_to_blur)
         self.thumbnail_manager.startEnsuring.emit()
         self.browser_handler = BrowserHandler(self)
+        self.disk_handler = DiskHandler(self)
         self.init_ui()
         self.show()
         self.check_for_backups_and_recovery_files()
@@ -88,6 +90,7 @@ class MangaCabinet(QWidget):
             self.browser_path = config["browser_executable_path"]
             self.browser_flags = config["browser_flags"]
             self.default_URL = config["default_url"]
+            self.open_on_disk_script = config["open_manga_on_disk_script_location"]
             self.download_thumbnails = config["download_thumbnails"]
             self.tags_to_blur = config.get("tags_to_blur", [])
 

@@ -47,8 +47,7 @@ class ListViewHandler:
         # To force manual update because I use custom highlighting logic
         self.list_view.clicked.connect(lambda: self.list_view.viewport().update())
         self.list_view.clicked.connect(self.update_selection_history)
-        self.list_view.middleClicked.connect(self.mw.open_tab_from_index)
-        #self.list_view.rightClicked.connect(lambda index: self.mw.open_detail_view(index.data(Qt.UserRole)))
+        self.list_view.middleClicked.connect(self.on_middle_click)
         self.list_view.rightClicked.connect(self.on_right_click)
 
     def get_widget(self):
@@ -133,7 +132,6 @@ class ListViewHandler:
             self.list_view.scrollTo(current_index)
 
     def on_right_click(self, index):
-        # Check if the index is valid
         if not index.isValid():
             return
 
@@ -172,6 +170,14 @@ class ListViewHandler:
 
         # Execute the context menu at the cursor's position
         context_menu.exec_(QCursor.pos())
+
+    def on_middle_click(self, index):
+        if not index.isValid():
+            return
+        entry = index.data(Qt.UserRole)
+
+        if not self.mw.disk_handler.open(entry):
+            self.mw.open_tab_from_index(index)
 
     def copy_id_to_clipboard(self, entry_id):
         clipboard = self.mw.app.clipboard()
