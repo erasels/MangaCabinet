@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidg
 
 import gui
 from auxillary.DataAccess import MangaEntry
-from gui.Options import bind_dview
+from gui.Options import bind_dview, show_removed
 
 
 class RightClickableComboBox(QComboBox):
@@ -311,14 +311,18 @@ class IdMatcher(QWidget):
     def _update_item_visibility_and_color(self, input_filter="", update_color=False):
         for idx in range(self.list_widget.count()):
             item = self.list_widget.item(idx)
-            entry_id = item.data(Qt.UserRole).id
+            entry = item.data(Qt.UserRole)
+            entry_id = entry.id
 
-            # Determine if the item should be hidden
-            if self.show_similar_toggle:
-                is_hidden = entry_id not in self.selected_items or entry_id == self.base_id
+            if not self.mw.settings[show_removed] and entry.removed:
+                is_hidden = True
             else:
-                is_hidden = entry_id == self.base_id or (
-                            len(input_filter) > 0 and input_filter not in item.text().lower())
+                # Determine if the item should be hidden
+                if self.show_similar_toggle:
+                    is_hidden = entry_id not in self.selected_items or entry_id == self.base_id
+                else:
+                    is_hidden = entry_id == self.base_id or (
+                                len(input_filter) > 0 and input_filter.lower() not in item.text().lower())
 
             item.setHidden(is_hidden)
 
