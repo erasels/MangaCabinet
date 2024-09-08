@@ -6,5 +6,6 @@
     "bind_detail_view": false,
     "show_hover_thumbnail": true,
     "use_thumbnail_view": false,
-    "default_manga_system_location": ""
+    "default_manga_system_location": "",
+    "open_manga_on_filesystem_first": true
 }

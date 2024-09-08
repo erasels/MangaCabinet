@@ -10,7 +10,7 @@ from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemM
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect, QMenu, QAction, QFileDialog, QToolTip
 
-from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, show_on_disk, default_manga_loc, show_on_disk
+from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, show_on_disk, default_manga_loc, show_on_disk, prefer_open_on_disk
 from gui.WidgetDerivatives import CustomListView
 
 
@@ -176,8 +176,14 @@ class ListViewHandler:
             return
         entry = index.data(Qt.UserRole)
 
-        if not self.mw.disk_handler.open(entry):
-            self.mw.open_tab_from_index(index)
+        if self.mw.settings[prefer_open_on_disk]:
+            if not self.mw.disk_handler.open(entry):
+                self.mw.open_tab_from_index(index)
+        else:
+            if not self.mw.browser_handler.unsupported:
+                self.mw.open_tab_from_index(index)
+            else:
+                self.mw.disk_handler.open(entry)
 
     def copy_id_to_clipboard(self, entry_id):
         clipboard = self.mw.app.clipboard()

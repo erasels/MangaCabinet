@@ -268,6 +268,7 @@ class MangaCabinet(QWidget):
     def open_tab_from_index(self, index):
         entry = index.data(Qt.UserRole)
         self.open_tab_from_entry(entry)
+        # Update json edit detail as num opens has changed
         if not self.browser_handler.unsupported:
             if self.details_handler.json_edit_mode:
                 self.details_handler.display_detail(index, True)

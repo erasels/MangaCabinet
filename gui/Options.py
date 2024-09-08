@@ -15,6 +15,7 @@ thumbnail_preview = "show_hover_thumbnail"
 thumbnail_delegate = "use_thumbnail_view"
 download_script_loc = "download_script_location"
 default_manga_loc = "default_manga_system_location"
+prefer_open_on_disk = "open_manga_on_filesystem_first"
 
 
 def init_settings():
@@ -26,7 +27,8 @@ def init_settings():
         bind_dview: False,
         thumbnail_preview: True,
         thumbnail_delegate: False,
-        default_manga_loc: ""
+        default_manga_loc: "",
+        prefer_open_on_disk: True
     }
 
 
@@ -127,6 +129,11 @@ class OptionsHandler(QDialog):
         self.default_manga_loc_button.setStyleSheet(self.mw.styles.get("textbutton"))
         self.default_manga_loc_button.clicked.connect(self.change_default_manga_loc)
 
+        self.prefer_disk_checkbox = QCheckBox("Prefer Opening Manga Folder over Browser", self)
+        self.prefer_disk_checkbox.setChecked(self.mw.settings[prefer_open_on_disk])
+        self.prefer_disk_checkbox.stateChanged.connect(lambda state: self.simple_change(prefer_open_on_disk, state))
+        self.prefer_disk_checkbox.setToolTip("When middle-clicking a manga in the list, try to open it in the explorer/reader app if possible, otherwise in browser.")
+
         sort_layout = QHBoxLayout()
         sort_layout.addWidget(self.default_sort_label)
         sort_layout.addWidget(self.default_sort_combobox)
@@ -144,6 +151,7 @@ class OptionsHandler(QDialog):
         layout.addWidget(self.default_manga_label)
         layout.addWidget(self.default_manga_loc_label)
         layout.addWidget(self.default_manga_loc_button)
+        layout.addWidget(self.prefer_disk_checkbox)
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
