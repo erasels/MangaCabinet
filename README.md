@@ -46,6 +46,9 @@ Of special note:
 
 For less front-facing features you can take a look at the `config_default.json`, found in `assets/data`. 
 Here you can modify the locations of the data, settings and collections files in case you want them outside the project.
-If you want to easily open entries via middle-click, you may want to set your `browser_executable_path` and default_url.
+If you want to easily open entries via middle-click, you have two options. 
+If you want to open them in your browser, you want to set your `browser_executable_path` and default_url.
+If you store your mangas locally on your file system, you can set `open_manga_on_disk_script_location` in case you have a manga viewer like yomikiru and have a python script that runs it. 
+Of more interest would be the settings in the options menu here, as you can configure your default location for all your mangas. If you name their folders by the id, they will automatically be recognized on start-up, otherwise you can right-click an entry in the list and select `locate on disk` to set the directory.
 
 Finally, if you want to use the thumbnail view you'll want to enable the downloading of thumbnails which will read the `thumbnail_url` on the entry and download it into `assets/thumbnails`.
