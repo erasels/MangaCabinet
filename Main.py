@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import *
 
-from auxillary.BrowserHandling import BrowserHandler
+from auxillary.BrowserHandler import BrowserHandler
 from auxillary.DataAccess import MangaEntry, TagData
 from auxillary.JSONMethods import load_json, load_styles, save_json
 from auxillary.Thumbnails import ThumbnailManager
