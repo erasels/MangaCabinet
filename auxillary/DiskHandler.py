@@ -4,6 +4,9 @@ import os
 import platform
 import subprocess
 import sys
+from pathlib import Path
+
+from gui.Options import default_manga_loc
 
 logger = logging.getLogger(__name__)
 
@@ -73,3 +76,51 @@ class DiskHandler:
         entry.update_last_opened()
         # entry.update_last_edited()  # Doesn't feel like it should be updated here
         self.mw.is_data_modified = True
+
+    def check_entry_disk_location(self, entry, loose_check=False):
+        # If entry doesn't have a defined filesystem location and default is defined, try to find it
+        if self.mw.settings[default_manga_loc] and not entry.disk_location(loose_check=loose_check):
+            # Special handling for path here because I want to prevent backslash usage in data json
+            entry_path = Path(self.mw.settings[default_manga_loc]) / entry.id
+            if entry_path.exists():
+                # TODO: Streamline save system
+                entry.filesystem_location = str(entry_path).replace('\\', '/')
+                self.mw.is_data_modified = True
+                entry.update_last_edited()
+                logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
+
+    def check_entries_disk_locations(self, entries, loose_check=True):
+        """
+        Efficiently checks and updates filesystem locations for multiple entries
+        by minimizing disk I/O with a single directory read.
+        """
+        if not self.mw.settings[default_manga_loc]:
+            return
+        manga_loc_path = Path(self.mw.settings[default_manga_loc])
+
+        existing_paths = os.listdir(manga_loc_path)
+
+        # Iterate through each entry in the provided list
+        for entry in entries:
+            cur_loc = entry.filesystem_location
+            cur_loc_path = Path(cur_loc) if cur_loc else None
+
+            if loose_check:
+                # Catches location not written or written but id changed mostly
+                check_condition = (not cur_loc_path or
+                                   (cur_loc_path.is_relative_to(manga_loc_path) and
+                                    cur_loc_path.name not in existing_paths))
+            else:
+                # Catches not written or not existing (does an IO operation, costly, only done rarely)
+                check_condition = (not cur_loc_path or not cur_loc_path.exists())
+
+            if check_condition:
+                # Construct the path for the entry
+                entry_path = manga_loc_path / entry.id
+
+                if entry_path.name in existing_paths:
+                    # TODO: Streamline save system
+                    entry.filesystem_location = str(entry_path).replace('\\', '/')
+                    self.mw.is_data_modified = True
+                    entry.update_last_edited()
+                    logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
