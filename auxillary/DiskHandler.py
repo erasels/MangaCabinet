@@ -31,6 +31,7 @@ class DiskHandler:
                 subprocess.run(["open", folder_path])
             else:  # Linux and others
                 subprocess.run(["xdg-open", folder_path])
+            self.update_num_opens(entry)
         except Exception as e:
             logger.error(f"Failed to open folder for {entry.id}: {folder_path}\nException: {e}")
             return False
@@ -50,6 +51,7 @@ class DiskHandler:
         entry_json = json.dumps(entry)  # Convert entry to pass it
         try:
             subprocess.run([sys.executable, script_location, entry_json], check=True)
+            self.update_num_opens(entry)
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to execute script for {entry.id}: {e}")
             return False
@@ -63,3 +65,11 @@ class DiskHandler:
             return None
         else:
             return folder_path
+
+    def update_num_opens(self, entry):
+        # TODO: Streamline save system, shares code with open_tab_from_index
+        entry.opens += 1
+        logger.debug(f"{entry.id}: MC_num_opens was updated with: {entry.opens}")
+        entry.update_last_opened()
+        # entry.update_last_edited()  # Doesn't feel like it should be updated here
+        self.mw.is_data_modified = True
