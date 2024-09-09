@@ -94,7 +94,7 @@ class MangaCabinet(QWidget):
             self.tags_to_blur = config.get("tags_to_blur", [])
 
     def init_ui(self):
-        self.changeFont()
+        self.changeFont(silent=True)
         self.layout = QVBoxLayout()
 
         # Init options button and add logic for it
@@ -168,11 +168,12 @@ class MangaCabinet(QWidget):
 
         self.changeFont()
 
-    def changeFont(self):
+    def changeFont(self, silent=False):
         prev_name = self.font().family()
         font = QFont(self.fonts[self.font_index], 9)
         self.setFont(font)
-        self.logger.info(f"Changing font from {prev_name} to {self.fonts[self.font_index]}")
+        if not silent:
+            self.logger.info(f"Changing font from {prev_name} to {self.fonts[self.font_index]}")
 
     def init_and_validate_data(self):
         # Fill in auxillary lists for other services and validate data
