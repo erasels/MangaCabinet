@@ -162,7 +162,8 @@ class ListViewHandler:
 
         # Add actions to the menu
         context_menu.addAction(open_detail_action)
-        context_menu.addAction(open_browser_action)
+        if not self.mw.browser_handler.unsupported and (self.mw.default_URL or entry.open_url):
+            context_menu.addAction(open_browser_action)
         context_menu.addAction(copy_id_action)
         context_menu.addAction(edit_action)
         context_menu.addAction(locate_on_disk_action)

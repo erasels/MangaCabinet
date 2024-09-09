@@ -582,9 +582,11 @@ class ImageViewer(QGraphicsView):
             open_detail_action.triggered.connect(lambda: mw.open_detail_view(entry))
             context_menu.addAction(open_detail_action)
 
-        open_browser_action = QAction('Open in Browser', self)
-        open_browser_action.triggered.connect(lambda: mw.open_tab_from_entry(entry))
-        context_menu.addAction(open_browser_action)
+        # Only show open in browser if browser is selected and default URL or open_url is set
+        if not mw.browser_handler.unsupported and (mw.default_URL or entry.open_url):
+            open_browser_action = QAction('Open in Browser', self)
+            open_browser_action.triggered.connect(lambda: mw.open_tab_from_entry(entry))
+            context_menu.addAction(open_browser_action)
 
         copy_id_action = QAction('Copy ID', self)
         copy_id_action.triggered.connect(lambda: mw.manga_list_handler.copy_id_to_clipboard(entry.id))
