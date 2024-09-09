@@ -32,6 +32,7 @@ class ThumbnailManager(QObject):
     def __init__(self, mw, data, download, tags_to_blur):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
+        logging.getLogger('asyncio').setLevel(logging.INFO)
         self.mw = mw
         self.data = data
         self.download = download
