@@ -2,7 +2,7 @@ import os
 
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton, QComboBox, QHBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QDialog, QLabel, QSlider, QVBoxLayout, QCheckBox, QPushButton, QComboBox, QHBoxLayout, QFileDialog, QGroupBox
 
 from auxillary.JSONMethods import save_json, load_json
 
@@ -80,19 +80,16 @@ class OptionsHandler(QDialog):
             save_json(self.mw.settings_file, self.mw.settings)
 
     def init_options_dialog(self):
-        self.show_removed_checkbox = QCheckBox("Show Removed Entries", self)
+        # Group for list view settings
+        list_view_group = QGroupBox("List View Options", self)
+        list_view_layout = QVBoxLayout(list_view_group)
+        self.show_removed_checkbox = QCheckBox("Show Mangas Marked as Removed", list_view_group)
         self.show_removed_checkbox.setChecked(self.mw.settings[show_removed])
         self.show_removed_checkbox.stateChanged.connect(lambda state: self.simple_change(show_removed, state))
         self.show_removed_checkbox.setToolTip("Show removed entries in the main manga list.")
 
-        self.show_on_disk_checkbox = QCheckBox("Show Local Copy Indicator", self)
-        self.show_on_disk_checkbox.setChecked(self.mw.settings[show_on_disk])
-        self.show_on_disk_checkbox.stateChanged.connect(lambda state: self.simple_change(show_on_disk, state))
-        self.show_on_disk_checkbox.setToolTip("Show a folder icon in thumbnail view when the manga has been located on your system.")
-
-        self.default_sort_label = QLabel("Default Sort:", self)
-
-        self.default_sort_combobox = QComboBox(self)
+        self.default_sort_label = QLabel("Default Sort:", list_view_group)
+        self.default_sort_combobox = QComboBox(list_view_group)
         sort_options = [name for name, _, _ in self.mw.search_bar_handler.sorting_options]
         self.default_sort_combobox.addItems(sort_options)
         current_sort_index = sort_options.index(self.mw.settings.get(default_sort, sort_options[0]))
@@ -101,57 +98,79 @@ class OptionsHandler(QDialog):
         self.default_sort_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
         self.default_sort_combobox.setToolTip("Select the default sort option for the manga list.")
 
-        self.slider_label = QLabel(self.get_search_cutoff_text())
-        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider_label = QLabel(self.get_search_cutoff_text(), list_view_group)
+        self.slider = QSlider(Qt.Horizontal, list_view_group)
         self.slider.setRange(0, 30)
         self.slider.setValue(int(self.mw.settings[search_thrshold] * 0.1))
         self.slider.valueChanged.connect(self.slider_value_changed)
         self.slider.setToolTip("The amount of results to return when using the search bar.")
 
-        self.bind_view_checkbox = QCheckBox("Bind Detail View to Editor", self)
+        list_view_layout.addWidget(self.show_removed_checkbox)
+        list_view_layout.addWidget(self.default_sort_label)
+        list_view_layout.addWidget(self.default_sort_combobox)
+        list_view_layout.addWidget(self.slider_label)
+        list_view_layout.addWidget(self.slider)
+
+        # Group for thumbnails settings
+        thumbnails_group = QGroupBox("Thumbnails Options", self)
+        thumbnails_layout = QVBoxLayout(thumbnails_group)
+        self.bind_view_checkbox = QCheckBox("Bind Detail View to Editor", thumbnails_group)
         self.bind_view_checkbox.setChecked(self.mw.settings[bind_dview])
         self.bind_view_checkbox.stateChanged.connect(self.bind_view_changed)
         self.bind_view_checkbox.setToolTip("Update the detail view when selecting a manga from the list.")
 
-        self.thumbnail_checkbox = QCheckBox("Show Thumbnail on Hover", self)
+        self.thumbnail_checkbox = QCheckBox("Show Thumbnail on Hover", thumbnails_group)
         self.thumbnail_checkbox.setChecked(self.mw.settings[thumbnail_preview])
         self.thumbnail_checkbox.stateChanged.connect(lambda state: self.simple_change(thumbnail_preview, state))
+        self.thumbnail_checkbox.setToolTip("Whether to show the thumbnail of the manga you're hovering in the manga list. Not that useful if the thumbnail view is used.")
 
-        self.switch_delegate_checkbox = QCheckBox("Use Thumbnail List View", self)
+        self.switch_delegate_checkbox = QCheckBox("Use Thumbnail List View", thumbnails_group)
         self.switch_delegate_checkbox.setChecked(self.mw.settings[thumbnail_delegate])
         self.switch_delegate_checkbox.stateChanged.connect(self.thumbnail_view_changed)
-        self.switch_delegate_checkbox.setToolTip("WARNING: High RAM requirement if you have a lot of entries with images.")
+        self.switch_delegate_checkbox.setToolTip("WARNING: High RAM requirement if you have a lot of mangas with thumbnails.")
 
+        thumbnails_layout.addWidget(self.bind_view_checkbox)
+        thumbnails_layout.addWidget(self.thumbnail_checkbox)
+        thumbnails_layout.addWidget(self.switch_delegate_checkbox)
+
+        # Group for local settings
+        local_group = QGroupBox("Local Manga Options", self)
+        local_layout = QVBoxLayout(local_group)
         self.default_manga_label = QLabel("Default Manga Location:", self)
         self.default_manga_loc_label = QLabel(self.truncate_path(self.mw.settings.get(default_manga_loc, 'Not set')), self)
         self.default_manga_loc_label.setToolTip(self.mw.settings[default_manga_loc])
         self.default_manga_loc_button = QPushButton("Change Location", self)
         self.default_manga_loc_button.setStyleSheet(self.mw.styles.get("textbutton"))
+        self.default_manga_loc_button.setToolTip("Location you keep your mangas named after the id of the entry. If selected, will check for mangas in there on startup.")
         self.default_manga_loc_button.clicked.connect(self.change_default_manga_loc)
 
-        self.prefer_disk_checkbox = QCheckBox("Prefer Opening Manga Folder over Browser", self)
+        self.show_on_disk_checkbox = QCheckBox("Show Local Copy Indicator", local_group)
+        self.show_on_disk_checkbox.setChecked(self.mw.settings[show_on_disk])
+        self.show_on_disk_checkbox.stateChanged.connect(lambda state: self.simple_change(show_on_disk, state))
+        self.show_on_disk_checkbox.setToolTip("Show a folder icon in thumbnail view when the manga has been located on your system.")
+
+        self.prefer_disk_checkbox = QCheckBox("Prefer Opening Manga Folder over Browser", local_group)
         self.prefer_disk_checkbox.setChecked(self.mw.settings[prefer_open_on_disk])
         self.prefer_disk_checkbox.stateChanged.connect(lambda state: self.simple_change(prefer_open_on_disk, state))
         self.prefer_disk_checkbox.setToolTip("When middle-clicking a manga in the list, try to open it in the explorer/reader app if possible, otherwise in browser.")
 
-        sort_layout = QHBoxLayout()
-        sort_layout.addWidget(self.default_sort_label)
-        sort_layout.addWidget(self.default_sort_combobox)
+        local_layout.addWidget(self.default_manga_label)
+        local_layout.addWidget(self.default_manga_loc_label)
+        local_layout.addWidget(self.default_manga_loc_button)
+        local_layout.addWidget(self.show_on_disk_checkbox)
+        local_layout.addWidget(self.prefer_disk_checkbox)
 
-        # Layout management
+        # Apply the style to the group boxes
+        group_box_style = self.mw.styles.get("groupbox")
+        list_view_group.setStyleSheet(group_box_style)
+        thumbnails_group.setStyleSheet(group_box_style)
+        local_group.setStyleSheet(group_box_style)
+
+        # Main layout
         layout = QVBoxLayout()
-        layout.addWidget(self.show_removed_checkbox)
-        layout.addWidget(self.show_on_disk_checkbox)
-        layout.addLayout(sort_layout)
-        layout.addWidget(self.slider_label)
-        layout.addWidget(self.slider)
-        layout.addWidget(self.bind_view_checkbox)
-        layout.addWidget(self.thumbnail_checkbox)
-        layout.addWidget(self.switch_delegate_checkbox)
-        layout.addWidget(self.default_manga_label)
-        layout.addWidget(self.default_manga_loc_label)
-        layout.addWidget(self.default_manga_loc_button)
-        layout.addWidget(self.prefer_disk_checkbox)
+        layout.addWidget(list_view_group)
+        layout.addWidget(thumbnails_group)
+        layout.addWidget(local_group)
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
