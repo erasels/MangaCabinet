@@ -84,7 +84,7 @@ class DiskHandler:
             entry_path = Path(self.mw.settings[default_manga_loc]) / entry.id
             if entry_path.exists():
                 # TODO: Streamline save system
-                entry.filesystem_location = str(entry_path).replace('\\', '/')
+                entry.filesystem_location = entry_path.as_posix()
                 self.mw.is_data_modified = True
                 entry.update_last_edited()
                 logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
@@ -98,9 +98,8 @@ class DiskHandler:
             return
         manga_loc_path = Path(self.mw.settings[default_manga_loc])
 
-        existing_paths = os.listdir(manga_loc_path)
+        existing_paths = set(os.listdir(manga_loc_path))
 
-        # Iterate through each entry in the provided list
         for entry in entries:
             cur_loc = entry.filesystem_location
             cur_loc_path = Path(cur_loc) if cur_loc else None
@@ -120,7 +119,7 @@ class DiskHandler:
 
                 if entry_path.name in existing_paths:
                     # TODO: Streamline save system
-                    entry.filesystem_location = str(entry_path).replace('\\', '/')
+                    entry.filesystem_location = entry_path.as_posix()
                     self.mw.is_data_modified = True
                     entry.update_last_edited()
                     logger.debug(f"{entry.id}: filesystem_location was updated with: {entry.filesystem_location}")
