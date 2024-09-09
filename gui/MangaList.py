@@ -142,6 +142,7 @@ class ListViewHandler:
         # Actions
         open_detail_action = QAction('Details', self.list_view)
         open_browser_action = QAction('Open in Browser', self.list_view)
+        open_on_disk_action = QAction('Open on System', self.list_view)
         copy_id_action = QAction('Copy ID', self.list_view)
         edit_action = QAction('Edit', self.list_view)
         locate_on_disk_action = QAction('Locate on Disk', self.list_view)
@@ -155,6 +156,7 @@ class ListViewHandler:
         # Connect actions to slots or functions
         open_detail_action.triggered.connect(lambda: self.mw.open_detail_view(entry))
         open_browser_action.triggered.connect(lambda: self.mw.open_tab_from_index(index))
+        open_on_disk_action.triggered.connect(lambda: self.mw.disk_handler.open(entry))
         copy_id_action.triggered.connect(lambda: self.copy_id_to_clipboard(entry.id))
         edit_action.triggered.connect(lambda: self.select_index(index, True))
         locate_on_disk_action.triggered.connect(lambda: self.locate_on_disk_via_index(index))
@@ -164,6 +166,8 @@ class ListViewHandler:
         context_menu.addAction(open_detail_action)
         if not self.mw.browser_handler.unsupported and (self.mw.default_URL or entry.open_url):
             context_menu.addAction(open_browser_action)
+        if entry.disk_location(loose_check=True):
+            context_menu.addAction(open_on_disk_action)
         context_menu.addAction(copy_id_action)
         context_menu.addAction(edit_action)
         context_menu.addAction(locate_on_disk_action)

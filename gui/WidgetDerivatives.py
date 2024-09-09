@@ -588,6 +588,11 @@ class ImageViewer(QGraphicsView):
             open_browser_action.triggered.connect(lambda: mw.open_tab_from_entry(entry))
             context_menu.addAction(open_browser_action)
 
+        if entry.disk_location(loose_check=True):
+            open_on_disk_action = QAction('Open on System', self)
+            open_on_disk_action.triggered.connect(lambda: mw.disk_handler.open(entry))
+            context_menu.addAction(open_on_disk_action)
+
         copy_id_action = QAction('Copy ID', self)
         copy_id_action.triggered.connect(lambda: mw.manga_list_handler.copy_id_to_clipboard(entry.id))
         context_menu.addAction(copy_id_action)
