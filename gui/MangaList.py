@@ -626,14 +626,7 @@ class ThumbnailDelegate(QStyledItemDelegate):
         super(ThumbnailDelegate, self).__init__(parent, *args, **kwargs)
         self.mw = mw
         self.cache = {}
-        self.img_star = (QPixmap(os.path.join(self.mw.image_path, 'star.png'))
-                         .scaled(8, 8, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        self.img_good_story = (QPixmap(os.path.join(self.mw.image_path, 'good_story.png'))
-                               .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        self.img_good_art = (QPixmap(os.path.join(self.mw.image_path, 'good_art.png'))
-                             .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        self.img_on_disk = (QPixmap(os.path.join(self.mw.image_path, 'on_disk.png'))
-                            .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.loadIcons()
 
         self.threadPool = QThreadPool()
         self.imageLoader = ImageLoader(mw.thumbnail_manager)
@@ -645,6 +638,26 @@ class ThumbnailDelegate(QStyledItemDelegate):
         self.updateTimer.setSingleShot(True)
         self.updateTimer.timeout.connect(self.processBatchUpdate)
         self.updateThreshold = self.UPDATE_TIME_TREHSOLD  # Time when to force an update if batch isn't met
+
+    def loadIcons(self):
+        self.img_star = (QPixmap(os.path.join(self.mw.image_path, 'star.png'))
+                         .scaled(8, 8, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.img_good_story = (QPixmap(os.path.join(self.mw.image_path, 'good_story.png'))
+                               .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.img_good_art = (QPixmap(os.path.join(self.mw.image_path, 'good_art.png'))
+                             .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.img_on_disk = (QPixmap(os.path.join(self.mw.image_path, 'on_disk.png'))
+                            .scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+        # Loading language flag icons
+        self.imgs_language = {}
+        language_flags_dir = os.path.join(self.mw.image_path, 'language_flags')
+        for file_name in os.listdir(language_flags_dir):
+            if file_name.endswith('.png'):
+                file_path = os.path.join(language_flags_dir, file_name)
+                pixmap = QPixmap(file_path).scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                self.imgs_language[os.path.splitext(file_name)[0]] = pixmap
+
 
     @pyqtSlot(str, QPixmap)
     def onImageLoaded(self, image_id, pixmap):
@@ -658,6 +671,9 @@ class ThumbnailDelegate(QStyledItemDelegate):
 
     def calculate_icon_rect(self, option, entry):
         icons = []
+        main_language = entry.main_language()
+        if main_language and main_language in self.imgs_language:
+            icons.append(self.imgs_language[main_language].height())
         if bool(entry.disk_location(True)) and self.mw.settings[show_on_disk]:
             icons.append(self.img_on_disk.height())
         if entry.good_story():
@@ -674,7 +690,9 @@ class ThumbnailDelegate(QStyledItemDelegate):
 
     def generate_icon_tooltip(self, entry):
         tooltip_text = []
-        if entry.disk_location(True) and self.mw.settings[show_on_disk]:
+        if entry.main_language():
+            tooltip_text.append(f"Language: {entry.main_language().capitalize()}")
+        if entry.disk_location(True):
             tooltip_text.append(f"On filesystem: {entry.disk_location(True)}")
         if entry.good_art():
             tooltip_text.append("Good Art")
@@ -828,6 +846,13 @@ class ThumbnailDelegate(QStyledItemDelegate):
             painter.drawRoundedRect(backdrop_rect, 5, 5)
 
             current_y = backdrop_rect.top() + 2
+
+            # Draw the language flag if applicable
+            if entry.main_language():
+                lang_icon_pos = QPoint(backdrop_rect.left(), current_y)
+                lang_icon = self.imgs_language[entry.main_language()]
+                painter.drawPixmap(lang_icon_pos, lang_icon)
+                current_y += lang_icon.height() + ICON_SPACING
 
             # Draw the on disk icon if applicable
             if entry.disk_location(True) and self.mw.settings[show_on_disk]:
