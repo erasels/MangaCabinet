@@ -1,6 +1,7 @@
 {
     "show_removed_entries": false,
     "show_system_location_indicator":  false,
+    "show_manga_language_indicator":  true,
     "default_sort_option": "By data order",
     "search_cutoff_threshold": 0,
     "bind_detail_view": false,

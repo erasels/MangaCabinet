@@ -8,6 +8,7 @@ from auxillary.JSONMethods import save_json, load_json
 
 show_removed = "show_removed_entries"
 show_on_disk = "show_system_location_indicator"
+show_language = "show_manga_language_indicator"
 default_sort = "default_sort_option"
 search_thrshold = "search_cutoff_threshold"
 bind_dview = "bind_detail_view"
@@ -22,6 +23,7 @@ def init_settings():
     return {
         show_removed: False,
         show_on_disk: False,
+        show_language: True,
         default_sort: "By data order",
         search_thrshold: 100,
         bind_dview: False,
@@ -88,6 +90,11 @@ class OptionsHandler(QDialog):
         self.show_removed_checkbox.stateChanged.connect(lambda state: self.simple_change(show_removed, state))
         self.show_removed_checkbox.setToolTip("Show removed entries in the main manga list.")
 
+        self.show_language_checkbox = QCheckBox("Show Language Indicator", list_view_group)
+        self.show_language_checkbox.setChecked(self.mw.settings[show_language])
+        self.show_language_checkbox.stateChanged.connect(lambda state: self.simple_change(show_language, state))
+        self.show_language_checkbox.setToolTip("Show a language flag icon in thumbnail view.")
+
         self.default_sort_label = QLabel("Default Sort:", list_view_group)
         self.default_sort_combobox = QComboBox(list_view_group)
         sort_options = [name for name, _, _ in self.mw.search_bar_handler.sorting_options]
@@ -106,6 +113,7 @@ class OptionsHandler(QDialog):
         self.slider.setToolTip("The amount of results to return when using the search bar.")
 
         list_view_layout.addWidget(self.show_removed_checkbox)
+        list_view_layout.addWidget(self.show_language_checkbox)
         list_view_layout.addWidget(self.default_sort_label)
         list_view_layout.addWidget(self.default_sort_combobox)
         list_view_layout.addWidget(self.slider_label)

@@ -10,7 +10,7 @@ from PyQt5.QtGui import QColor, QPen, QFontMetrics, QPainterPath, QStandardItemM
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QListView, QAbstractItemView, QWidget, QVBoxLayout, \
     QLabel, QGraphicsDropShadowEffect, QMenu, QAction, QFileDialog, QToolTip
 
-from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, show_on_disk, default_manga_loc, show_on_disk, prefer_open_on_disk
+from gui.Options import thumbnail_preview, thumbnail_delegate, show_removed, show_on_disk, default_manga_loc, show_on_disk, prefer_open_on_disk, show_language
 from gui.WidgetDerivatives import CustomListView
 
 
@@ -672,9 +672,9 @@ class ThumbnailDelegate(QStyledItemDelegate):
     def calculate_icon_rect(self, option, entry):
         icons = []
         main_language = entry.main_language()
-        if main_language and main_language in self.imgs_language:
+        if self.mw.settings[show_language] and main_language and main_language in self.imgs_language:
             icons.append(self.imgs_language[main_language].height())
-        if bool(entry.disk_location(True)) and self.mw.settings[show_on_disk]:
+        if self.mw.settings[show_on_disk] and bool(entry.disk_location(True)):
             icons.append(self.img_on_disk.height())
         if entry.good_story():
             icons.append(self.img_good_story.height())
@@ -848,7 +848,7 @@ class ThumbnailDelegate(QStyledItemDelegate):
             current_y = backdrop_rect.top() + 2
 
             # Draw the language flag if applicable
-            if entry.main_language():
+            if self.mw.settings[show_language] and entry.main_language():
                 lang_icon_pos = QPoint(backdrop_rect.left(), current_y)
                 lang_icon = self.imgs_language[entry.main_language()]
                 painter.drawPixmap(lang_icon_pos, lang_icon)
