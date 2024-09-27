@@ -92,6 +92,13 @@ class MangaEntry(dict):
             return artists[0]
         return ""
 
+    def main_language(self):
+        if self.language:
+            for lang in self.language:
+                if lang != "translated":
+                    return lang
+        return None
+
     def is_translated(self):
         return self.language and "translated" in self.language
 
