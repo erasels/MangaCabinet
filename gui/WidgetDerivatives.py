@@ -778,16 +778,6 @@ class DictEditor(QWidget):
         except:
             return "str"
 
-    def apply_completer_to_key(self, row, column):
-        """Applies a QCompleter to the key column (column 0)."""
-        if column == 0:  # Only apply the completer to the key column
-            completer = QCompleter(MangaEntry.ATTRIBUTE_MAP.keys(), self)
-            key_item = self.table.item(row, 0)
-            if key_item:
-                line_edit = self.table.cellWidget(row, column)
-                if isinstance(line_edit, QLineEdit):
-                    line_edit.setCompleter(completer)
-
     def remove_selected_row(self):
         """Removes the selected row from the table."""
         indices = self.table.selectionModel().selectedRows()
