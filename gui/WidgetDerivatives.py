@@ -820,7 +820,7 @@ class DictEditor(QWidget):
                     elif value_type == "dict":
                         value = json.loads(value)  # Assuming user enters JSON dict as string
                 except ValueError:
-                    QMessageBox.critical(self, "Error", f"Invalid value for type {value_type}: {value}")
+                    self.mw.toast.show_notification(f"Invalid value for type {value_type}: {value}", display_time=5000)
                     return None
 
                 new_data[key] = value
@@ -837,7 +837,7 @@ class DictEditor(QWidget):
                 self.cur_data.update(new_data)
                 return True
             except TypeError as ex:
-                QMessageBox.critical(self, "Error", f"Data contains non-serializable types: {ex}")
+                QMessageBox.critical(self, "Error", f"Data contains non-serializable types: {ex}") # Sanity check
         return False
 
     def load_new_data(self, new_dict):
