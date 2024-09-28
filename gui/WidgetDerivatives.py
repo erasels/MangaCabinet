@@ -714,9 +714,13 @@ class DictEditor(QWidget):
         self.remove_row_btn.setToolTip("You need to select a row by clicking on its row number.")
         self.remove_row_btn.setStyleSheet(self.mw.styles.get("textbutton"))
         self.remove_row_btn.clicked.connect(self.remove_selected_row)
+        self.save_button = QPushButton("Save Changes", self.mw)
+        self.save_button.clicked.connect(lambda: self.mw.details_handler.save_changes())
+        self.save_button.setStyleSheet(self.mw.styles.get("textbutton"))
 
         button_layout.addWidget(self.add_row_btn)
         button_layout.addWidget(self.remove_row_btn)
+        button_layout.addWidget(self.save_button)
 
         layout.addLayout(button_layout)
 
@@ -827,7 +831,7 @@ class DictEditor(QWidget):
                 self.cur_data.update(new_data)
                 return True
             except TypeError as ex:
-                QMessageBox.critical(self, "Error", f"Data contains non-serializable types: {ex}") # Sanity check
+                QMessageBox.critical(self, "Error", f"Data contains non-serializable types: {ex}")  # Sanity check
         return False
 
     def load_new_data(self, new_dict):

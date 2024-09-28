@@ -19,7 +19,6 @@ class DetailEditorHandler:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.opened = False
         self.cur_data = None
-        self.save_button = None
         self.detail_editor = None
         self.mw = parent
         self.json_edit_mode = False
@@ -34,19 +33,9 @@ class DetailEditorHandler:
     def init_ui(self):
         self.layout = QGridLayout()
 
-        # Detail view
-        #self.detail_view = QTextEdit(self.mw)
-        #self.detail_view.setPlaceholderText("Select an item to edit it.")
+        # Detail editor
         self.detail_editor = DictEditor(self.mw)
-
-        # Save button
-        self.save_button = QPushButton("Save Changes", self.mw)
-        self.save_button.clicked.connect(self.save_changes)
-        self.save_button.setStyleSheet(self.mw.styles.get("textbutton"))
-
-        # Set up JSON view
-        self.layout.addWidget(self.detail_editor, 0, 0, 3, -1)
-        self.layout.addWidget(self.save_button, 4, 0, -1, -1)
+        self.layout.addWidget(self.detail_editor)
 
         # Title and Short Title
         self.title_input = QLineEdit(self.mw)
@@ -154,10 +143,9 @@ class DetailEditorHandler:
         self.toggle_button.setIconSize(QSize(41, 41))
         self.toggle_button.setFixedSize(41, 41)
         self.toggle_button.setStyleSheet("QPushButton { border: none; }")
-        self.toggle_button.setToolTip("Switch between json editing and easy edit.")
+        self.toggle_button.setToolTip("Switch between detail editing and easy edit.")
         self.positionToggleButton()
         self.toggle_button.clicked.connect(self.toggle_edit_mode)
-        self.toggle_button.raise_()
         self.toggle_button.hide()
 
     # For the details display
@@ -180,6 +168,7 @@ class DetailEditorHandler:
             self.opened = True
             self.switch_views("detail")
             self.toggle_button.show()
+            self.toggle_button.raise_()
             # Fix current item being offscreen when window pops up
             self.mw.manga_list_handler.rescroll()
 
@@ -336,7 +325,6 @@ class DetailEditorHandler:
         for i in range(self.layout.count()):
             self.recursively_toggle_visibility(self.layout.itemAt(i), view == "detail")
         self.detail_editor.setVisible(view == "JSON")
-        self.save_button.setVisible(view == "JSON")
 
     def recursively_toggle_visibility(self, item, show: bool):
         """Toggle the visibility of the widget, or if it's a layout, toggle all its items."""
