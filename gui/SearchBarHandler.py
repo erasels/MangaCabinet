@@ -52,7 +52,6 @@ class SearchBarHandler:
 
         # Hits label
         self.hits_label = QLabel(self.mw)
-        self.hits_label.hide()
 
         # Sorting combo box
         self.sort_combobox = RightClickableComboBox()
@@ -142,7 +141,7 @@ class SearchBarHandler:
                 sorted_data = sorted(mod_data, key=lambda x: sorting_option[1](x), reverse=reverse_final)
                 self.readd_items(sorted_data)
                 self.showing_all_entries = True
-                self.hits_label.hide()
+                self.hits_label.setText(f"Entries: {len(sorted_data)}")
                 return
 
         # Compute scores for all manga entries, prune non-hits and sort them based on sorting option (and then data order)
@@ -166,11 +165,8 @@ class SearchBarHandler:
             entries_to_add = [entry for entry, _ in sorted_data[:threshold]]
         self.readd_items(entries_to_add)
 
-        if hit_count > 0 and any(search_terms_groups):
-            self.hits_label.setText(f"Hits: {hit_count}")
-            self.hits_label.show()
-        else:
-            self.hits_label.hide()
+        if hit_count > 0:
+            self.hits_label.setText(f"Entries: {hit_count}")
 
         self.showing_all_entries = False
 
