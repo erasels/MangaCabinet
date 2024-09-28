@@ -63,6 +63,7 @@ class SearchBarHandler:
         self.sort_combobox.rightClicked.connect(self.toggle_sort_order)
         self.sort_combobox.setStyleSheet(self.mw.styles.get("sorter"))
         self.sort_combobox.setObjectName("Normal")
+        self.sort_combobox.setToolTip("Select order to display entries. (Right-click to reverse)")
 
         # Random button
         self.random_button = QPushButton("Random", self.mw)
