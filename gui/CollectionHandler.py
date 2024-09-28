@@ -45,6 +45,7 @@ class CollectionHandler(QWidget):
         fill_collections_box(self.collections, self.collection_combobox)
         self.collection_combobox.setFixedWidth(150)
         self.collection_combobox.setStyleSheet(self.mw.styles.get("dropdown"))
+        self.collection_combobox.setToolTip("Filter by Collection")
         self.collection_combobox.currentIndexChanged.connect(lambda: self.mw.search_bar_handler.update_list())
         self.collection_combobox.rightClicked.connect(lambda: self.collection_combobox.setCurrentIndex(0))
         self.collection_modified.connect(lambda: fill_collections_box(self.collections, self.collection_combobox))
