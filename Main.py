@@ -99,10 +99,10 @@ class MangaCabinet(QWidget):
 
         # Init options button and add logic for it
         self.options_handler = OptionsHandler(self)
-        # Handles entire search bar and accesses settings_buton
-        self.search_bar_handler = SearchBarHandler(self)
         # Handles entire collections bar
         self.collection_handler = CollectionHandler(self)
+        # Handles entire search bar and accesses settings_buton
+        self.search_bar_handler = SearchBarHandler(self, self.collection_handler)
         # Handles looking at and modifying details of manga entries
         self.details_handler = DetailEditorHandler(self)
         self.options_handler.bindViewChanged.connect(lambda state: self.details_handler.image_view.set_dynamic_show(state))
@@ -112,7 +112,7 @@ class MangaCabinet(QWidget):
         self.search_bar_handler.update_list(False)
 
         # Setup layout (wdiget = single item, layout = group of items)
-        self.layout.addLayout(self.search_bar_handler.get_layout(self.collection_handler.get_widgets() + [ArbitraryDownloadButton(self), self.options_handler.get_widget()]))
+        self.layout.addLayout(self.search_bar_handler.get_layout([ArbitraryDownloadButton(self), self.options_handler.get_widget()]))
 
         # Create a splitter between the list view and the detail editor
         self.splitter = QSplitter(Qt.Vertical)  # Use a vertical splitter

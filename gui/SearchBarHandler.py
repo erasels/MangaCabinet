@@ -1,8 +1,10 @@
+import os
 import random
 from typing import Callable
 
-from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton, QCompleter
+from PyQt5.QtCore import QTimer, Qt, QSize
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QLineEdit, QLabel, QHBoxLayout, QPushButton, QCompleter, QVBoxLayout, QWidget
 
 from auxillary.DataAccess import MangaEntry
 from gui.Options import search_thrshold, show_removed, default_sort
@@ -12,12 +14,13 @@ from gui.WidgetDerivatives import RightClickableComboBox
 class SearchBarHandler:
     RESELECT_DELAY = 35
 
-    def __init__(self, main_window):
+    def __init__(self, main_window, collection_handler):
         self.random_button = None
         self.sort_combobox = None
         self.hits_label = None
         self.search_bar = None
         self.mw = main_window
+        self.collection_handler = collection_handler
         self.sort_order_reversed = False
         self.showing_all_entries = False
         self.sorting_options = [
@@ -29,7 +32,7 @@ class SearchBarHandler:
             ("By name", lambda entry: entry.display_title().lower(), False),
             ("By artist", lambda entry: entry.first_artist().lower(), False),
             ("By score", lambda entry: entry.get('score', float('-inf')), True),  # Reversed will show unrated first
-            ("By collection", lambda entry: self.mw.collection_handler.collection_to_index.get(entry.collection, float('inf')), False)
+            ("By collection", lambda entry: self.collection_handler.collection_to_index.get(entry.collection, float('inf')), False)
         ]
         self.init_ui()
 
@@ -70,15 +73,52 @@ class SearchBarHandler:
         self.random_button.clicked.connect(self.get_random_item)
         self.random_button.setStyleSheet(self.mw.styles.get("textbutton"))
 
+        # Expand button
+        self.expand_button = QPushButton(self.mw)
+        self.expand_button.setCheckable(True)  # Makes the button toggleable
+        self.expand_button.clicked.connect(self.toggle_additional_buttons)
+        self.expand_button.setIcon(QIcon(os.path.join(self.mw.image_path, 'expand_icon.png')))
+        self.expand_button.setIconSize(QSize(24, 24))
+        self.expand_button.setFixedSize(24, 24)
+        self.expand_button.setStyleSheet("""QPushButton { border: none; }
+                    QPushButton:hover { background-color: #cccccc; border-radius: 10px;}""")
+
+        # Container widget for additional buttons (initially hidden)
+        self.additional_buttons_widget = QWidget(self.mw)
+        self.additional_buttons_layout = QHBoxLayout(self.additional_buttons_widget)
+        self.additional_buttons_widget.setVisible(False)  # Start hidden
+
+    def toggle_additional_buttons(self):
+        # Toggle visibility of the widget
+        visible = not self.additional_buttons_widget.isVisible()
+        self.additional_buttons_widget.setVisible(visible)
+
     def get_layout(self, widgets):
+        main_layout = QVBoxLayout()  # Vertical layout to hold everything
+
         search_box = QHBoxLayout()  # Create a horizontal box layout
         search_box.addWidget(self.search_bar, 1)  # The '1' makes the search bar expand to fill available space
         search_box.addWidget(self.hits_label)
         search_box.addWidget(self.sort_combobox)
         search_box.addWidget(self.random_button)
+
+        collection_widgets = self.collection_handler.get_widgets()
+        search_box.addWidget(collection_widgets[0])
+        self.additional_buttons_layout.addWidget(collection_widgets[1])
+
+        # Add passed widgets to the expandable menu
         for widget in widgets:
-            search_box.addWidget(widget)
-        return search_box
+            self.additional_buttons_layout.addWidget(widget)
+
+        # Add the search bar layout to the main layout
+        main_layout.addLayout(search_box)
+
+        search_box.addWidget(self.expand_button)
+
+        # Add the hidden buttons widget (initially hidden)
+        main_layout.addWidget(self.additional_buttons_widget)
+
+        return main_layout
 
     def reset_search_timer(self):
         # Restart the timer every time this method is called
@@ -119,7 +159,7 @@ class SearchBarHandler:
         # Define sort in case we need it
         sorting_option: tuple[str, Callable, bool] = self.sorting_options[self.sort_combobox.currentIndex()]
         reverse_final = sorting_option[2] ^ self.sort_order_reversed  # XOR
-        selected_collection = self.mw.collection_handler.collection_combobox.currentData()
+        selected_collection = self.collection_handler.collection_combobox.currentData()
 
         # Aggregate applicable filters
         filters = []
