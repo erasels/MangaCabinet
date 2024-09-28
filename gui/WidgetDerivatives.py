@@ -709,9 +709,9 @@ class DictEditor(QWidget):
         """Loads the dictionary data into the table."""
         if self.cur_data:
             for key, value in self.cur_data.items():
-                self.add_row(key, value)
+                self.add_row(key, value, False)
 
-    def add_row(self, key="", value=""):
+    def add_row(self, key="", value="", manual=True):
         """Adds a new row to the table, with optional initial key and value."""
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
@@ -737,6 +737,9 @@ class DictEditor(QWidget):
         if value_type:
             type_combo.setCurrentText(value_type)
         self.table.setCellWidget(row_position, 2, type_combo)
+
+        if manual:
+            self.table.setCurrentCell(row_position, 0)  # Focus the first cell (key column)
 
     def detect_value_type(self, value):
         """Attempts to detect the type of the value and returns it as a string."""
