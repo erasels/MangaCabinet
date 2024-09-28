@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -6,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal, Qt, QRectF, QPointF, QPoint, pyqtSlot, QTim
 from PyQt5.QtGui import QColor, QPainter, QPixmap, QWheelEvent, QMouseEvent, QShowEvent, QHideEvent, QCursor
 from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidget, QLineEdit, QListWidget, QLabel, \
     QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene, \
-    QHBoxLayout, QGraphicsDropShadowEffect, QMenu, QAction
+    QHBoxLayout, QGraphicsDropShadowEffect, QMenu, QAction, QTableWidget, QTableWidgetItem, QMessageBox, QHeaderView
 
 import gui
 from auxillary.DataAccess import MangaEntry
@@ -650,3 +651,166 @@ class RatingWidget(QWidget):
 
     def get_current_score(self):
         return self.current_score
+
+
+class DictEditor(QWidget):
+    def __init__(self, mw):
+        super().__init__()
+        self.mw = mw
+        self.cur_data = None
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+
+        # Table widget for key-value pairs
+        self.table = QTableWidget()
+        self.table.setStyleSheet(self.mw.styles.get("table"))
+        self.table.setColumnCount(3)
+        # Set the headers with tooltips
+        key_header = QTableWidgetItem("Property")
+        key_header.setToolTip("The dictionary key")
+        value_header = QTableWidgetItem("Value")
+        value_header.setToolTip("The corresponding value (editable)")
+        type_header = QTableWidgetItem("Value Type")
+        type_header.setToolTip("Type of the value (e.g., int, str, list)")
+        self.table.setHorizontalHeaderItem(0, key_header)
+        self.table.setHorizontalHeaderItem(1, value_header)
+        self.table.setHorizontalHeaderItem(2, type_header)
+
+        # Set the resizing behavior
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Key column resizes based on content
+        header.setSectionResizeMode(1, QHeaderView.Stretch)  # Value column stretches to fill remaining space
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Value Type column resizes based on content
+
+        layout.addWidget(self.table)
+
+        # Add buttons to add and remove rows
+        button_layout = QHBoxLayout()
+        self.add_row_btn = QPushButton("Add Row")
+        self.add_row_btn.setStyleSheet(self.mw.styles.get("textbutton"))
+        self.add_row_btn.clicked.connect(self.add_row)
+        self.remove_row_btn = QPushButton("Remove Selected Row")
+        self.remove_row_btn.setToolTip("You need to select a row by clicking on its row number.")
+        self.remove_row_btn.setStyleSheet(self.mw.styles.get("textbutton"))
+        self.remove_row_btn.clicked.connect(self.remove_selected_row)
+
+        button_layout.addWidget(self.add_row_btn)
+        button_layout.addWidget(self.remove_row_btn)
+
+        layout.addLayout(button_layout)
+
+        # Set the layout and window
+        self.setLayout(layout)
+        self.setWindowTitle("Dictionary Editor")
+
+    def convert_into_rows(self):
+        """Loads the dictionary data into the table."""
+        if self.cur_data:
+            for key, value in self.cur_data.items():
+                self.add_row(key, value)
+
+    def add_row(self, key="", value=""):
+        """Adds a new row to the table, with optional initial key and value."""
+        row_position = self.table.rowCount()
+        self.table.insertRow(row_position)
+
+        # Add key
+        key_item = QTableWidgetItem(key)
+        self.table.setItem(row_position, 0, key_item)
+
+        # Handle lists by joining them into a comma-separated string
+        if isinstance(value, list):
+            value_str = ', '.join(map(str, value))  # Convert list elements to string and join
+        else:
+            value_str = str(value)  # Convert non-list values to string
+
+        # Add value as string
+        value_item = QTableWidgetItem(value_str)
+        self.table.setItem(row_position, 1, value_item)
+
+        # Add value type combo box
+        value_type = self.detect_value_type(value)
+        type_combo = QComboBox()
+        type_combo.addItems(["str", "int", "float", "bool", "list", "dict"])
+        if value_type:
+            type_combo.setCurrentText(value_type)
+        self.table.setCellWidget(row_position, 2, type_combo)
+
+    def detect_value_type(self, value):
+        """Attempts to detect the type of the value and returns it as a string."""
+        try:
+            if isinstance(value, list):
+                return "list"
+            elif isinstance(value, dict):
+                return "dict"
+            elif isinstance(value, int):
+                return "int"
+            elif isinstance(value, float):
+                return "float"
+            elif isinstance(value, bool):
+                return "bool"
+            else:
+                return "str"
+        except:
+            return "str"
+
+    def remove_selected_row(self):
+        """Removes the selected row from the table."""
+        indices = self.table.selectionModel().selectedRows()
+        for index in sorted(indices):
+            self.table.removeRow(index.row())
+
+    def get_table_data(self):
+        """Collects data from the table and returns it as a dictionary."""
+        new_data = {}
+        for row in range(self.table.rowCount()):
+            key_item = self.table.item(row, 0)
+            value_item = self.table.item(row, 1)
+            type_combo = self.table.cellWidget(row, 2)
+
+            key = key_item.text() if key_item else None
+            if key:
+                value = value_item.text() if value_item else ""
+                value_type = type_combo.currentText() if type_combo else "str"
+
+                # Convert value based on selected type
+                try:
+                    if value_type == "int":
+                        value = int(value)
+                    elif value_type == "float":
+                        value = float(value)
+                    elif value_type == "bool":
+                        value = value.lower() == "true"
+                    elif value_type == "list":
+                        value = [v.strip() for v in value.split(",")]
+                    elif value_type == "dict":
+                        value = json.loads(value)  # Assuming user enters JSON dict as string
+                except ValueError:
+                    QMessageBox.critical(self, "Error", f"Invalid value for type {value_type}: {value}")
+                    return None
+
+                new_data[key] = value
+
+        return new_data
+
+    def save(self):
+        """Updates self.cur_data with the new data from the table."""
+        new_data = self.get_table_data()
+        if new_data is not None:
+            try:
+                # Update cur_data with the new dictionary
+                self.cur_data.clear()
+                self.cur_data.update(new_data)
+            except TypeError as ex:
+                QMessageBox.critical(self, "Error", f"Data contains non-serializable types: {ex}")
+
+    def load_new_data(self, new_dict):
+        """Loads a new dictionary into the table, clearing the existing data."""
+        # Clear the current table
+        self.table.setRowCount(0)
+        self.cur_data = new_dict
+
+        # Load the new data
+        self.convert_into_rows()
