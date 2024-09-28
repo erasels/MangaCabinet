@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
 from auxillary.DataAccess import MangaEntry
 from gui.CollectionHandler import fill_collections_box
 from gui.Options import bind_dview
-from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget, CommaCompleter
+from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget, CommaCompleter, DictEditor
 
 
 class DetailEditorHandler:
@@ -19,8 +19,7 @@ class DetailEditorHandler:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.opened = False
         self.cur_data = None
-        self.save_button = None
-        self.detail_view = None
+        self.detail_editor = None
         self.mw = parent
         self.json_edit_mode = False
         self.current_row = 0
@@ -34,18 +33,9 @@ class DetailEditorHandler:
     def init_ui(self):
         self.layout = QGridLayout()
 
-        # Detail view
-        self.detail_view = QTextEdit(self.mw)
-        self.detail_view.setPlaceholderText("Select an item to edit it.")
-
-        # Save button
-        self.save_button = QPushButton("Save Changes", self.mw)
-        self.save_button.clicked.connect(self.save_changes)
-        self.save_button.setStyleSheet(self.mw.styles.get("textbutton"))
-
-        # Set up JSON view
-        self.layout.addWidget(self.detail_view, 0, 0, 3, -1)
-        self.layout.addWidget(self.save_button, 4, 0, -1, -1)
+        # Detail editor
+        self.detail_editor = DictEditor(self.mw)
+        self.layout.addWidget(self.detail_editor)
 
         # Title and Short Title
         self.title_input = QLineEdit(self.mw)
@@ -153,10 +143,9 @@ class DetailEditorHandler:
         self.toggle_button.setIconSize(QSize(41, 41))
         self.toggle_button.setFixedSize(41, 41)
         self.toggle_button.setStyleSheet("QPushButton { border: none; }")
-        self.toggle_button.setToolTip("Switch between json editing and easy edit.")
+        self.toggle_button.setToolTip("Switch between detail editing and easy edit.")
         self.positionToggleButton()
         self.toggle_button.clicked.connect(self.toggle_edit_mode)
-        self.toggle_button.raise_()
         self.toggle_button.hide()
 
     # For the details display
@@ -179,6 +168,7 @@ class DetailEditorHandler:
             self.opened = True
             self.switch_views("detail")
             self.toggle_button.show()
+            self.toggle_button.raise_()
             # Fix current item being offscreen when window pops up
             self.mw.manga_list_handler.rescroll()
 
@@ -198,12 +188,7 @@ class DetailEditorHandler:
             self.mw.open_detail_view(self.cur_data)
 
         if self.json_edit_mode:
-            data_json = "Invalid JSON, do not save!"
-            try:
-                data_json = json.dumps(self.cur_data, indent=4)
-            except TypeError as ex:
-                self.logger.error(f"{self.cur_data.id}: has invalid JSON due to non-serializable types. Error: {ex}")
-            self.detail_view.setText(data_json)
+            self.detail_editor.load_new_data(self.cur_data)
         else:
             # Populate fields with manga data
             self.title_input.setText(self.cur_data.title)
@@ -233,15 +218,12 @@ class DetailEditorHandler:
             return
 
         if self.json_edit_mode:
-            contents = self.detail_view.toPlainText()
-            if len(contents) > 5:  # saftey to not save bogus
-                modified_data = json.loads(contents, object_pairs_hook=MangaEntry)
-                self.cur_data.clear()  # Done to update inplace references
-                self.cur_data.update(modified_data)
+            if self.detail_editor.save():
                 self.logger.debug(f"{self.cur_data.id} was updated manually")
                 self.cur_data.update_last_edited()
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
+                self.detail_editor.load_new_data(self.cur_data)
         else:
             data_changed = False
 
@@ -342,8 +324,7 @@ class DetailEditorHandler:
     def switch_views(self, view="detail"):
         for i in range(self.layout.count()):
             self.recursively_toggle_visibility(self.layout.itemAt(i), view == "detail")
-        self.detail_view.setVisible(view == "JSON")
-        self.save_button.setVisible(view == "JSON")
+        self.detail_editor.setVisible(view == "JSON")
 
     def recursively_toggle_visibility(self, item, show: bool):
         """Toggle the visibility of the widget, or if it's a layout, toggle all its items."""
