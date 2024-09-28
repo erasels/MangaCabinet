@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal, Qt, QRectF, QPointF, QPoint, pyqtSlot, QTim
 from PyQt5.QtGui import QColor, QPainter, QPixmap, QWheelEvent, QMouseEvent, QShowEvent, QHideEvent, QCursor
 from PyQt5.QtWidgets import QComboBox, QCompleter, QTextEdit, QVBoxLayout, QWidget, QLineEdit, QListWidget, QLabel, \
     QListWidgetItem, QGridLayout, QScrollArea, QPushButton, QInputDialog, QListView, QGraphicsView, QGraphicsScene, \
-    QHBoxLayout, QGraphicsDropShadowEffect, QMenu, QAction, QTableWidget, QTableWidgetItem, QMessageBox, QHeaderView
+    QHBoxLayout, QGraphicsDropShadowEffect, QMenu, QAction, QTableWidget, QTableWidgetItem, QMessageBox, QHeaderView, QStyledItemDelegate
 
 import gui
 from auxillary.DataAccess import MangaEntry
@@ -653,6 +653,17 @@ class RatingWidget(QWidget):
         return self.current_score
 
 
+class CompleterDelegate(QStyledItemDelegate):
+    def __init__(self, completer, parent=None):
+        super().__init__(parent)
+        self.completer = completer
+
+    def createEditor(self, parent, option, index):
+        editor = QLineEdit(parent)
+        editor.setCompleter(self.completer)
+        return editor
+
+
 class DictEditor(QWidget):
     def __init__(self, mw):
         super().__init__()
@@ -683,6 +694,14 @@ class DictEditor(QWidget):
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Key column resizes based on content
         header.setSectionResizeMode(1, QHeaderView.Stretch)  # Value column stretches to fill remaining space
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Value Type column resizes based on content
+
+        completer = QCompleter(list(MangaEntry.ATTRIBUTE_MAP.keys()))
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setCompletionMode(QCompleter.PopupCompletion)
+
+        # Set the delegate with completer for the 'Key' column
+        delegate = CompleterDelegate(completer, self.table)
+        self.table.setItemDelegateForColumn(0, delegate)
 
         layout.addWidget(self.table)
 
@@ -758,6 +777,16 @@ class DictEditor(QWidget):
                 return "str"
         except:
             return "str"
+
+    def apply_completer_to_key(self, row, column):
+        """Applies a QCompleter to the key column (column 0)."""
+        if column == 0:  # Only apply the completer to the key column
+            completer = QCompleter(MangaEntry.ATTRIBUTE_MAP.keys(), self)
+            key_item = self.table.item(row, 0)
+            if key_item:
+                line_edit = self.table.cellWidget(row, column)
+                if isinstance(line_edit, QLineEdit):
+                    line_edit.setCompleter(completer)
 
     def remove_selected_row(self):
         """Removes the selected row from the table."""
