@@ -229,11 +229,11 @@ class DetailEditorHandler:
             return
 
         if self.json_edit_mode:
-            self.detail_editor.save()
-            self.logger.debug(f"{self.cur_data.id} was updated manually")
-            self.cur_data.update_last_edited()
-            self.mw.is_data_modified = True
-            self.mw.search_bar_handler.update_list()
+            if self.detail_editor.save():
+                self.logger.debug(f"{self.cur_data.id} was updated manually")
+                self.cur_data.update_last_edited()
+                self.mw.is_data_modified = True
+                self.mw.search_bar_handler.update_list()
         else:
             data_changed = False
 

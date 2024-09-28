@@ -828,15 +828,17 @@ class DictEditor(QWidget):
         return new_data
 
     def save(self):
-        """Updates self.cur_data with the new data from the table."""
+        """Updates self.cur_data with the new data from the table. Returns True if saving was successful."""
         new_data = self.get_table_data()
         if new_data is not None:
             try:
                 # Update cur_data with the new dictionary
                 self.cur_data.clear()
                 self.cur_data.update(new_data)
+                return True
             except TypeError as ex:
                 QMessageBox.critical(self, "Error", f"Data contains non-serializable types: {ex}")
+        return False
 
     def load_new_data(self, new_dict):
         """Loads a new dictionary into the table, clearing the existing data."""
