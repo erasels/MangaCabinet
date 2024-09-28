@@ -1,0 +1,56 @@
+/* Style for table headers (horizontal and vertical) */
+QHeaderView::section {
+    background-color: #444444;  /* Dark grey background */
+    color: white;               /* White text */
+    border: 1px solid #2e2e2e;  /* Darker grey border */
+    font-weight: bold;          /* Bold text */
+}
+
+/* Style for row number (vertical header) */
+QTableCornerButton::section {
+    background-color: #444444;  /* Dark grey background */
+    border: 1px solid #2e2e2e;  /* Darker grey border */
+    qproperty-alignment: AlignCenter;  /* Center the text */
+    font-weight: bold;          /* Bold text */
+    border-radius: 5px;
+}
+
+/* Style for the combo box inside the table */
+QComboBox {
+    background-color: #555555;  /* Darker grey background */
+    color: black;               /* Black text */
+    font-weight: bold;          /* Bold text */
+    border: 1px solid #2e2e2e;  /* Darker grey border */
+    border-radius: 5px;
+}
+
+/* Style for the combo box when it's dropped down */
+QComboBox QAbstractItemView {
+    background-color: #555555;  /* Darker grey background */
+    color: black;               /* Black text */
+    font-weight: bold;          /* Bold text */
+}
+
+/* Optional: Style the items in the table rows */
+QTableWidget::item {
+    border: 1px solid #2e2e2e;  /* Darker grey border for cells */
+    border-radius: 5px;
+}
+
+/* Style for selected items */
+QTableWidget::item:selected {
+    background-color: #4b23c2;  /* Purple background when selected */
+    color: black;              /* Black text when selected */
+}
+
+/* Style when the item is being edited */
+QTableWidget::item:focus {
+    color: black;              /* Ensure text stays black when editing */
+}
+
+/* Style the QLineEdit that is created when editing a cell */
+QTableWidget QLineEdit {
+    background-color: #6a38ff;  /* Keep purple background when editing */
+    color: black;              /* Black text while editing */
+    border: none;              /* Remove any default border */
+}
