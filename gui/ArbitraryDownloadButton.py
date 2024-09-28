@@ -24,7 +24,7 @@ class ArbitraryDownloadButton(QPushButton):
         self.setStyleSheet("""ArbitraryDownloadButton { border: none; }
                     ArbitraryDownloadButton:hover { background-color: #cccccc; border-radius: 5px;}""")
         self.clicked.connect(self.openDialog)
-        self.setToolTip("Options")
+        self.setToolTip("Entry Download Scripts")
 
     def openDialog(self):
         dialog = ScriptDialog(self.mw, self)
