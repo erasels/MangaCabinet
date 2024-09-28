@@ -37,9 +37,9 @@ class ScriptDialog(QDialog):
         self.setWindowTitle("Download Manga")
         self.mw = mw
         self.scriptPath = self.mw.settings.get(Options.download_script_loc, os.path.join('auxillary', 'EmptyMangaGenerator.py'))
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
         layout = QVBoxLayout(self)
 
         # Label for the current script location

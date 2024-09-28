@@ -6,9 +6,9 @@ class TagViewer(QWidget):
         super().__init__()
         self.mw = mw
         self.tag_data = mw.tag_data
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle('Tag Viewer')
         self.setGeometry(0, 0, 600, 400)
 
