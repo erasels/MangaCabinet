@@ -234,6 +234,7 @@ class DetailEditorHandler:
                 self.cur_data.update_last_edited()
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
+                self.detail_editor.load_new_data(self.cur_data)
         else:
             data_changed = False
 
