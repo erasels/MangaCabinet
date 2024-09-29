@@ -470,7 +470,7 @@ class ImageViewer(QGraphicsView):
 
     def __init__(self, thumb_manager, parent=None, dynamic_show=False):
         super(ImageViewer, self).__init__(parent)
-
+        self.mw = thumb_manager.mw
         self.thumb_manager = thumb_manager
         self.dynamic_show = dynamic_show
         self.entry_id = None
@@ -561,7 +561,7 @@ class ImageViewer(QGraphicsView):
         super().hideEvent(event)
 
     def shouldShow(self):
-        return not self.parent().settings[bind_dview]
+        return not self.mw.settings[bind_dview]
 
     def set_dynamic_show(self, state):
         self.setHidden(state)
