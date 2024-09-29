@@ -3,7 +3,7 @@ import logging
 import os
 from json import JSONDecodeError
 
-from PyQt5.QtCore import Qt, QSize, QStringListModel
+from PyQt5.QtCore import Qt, QSize, QStringListModel, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLabel, QComboBox, \
     QHBoxLayout
@@ -169,6 +169,8 @@ class DetailEditorHandler:
             self.switch_views("detail")
             self.toggle_button.show()
             self.toggle_button.raise_()
+            # Split view between list view and details handler once opened
+            self.mw.toggle_details_handler(True)
             # Fix current item being offscreen when window pops up
             self.mw.manga_list_handler.rescroll()
 

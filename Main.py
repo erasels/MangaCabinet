@@ -114,15 +114,22 @@ class MangaCabinet(QWidget):
         # Setup layout (wdiget = single item, layout = group of items)
         self.layout.addLayout(self.search_bar_handler.get_layout(self.collection_handler.get_widgets() + [ArbitraryDownloadButton(self), self.options_handler.get_widget()]))
 
-        self.vertical_layout = QVBoxLayout()
+        # Create a splitter between the list view and the detail editor
+        self.splitter = QSplitter(Qt.Vertical)  # Use a vertical splitter
         list_widget = self.manga_list_handler.get_widget()
-        list_widget.setMinimumHeight(335)
-        self.vertical_layout.addWidget(list_widget, 1)
-        self.vertical_layout.addLayout(self.details_handler.get_layout(), 0)
+        self.splitter.addWidget(list_widget)
+        detail_widget = QWidget()
+        detail_widget.setLayout(self.details_handler.get_layout())
+        self.splitter.addWidget(detail_widget)
+        self.splitter.setSizes([1, 0])
 
-        self.layout.addLayout(self.vertical_layout)
-
+        # Add the splitter to the main layout
+        self.layout.addWidget(self.splitter)
         self.setLayout(self.layout)
+
+        # Fixes manga list entries not taking up available space on start up
+        self.manga_list_handler.handle_resize()
+
         self.toast = ToastNotification(self)
 
     # Override for updating list when resizing
@@ -156,6 +163,15 @@ class MangaCabinet(QWidget):
             self.tag_view = TagViewer(self)
 
         self.tag_view.show()
+
+    def toggle_details_handler(self, show):
+        # Used to nicely show the details handler and list view with splitter once something is selcted
+        if show:
+            # Show the details handler, adjust the splitter to give it space
+            self.splitter.setSizes([350, 350])
+        else:
+            # Hide the details handler, set its size to 0
+            self.splitter.setSizes([1, 0])
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_F2:
