@@ -45,7 +45,7 @@ class MangaCabinet(QWidget):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.toast = None
         self.setWindowTitle("Manga Cabinet")
-        self.resize(1280, 720)
+        self.resize(1280, 850)
         self.fonts = ["Tahoma", "Arial", "Verdana"]
         self.font_index = 0
         self.is_data_modified = False
