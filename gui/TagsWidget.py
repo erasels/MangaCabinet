@@ -33,21 +33,18 @@ class TagsWidget(QWidget):
         buttons_layout.addWidget(self.browse_tag_btn)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel("Tags:"))
+        layout.addWidget(QLabel("Tags: (Right-click to highlight)"))
         layout.addWidget(self.scroll_area)
         layout.addLayout(buttons_layout)
 
-    def emit_save_signal(self):
+    def signal_save(self):
         self.saveSignal.emit()
 
-    def add_tag_to_layout(self, tag_name):
-        # Create the Button with both the tag name and the '❌' symbol
-        tag_btn = QPushButton(f"❌{tag_name}")
-        tag_btn.setStyleSheet(self.mw.styles.get("tagbutton"))
-        tag_btn.setObjectName("Unclicked")  # This allows us to use custom selectors
-        tag_btn.clicked.connect(lambda: self.tag_clicked(tag_btn, tag_name))
-        tag_btn.setProperty("greyed_out", False)
-
+    def add_tag_to_layout(self, tag_name, special=False):
+        tag_btn = TagButton(tag_name, special, self.mw)
+        tag_btn.update_style()
+        tag_btn.toggledGreyedOut.connect(self.signal_save)
+        tag_btn.toggledSpecial.connect(self.signal_save)
         self.tags_layout.addWidget(tag_btn)
 
     def tag_clicked(self, tag_btn, original_text):
@@ -62,7 +59,7 @@ class TagsWidget(QWidget):
         tag_btn.style().unpolish(tag_btn)
         tag_btn.style().polish(tag_btn)
 
-        self.emit_save_signal()
+        self.signal_save()
 
     def add_new_tag(self):
         if not self.loaded:
@@ -86,38 +83,39 @@ class TagsWidget(QWidget):
         if ok and text:
             tags = [tag.strip() for tag in text.split(",")]
             # Check for duplicate tags
-            existing_tags = self.extract_tags_from_layout()
+            existing_tags = self.extract_tagdata_from_layout()[0]
             modified = False
             for tag in tags:
                 if tag and tag not in existing_tags:
                     self.add_tag_to_layout(tag)
                     modified = True
             if modified:
-                self.emit_save_signal()
+                self.signal_save()
 
-    def extract_tags_from_layout(self):
+    def extract_tagdata_from_layout(self):
         tags = []
+        special_tags = []
         for i in range(self.tags_layout.count()):
             widget = self.tags_layout.itemAt(i).widget()
-            if isinstance(widget, QPushButton):
-                is_greyed_out = widget.property("greyed_out")
-                # If the button isn't greyed out, extract its tag text
-                if not is_greyed_out:
-                    tag_text = widget.text().replace("❌", "")
+            if isinstance(widget, TagButton):
+                tag_text = widget.tag_name
+                if not widget.property("greyed_out"):
                     tags.append(tag_text)
-        return tags
+                if widget.property("special"):
+                    special_tags.append(tag_text)
+        return tags, special_tags
 
-    def load_tags(self, tags_list):
+    def load_tags(self, entry):
         self.loaded = True
         self.clear_tags_layout()
-        for tag in tags_list:
-            self.add_tag_to_layout(tag)
+        for tag in entry.tags:
+            special = tag in entry.highlighted_tags
+            self.add_tag_to_layout(tag, special=special)
 
     def clear_tags_layout(self):
         for i in reversed(range(self.tags_layout.count())):
             widget = self.tags_layout.itemAt(i).widget()
             if widget is not None:
-                # Remove the widget from layout
                 self.tags_layout.removeWidget(widget)
                 # Destroy the widget (this will also remove it from the screen)
                 widget.deleteLater()
@@ -202,3 +200,60 @@ class FlowLayout(QLayout):
             lineHeight = max(lineHeight, item.sizeHint().height())
 
         return y + lineHeight - rect.y()
+
+
+class TagButton(QPushButton):
+    """
+    The buttons used in the tag widget that represent tags. Allows for custom logic regarding
+    left-click/right-click logic.
+    """
+    toggledSpecial = pyqtSignal()
+    toggledGreyedOut = pyqtSignal()
+
+    def __init__(self, tag_name, isSpecial, mw):
+        super().__init__(f"❌{tag_name}")
+        self.tag_name = tag_name
+        self.mw = mw
+        self.setStyleSheet(self.mw.styles.get("tagbutton"))
+        self.setObjectName("Unclicked")  # For styling
+        self.setProperty("greyed_out", False)
+        self.setProperty("special", False)
+        if isSpecial:
+            self.toggle_special(False)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            if not self.property("greyed_out"):  # Only allow right-click if not greyed out
+                self.toggle_special()
+        elif event.button() == Qt.LeftButton:
+            if not self.property("special"):  # Left-click only affects non-special tags
+                self.toggle_greyed_out()
+        else:
+            super().mousePressEvent(event)
+
+    def toggle_greyed_out(self):
+        if self.property("greyed_out"):
+            self.setObjectName("Unclicked")
+            self.setProperty("greyed_out", False)
+        else:
+            self.setObjectName("Clicked")
+            self.setProperty("greyed_out", True)
+        self.update_style()
+        self.toggledGreyedOut.emit()
+
+    def toggle_special(self, shouldEmit=True):
+        special = not self.property("special")
+        self.setProperty("special", special)
+        # Update the text to remove or re-add the "❌"
+        if special:
+            self.setText(self.tag_name)
+        else:
+            self.setText(f"❌{self.tag_name}")
+        self.update_style()
+        if shouldEmit:
+            self.toggledSpecial.emit()
+
+    def update_style(self):
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()

@@ -13,6 +13,7 @@ class MangaEntry(dict):
         "title_alt": ("title_alt", ""),
         "title_short": ("title_short", ""),
         "tags": ("tag", []),
+        "highlighted_tags": ("MC_highlighted_tags", []),
         "artist": ("artist", []),
         "group": ("group", []),
         "language": ("language", []),

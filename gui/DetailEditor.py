@@ -197,7 +197,7 @@ class DetailEditorHandler:
             self.title_input.setText(self.cur_data.title)
             self.short_title_input.setText(self.cur_data.title_short)
 
-            self.tags_widget.load_tags(self.cur_data.tags)
+            self.tags_widget.load_tags(self.cur_data)
 
             self.description_input.setText(self.cur_data.description)
             self.language_input.setText(", ".join(self.cur_data.language))
@@ -248,7 +248,8 @@ class DetailEditorHandler:
             attributes_mapping = {
                 'title': self.title_input.text,
                 'title_short': self.short_title_input.text,
-                'tags': self.tags_widget.extract_tags_from_layout,
+                'tags': lambda: self.tags_widget.extract_tagdata_from_layout()[0],
+                'highlighted_tags': lambda: self.tags_widget.extract_tagdata_from_layout()[1],
                 'description': self.description_input.toPlainText,
                 'language': lambda: [lang.strip() for lang in self.language_input.text().split(",")],
                 'artist': lambda: [artist.strip() for artist in self.artist_input.text().split(",")],
