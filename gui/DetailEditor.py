@@ -11,7 +11,8 @@ from PyQt5.QtWidgets import QTextEdit, QPushButton, QGridLayout, QLineEdit, QLab
 from auxillary.DataAccess import MangaEntry
 from gui.CollectionHandler import fill_collections_box
 from gui.Options import bind_dview
-from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, TagsWidget, ImageViewer, RatingWidget, CommaCompleter, DictEditor
+from gui.WidgetDerivatives import CustomTextEdit, IdMatcher, ImageViewer, RatingWidget, CommaCompleter, DictEditor
+from gui.TagsWidget import TagsWidget
 
 
 class DetailEditorHandler:
