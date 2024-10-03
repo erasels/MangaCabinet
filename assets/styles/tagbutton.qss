@@ -1,27 +1,31 @@
-/* Style for the tag button */
+/* Style for the unclicked tag button with rounded border */
 QPushButton#Unclicked {
-    border: none;
+    border: 1px solid #888;  /* Light gray border */
+    border-radius: 8px;      /* Rounded corners */
     text-align: left;
     background-color: transparent;
-    margin: 0px;
+    margin: 1px;
+    padding: 1px 4px;        /* Adjust padding for a cleaner look */
 }
 
+/* Hover state for unclicked tag button */
 QPushButton#Unclicked:hover {
     background-color: #943d3d;
-    font-weight: bold;
 }
 
+/* Hover state for clicked tag button */
 QPushButton#Clicked:hover {
     background-color: #357a35;
-    font-weight: bold;
 }
 
-/* Style for the greyed-out tag button */
+/* Style for the greyed-out (clicked) tag button */
 QPushButton#Clicked {
-    border: none;
+    border: 1px solid #888;  /* Maintain the border and rounded corners */
+    border-radius: 8px;      /* Rounded corners */
     text-align: left;
     background-color: transparent;
     color: gray;
     text-decoration: line-through;
-    margin: 0px;
+    margin: 1px;
+    padding: 1px 4px;
 }
