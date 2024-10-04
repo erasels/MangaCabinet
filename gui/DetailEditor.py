@@ -223,6 +223,7 @@ class DetailEditorHandler:
         if self.json_edit_mode:
             if self.detail_editor.save():
                 self.logger.debug(f"{self.cur_data.id} was updated manually")
+                self.cur_data.enforce_tag_parity()
                 self.cur_data.update_last_edited()
                 self.mw.is_data_modified = True
                 self.mw.search_bar_handler.update_list()
