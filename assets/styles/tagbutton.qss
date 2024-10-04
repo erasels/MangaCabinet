@@ -1,31 +1,45 @@
-/* Style for the unclicked tag button with rounded border */
-QPushButton#Unclicked {
-    border: 1px solid #888;  /* Light gray border */
-    border-radius: 8px;      /* Rounded corners */
+/* Base style for tag buttons */
+QPushButton {
+    border-radius: 8px;
     text-align: left;
     background-color: transparent;
     margin: 1px;
-    padding: 1px 4px;        /* Adjust padding for a cleaner look */
+    padding: 1px 4px;
 }
 
-/* Hover state for unclicked tag button */
+/* Unclicked tag */
+QPushButton#Unclicked {
+    border: 1px solid #888;
+}
+
+/* Clicked (greyed out) tag */
+QPushButton#Clicked {
+    border: 1px solid #888;
+    color: gray;
+    text-decoration: line-through;
+}
+
+/* Hover effects for unclicked */
 QPushButton#Unclicked:hover {
     background-color: #943d3d;
 }
 
-/* Hover state for clicked tag button */
+/* Hover effects for clicked */
 QPushButton#Clicked:hover {
     background-color: #357a35;
 }
 
-/* Style for the greyed-out (clicked) tag button */
-QPushButton#Clicked {
-    border: 1px solid #888;  /* Maintain the border and rounded corners */
-    border-radius: 8px;      /* Rounded corners */
-    text-align: left;
-    background-color: transparent;
-    color: gray;
-    text-decoration: line-through;
-    margin: 1px;
-    padding: 1px 4px;
+/* Special (highlighted) tag (will only ever be unclicked, takes precendece so required) */
+QPushButton#Unclicked[special="true"] {
+    border: 1px solid #915c06;
+    background-color: #462ba6;
+    padding: 3px 6px;
+}
+
+/* Prevent hover effect on special tags */
+QPushButton#Clicked[special="true"]:hover {
+    background-color: #462ba6;  /* Keep the background */
+}
+QPushButton#Unclicked[special="true"]:hover {
+    background-color: #462ba6;  /* Keep the background */
 }

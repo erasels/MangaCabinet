@@ -13,6 +13,7 @@ class MangaEntry(dict):
         "title_alt": ("title_alt", ""),
         "title_short": ("title_short", ""),
         "tags": ("tag", []),
+        "highlighted_tags": ("MC_highlighted_tags", []),
         "artist": ("artist", []),
         "group": ("group", []),
         "language": ("language", []),
@@ -125,6 +126,13 @@ class MangaEntry(dict):
             return self.filesystem_location
         else:
             return None
+
+    def enforce_tag_parity(self):
+        # Find any highlighted tags that are not in the main tags list
+        missing_tags = [tag for tag in self.highlighted_tags if tag not in self.tags]
+        if missing_tags:
+            self.highlighted_tags = [tag for tag in self.highlighted_tags if tag in self.tags]
+            self.logger.debug(f"{self.id}: Was updated to remove the following highlighted_tags because they are missing from tags: {missing_tags}")
 
     def update_last_edited(self):
         self.last_edited = datetime.now().strftime("%Y/%m/%d %H:%M")

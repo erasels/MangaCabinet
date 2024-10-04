@@ -437,8 +437,8 @@ class MangaDelegate(QStyledItemDelegate):
         Renders tags for an item within specified bounds. Adjusts text by wrapping or scaling to ensure it fits
         within its tag, while drawing each tag with a rounded background. Also renders upload text below them.
         """
-        # Handle tags (showing only the first six tags)
-        tags = entry.tags[:MAX_TAGS]
+        # Handle tags (showing only six tags, highlighted first)
+        tags = self.get_display_tags(entry)
 
         # Start position for tags
         tag_x_start = title_rect.right() + TAG_SPACING
@@ -482,7 +482,8 @@ class MangaDelegate(QStyledItemDelegate):
                 tag_path = QPainterPath()
                 tag_path.addRoundedRect(QRectF(tag_rect), 5, 5)
                 painter.fillPath(tag_path, blend_colors(TAG_BACKGROUND_COLOR, background_color, 0.7))
-                # painter.strokePath(tag_path, QPen(QColor("#000000"), 1))  # draw border
+                if tags[idx] in entry.highlighted_tags:
+                    painter.strokePath(tag_path, QPen(QColor("#915c06"), 2))  # draw border for highlighted tags
                 painter.drawText(tag_rect, Qt.AlignCenter | Qt.TextWordWrap, tag_text)
         painter.setFont(original_font)
 
@@ -502,6 +503,19 @@ class MangaDelegate(QStyledItemDelegate):
             font_metrics = QFontMetrics(font)
 
         painter.drawText(tag_x_start, upload_text_y_start, upload_text)
+
+    def get_display_tags(self, entry):
+        display_tags = entry.highlighted_tags[:MAX_TAGS]
+
+        # Add normal tags, skipping any that are already in the highlighted tags if limit isn't reached
+        for tag in entry.tags:
+            if len(display_tags) >= MAX_TAGS:
+                break
+
+            if tag not in display_tags:
+                display_tags.append(tag)
+
+        return display_tags
 
     # Defines size of item in the list
     def sizeHint(self, option, index):
