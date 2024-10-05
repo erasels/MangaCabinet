@@ -33,7 +33,7 @@ QPushButton#Clicked:hover {
 QPushButton#Unclicked[special="true"] {
     border: 1px solid #915c06;
     background-color: #462ba6;
-    padding: 3px 6px;
+    padding: 3px 4px;
 }
 
 /* Prevent hover effect on special tags */
