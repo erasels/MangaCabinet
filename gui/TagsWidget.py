@@ -15,7 +15,7 @@ class TagsWidget(QWidget):
 
         # Create flow layout
         self.tags_widget = QWidget(self)
-        self.tags_layout = FlowLayout(self.tags_widget)
+        self.tags_layout = FlowLayout(self.tags_widget, spacing=3)
 
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidget(self.tags_widget)
