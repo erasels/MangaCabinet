@@ -749,7 +749,7 @@ class ThumbnailDelegate(QStyledItemDelegate):
             if collection_name and collection_name in self.mw.collection_handler.collections:
                 color = self.mw.collection_handler.collections[collection_name].get("color")
                 if color:
-                    background_color = blend_colors(DEFAULT_ITEM_BG_COLOR, QColor(color), 0.2)
+                    background_color = QColor(color)
 
             if option.state & QStyle.State_MouseOver:
                 mod_color = QColor(255, 255, 255, 50)  # semi-transparent white to brighten the color
