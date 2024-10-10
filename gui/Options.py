@@ -85,7 +85,7 @@ class OptionsHandler(QDialog):
         # Group for list view settings
         list_view_group = QGroupBox("List View Options", self)
         list_view_layout = QVBoxLayout(list_view_group)
-        self.show_removed_checkbox = QCheckBox("Show Mangas Marked as Removed", list_view_group)
+        self.show_removed_checkbox = QCheckBox("Show Entries Marked as Removed", list_view_group)
         self.show_removed_checkbox.setChecked(self.mw.settings[show_removed])
         self.show_removed_checkbox.stateChanged.connect(lambda state: self.simple_change(show_removed, state))
         self.show_removed_checkbox.setToolTip("Show removed entries in the main manga list.")
@@ -135,7 +135,7 @@ class OptionsHandler(QDialog):
         self.switch_delegate_checkbox = QCheckBox("Use Thumbnail List View", thumbnails_group)
         self.switch_delegate_checkbox.setChecked(self.mw.settings[thumbnail_delegate])
         self.switch_delegate_checkbox.stateChanged.connect(self.thumbnail_view_changed)
-        self.switch_delegate_checkbox.setToolTip("WARNING: High RAM requirement if you have a lot of mangas with thumbnails.")
+        self.switch_delegate_checkbox.setToolTip("WARNING: High RAM requirement if you have a lot of entries with thumbnails.")
 
         thumbnails_layout.addWidget(self.bind_view_checkbox)
         thumbnails_layout.addWidget(self.thumbnail_checkbox)
@@ -149,7 +149,7 @@ class OptionsHandler(QDialog):
         self.default_manga_loc_label.setToolTip(self.mw.settings[default_manga_loc])
         self.default_manga_loc_button = QPushButton("Change Location", self)
         self.default_manga_loc_button.setStyleSheet(self.mw.styles.get("textbutton"))
-        self.default_manga_loc_button.setToolTip("Location you keep your mangas named after the id of the entry. If selected, will check for mangas in there on startup.")
+        self.default_manga_loc_button.setToolTip("Location you keep your mangas named after the id of the entry. If selected, will check for new mangas in there on startup.")
         self.default_manga_loc_button.clicked.connect(self.change_default_manga_loc)
 
         self.show_on_disk_checkbox = QCheckBox("Show Local Copy Indicator", local_group)
