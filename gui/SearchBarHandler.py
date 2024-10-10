@@ -166,8 +166,7 @@ class SearchBarHandler:
             entries_to_add = [entry for entry, _ in sorted_data[:threshold]]
         self.readd_items(entries_to_add)
 
-        if hit_count > 0:
-            self.hits_label.setText(f"Entries: {hit_count}")
+        self.hits_label.setText(f"Entries: {hit_count}")
 
         self.showing_all_entries = False
 
