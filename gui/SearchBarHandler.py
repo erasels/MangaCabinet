@@ -206,21 +206,21 @@ class SearchBarHandler:
                 term = term[1:]
 
             if ":" in term:
-                field, value = term.split(":", 1)
+                field, search_term = term.split(":", 1)
                 # Apply the transformation from the alias list
                 fields_to_search = MangaEntry.FIELD_ALIASES_AND_GROUPING.get(field, [field])
                 # Map values from input to attribute map unerlying value or input if it doesn't exist in attmap
                 fields_to_search = [MangaEntry.ATTRIBUTE_MAP.get(f, (f, None))[0] for f in fields_to_search]
 
                 for search_field in fields_to_search:
-                    data_value = data.get(search_field, "")
-                    if value and value[0] in [">", "<", "="]:
-                        term_score += self.compare_match(data_value, value)
+                    field_contents = data.get(search_field, "")
+                    if search_term and search_term[0] in [">", "<", "="]:
+                        term_score += self.compare_match(field_contents, search_term)
                     else:
-                        term_score += self.count_matches(data_value, value)
+                        term_score += self.count_matches(field_contents, search_term)
             else:
-                for data_value in data.values():
-                    term_score += self.count_matches(data_value, term)
+                for field_contents in data.values():
+                    term_score += self.count_matches(field_contents, term)
 
             if invert_match:
                 term_score = term_score == 0
