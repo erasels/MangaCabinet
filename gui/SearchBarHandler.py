@@ -10,7 +10,7 @@ from gui.WidgetDerivatives import RightClickableComboBox
 
 
 class SearchBarHandler:
-    RESELECT_DELAY = 25
+    RESELECT_DELAY = 35
 
     def __init__(self, main_window):
         self.random_button = None
