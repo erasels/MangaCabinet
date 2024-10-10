@@ -214,8 +214,11 @@ class SearchBarHandler:
 
                 for search_field in fields_to_search:
                     field_contents = data.get(search_field, "")
-                    if search_term and search_term[0] in [">", "<", "="]:
-                        term_score += self.compare_match(field_contents, search_term)
+                    if search_term:
+                        if search_term[0] in [">", "<", "="]:
+                            term_score += self.compare_match(field_contents, search_term)
+                        elif search_term == "[EMPTY]":  # Allow for EMPTY keyword search that only matches empty values
+                            term_score += len(str(field_contents)) == 0
                     else:
                         term_score += self.count_matches(field_contents, search_term)
             else:

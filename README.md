@@ -38,6 +38,7 @@ While using 3rd-party packages has been avoided where possible to keep setup sim
     - You can also narrow down your searches within specific collections.
     - Sort the results by upload date, score, id, data order and more
     - Use a semicolon (`;`) to perform multiple separate searches in one query (e.g. `yandere, gore; horror, tags:romance`).
+    - Search for empty fields with the `[EMPTY]` keyword when searching for a specific field (e.g. `collection:[EMPTY]`) 
 
 ### Configuration
 You can configure many thing with the options menu by clicking on the cogwheel in the top right. If you are unsure what an option means, just hover it to have it explained.
