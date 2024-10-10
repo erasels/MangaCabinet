@@ -153,7 +153,7 @@ class SearchBarHandler:
                 if score > 0:
                     scored_data.append((entry, score))
                     break  # If an entry matches one of the search terms groups, no need to check further
-        # I don't use the match score (amount of hits) anywhere, but I want to, I'll have to sum the matches.
+        # I don't use the match score (amount of hits) anywhere, but if I want to, I'll have to sum the matches.
 
         sorted_data = sorted(scored_data, key=lambda x: sorting_option[1](x[0]), reverse=reverse_final)
 
